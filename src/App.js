@@ -3,11 +3,11 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Panel from "./pages/Panel";
 import DataReader from "./pages/DataReader";
+import exampleData from "./data/example.json";
 function App() {
     return (
         <div>
-            <DataReader />
-            {/* <Panel /> */}
+            <DataReader/>
         </div>
     );
 }

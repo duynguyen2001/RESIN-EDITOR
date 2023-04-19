@@ -1,0 +1,1056 @@
+{
+    "@id": "resin:Schemas/international aggression",
+    "sdfVersion": "3.0",
+    "version": "resin:Phase2b",
+    "events": [
+        {
+            "@id": "resin:Events/10000",
+            "name": "International Aggression",
+            "description": "international aggression news story.",
+            "wd_node": "Q191797",
+            "wd_label": "aggression",
+            "wd_description": "overt, often harmful, social interaction with the intention of inflicting damage or unpleasantness",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20000",
+                    "roleName": "A0_pag_aggressor",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20001",
+                    "roleName": "A1_gol_entity_aggression_is_directed_toward",
+                    "entity": "resin:Entities/00001/"
+                },
+                {
+                    "@id": "resin:Participants/20002",
+                    "roleName": "AM_loc",
+                    "entity": "resin:Entities/00002/"
+                }
+            ],
+            "children": [
+                "resin:Events/10001",
+                "resin:Events/10002",
+                "resin:Events/10003",
+                "resin:Events/10004"
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00001/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00002/",
+                    "name": "geographic_entity",
+                    "wd_description": "place or entity that could be a place",
+                    "wd_label": "geographic entity",
+                    "wd_node": "Q27096213"
+                }
+            ],
+            "relations": [
+                {
+                    "@id": "resin:Relations/30000/",
+                    "name": "proximity",
+                    "relationSubject": "resin:Entities/00000/",
+                    "relationObject": "resin:Entities/00002/",
+                    "wd_node": "wd:Q19267375",
+                    "wd_description": "state of being near as in space, time, or relationship",
+                    "wd_label": "proximity"
+                }
+            ],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10001",
+            "name": "Background",
+            "description": "the background of the aggression happening",
+            "wd_node": "Q196626",
+            "wd_label": "context",
+            "wd_description": "conditions associated with a communicative event that provide resources for its appropriate interpretation",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [
+                "resin:Events/10002"
+            ],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20004",
+                    "roleName": "A1_ppt_entity_now_in_context",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20006",
+                    "roleName": "AM_loc",
+                    "entity": "resin:Entities/00002/"
+                }
+            ],
+            "children": [
+                "resin:Events/10005",
+                "resin:Events/10006",
+                "resin:Events/10007"
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00002/",
+                    "name": "geographic_entity",
+                    "wd_description": "place or entity that could be a place",
+                    "wd_label": "geographic entity",
+                    "wd_node": "Q27096213"
+                }
+            ],
+            "relations": [
+                {
+                    "@id": "resin:Relations/30001/",
+                    "name": "proximity",
+                    "relationSubject": "resin:Entities/00000/",
+                    "relationObject": "resin:Entities/00002/",
+                    "wd_node": "wd:Q19267375",
+                    "wd_description": "state of being near as in space, time, or relationship",
+                    "wd_label": "proximity"
+                }
+            ],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10002",
+            "name": "Violation",
+            "description": "the main phase of the aggression",
+            "wd_node": "Q3537603",
+            "wd_label": "transgression",
+            "wd_description": "violation of a commitment, law, norm or other rule",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [
+                "resin:Events/10003"
+            ],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20007",
+                    "roleName": "A0_pag__transgressor",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20009",
+                    "roleName": "AM_loc__location",
+                    "entity": "resin:Entities/00002/"
+                }
+            ],
+            "children": [
+                "resin:Events/10008",
+                "resin:Events/10009",
+                "resin:Events/10010"
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00002/",
+                    "name": "geographic_entity",
+                    "wd_description": "place or entity that could be a place",
+                    "wd_label": "geographic entity",
+                    "wd_node": "Q27096213"
+                }
+            ],
+            "relations": [
+                {
+                    "@id": "resin:Relations/30002/",
+                    "name": "proximity",
+                    "relationSubject": "resin:Entities/00000/",
+                    "relationObject": "resin:Entities/00002/",
+                    "wd_node": "wd:Q19267375",
+                    "wd_description": "state of being near as in space, time, or relationship",
+                    "wd_label": "proximity"
+                }
+            ],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10003",
+            "name": "International Responses",
+            "description": "international society's response toward the aggression",
+            "wd_node": "Q31983622",
+            "wd_label": "reaction",
+            "wd_description": "action or statement in response to a stimulus or other event",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [
+                "resin:Events/10004"
+            ],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20010",
+                    "roleName": "A0_ppt_reactor",
+                    "entity": "resin:Entities/00010/"
+                },
+                {
+                    "@id": "resin:Participants/20011",
+                    "roleName": "A1_pag_reacted-to",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20012",
+                    "roleName": "A2_prd_reaction",
+                    "entity": "resin:Entities/00012/"
+                }
+            ],
+            "children": [
+                "resin:Events/10011",
+                "resin:Events/10012",
+                "resin:Events/10013"
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00010/",
+                    "name": "organization",
+                    "wd_node": "Q43229",
+                    "wd_label": "organization",
+                    "wd_description": "social entity established to meet needs or pursue goals"
+                },
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00012/",
+                    "name": "reaction",
+                    "wd_node": "Q31983622",
+                    "wd_label": "reaction",
+                    "wd_description": "action or statement in response to a stimulus or other event"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10004",
+            "name": "Impact of the responses",
+            "description": "the outcome of the international society's responses",
+            "wd_node": "Q926230",
+            "wd_label": "effect",
+            "wd_description": "phenomenon which results from a cause",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20014",
+                    "roleName": "A0_pag_cause",
+                    "entity": "resin:Entities/00010/"
+                },
+                {
+                    "@id": "resin:Participants/20015",
+                    "roleName": "A1_ppt_effect",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children": [
+                "resin:Events/10014",
+                "resin:Events/10015",
+                "resin:Events/10016"
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00010/",
+                    "name": "organization",
+                    "wd_node": "Q43229",
+                    "wd_label": "organization",
+                    "wd_description": "social entity established to meet needs or pursue goals"
+                },
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "optional": true,
+            "@id": "resin:Events/10005",
+            "name": "Previous Conflicts",
+            "description": "history of the conflict between countries",
+            "wd_node": "Q180684",
+            "wd_label": "conflict",
+            "wd_description": "friction, disagreement, or discord within a group or between different groups",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [
+                "resin:Events/10006"
+            ],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20017",
+                    "roleName": "A0_pag_agentive_clasher",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20018",
+                    "roleName": "A1_com_entity_clashed_with",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10006",
+            "name": "Incentives",
+            "description": "recent changes to the conflicting parties that induce the aggression",
+            "wd_node": "Q2141565",
+            "wd_label": "situation",
+            "wd_description": "position with respect to conditions, circumstances and contexts",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [
+                "resin:Events/10007"
+            ],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20021",
+                    "roleName": "A1_ppt_event",
+                    "entity": "resin:Entities/00021/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00021/",
+                    "name": "event",
+                    "wd_node": "Q1656682",
+                    "wd_label": "event",
+                    "wd_description": "temporary and scheduled happening, like a conference, festival, competition or similar"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": [],
+            "children": [
+                "resin:Events/10017",
+                "resin:Events/10018",
+                "resin:Events/10019"
+            ]
+        },
+        {
+            "@id": "resin:Events/10007",
+            "name": "Prehand Justification",
+            "description": "the justification made before the aggression",
+            "wd_node": "Q948144",
+            "wd_label": "rationalization",
+            "wd_description": "a psychological defense mechanism in which controversial behaviors or feelings are justified and explained in a seemingly rational or logical manner to avoid the true explanation",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20024",
+                    "roleName": "A0_pag_rationalizer",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "children": [
+                "resin:Events/10020",
+                "resin:Events/10021",
+                "resin:Events/10022"
+            ],
+            "@id": "resin:Events/10008",
+            "name": "Beginning",
+            "description": "the beginning action of aggression",
+            "wd_node": "Q529711",
+            "wd_label": "beginning",
+            "wd_description": "place where something begins",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [
+                "resin:Events/10009"
+            ],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20030",
+                    "roleName": "AM_loc",
+                    "entity": "resin:Entities/00002/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00002/",
+                    "name": "geographic_entity",
+                    "wd_description": "place or entity that could be a place",
+                    "wd_label": "geographic entity",
+                    "wd_node": "Q27096213"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10009",
+            "name": "Development",
+            "description": "the development phase of aggression",
+            "wd_node": "Q7562091",
+            "wd_label": "development",
+            "wd_description": "process of developing; growth, directed change",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [
+                "resin:Events/10010"
+            ],
+            "participants": [],
+            "children": [
+                "resin:Events/10023",
+                "resin:Events/10024"
+            ],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10010",
+            "name": "Outcome",
+            "description": "the direct outcome of aggression",
+            "wd_node": "Q2995644",
+            "wd_label": "result",
+            "wd_description": "final consequence or product of a sequence of actions or events",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children": [
+                "resin:Events/10025",
+                "resin:Events/10026",
+                "resin:Events/10027"
+            ],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10011",
+            "name": "Criticize",
+            "description": "The international society criticizes the aggressing party",
+            "wd_node": "Q17955",
+            "wd_label": "criticism",
+            "wd_description": "practice of judging the merits and faults of something or someone",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20031",
+                    "roleName": "A0_pag_critiquer",
+                    "entity": "resin:Entities/00010/"
+                },
+                {
+                    "@id": "resin:Participants/20032",
+                    "roleName": "A1_ppt_entity_being_critiqued",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00010/",
+                    "name": "organization",
+                    "wd_node": "Q43229",
+                    "wd_label": "organization",
+                    "wd_description": "social entity established to meet needs or pursue goals"
+                },
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "optional": true,
+            "@id": "resin:Events/10012",
+            "name": "Economic Sanctions",
+            "description": "The international society punishes the aggressing party by sanctioning with economic approaches",
+            "wd_node": "Q1248258",
+            "wd_label": "economic_sanctions",
+            "wd_description": "financial penalties applied by nations to persons, nations or companies to affect political change",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20034",
+                    "roleName": "A0_pag_applier_of_penalty",
+                    "entity": "resin:Entities/00010/"
+                },
+                {
+                    "@id": "resin:Participants/20035",
+                    "roleName": "A1_ppt_entity_penalized",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00010/",
+                    "name": "organization",
+                    "wd_node": "Q43229",
+                    "wd_label": "organization",
+                    "wd_description": "social entity established to meet needs or pursue goals"
+                },
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "optional": true,
+            "@id": "resin:Events/10013",
+            "name": "Military Inferences",
+            "description": "The international society punishes the aggressing party by sanctioning with military approaches",
+            "wd_node": "Q5919191",
+            "wd_label": "military_intervention",
+            "wd_description": "None",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20038",
+                    "roleName": "A0_pag_warmonger",
+                    "entity": "resin:Entities/00010/"
+                },
+                {
+                    "@id": "resin:Participants/20039",
+                    "roleName": "A1_com_war_against/with",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00010/",
+                    "name": "organization",
+                    "wd_node": "Q43229",
+                    "wd_label": "organization",
+                    "wd_description": "social entity established to meet needs or pursue goals"
+                },
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "optional": true,
+            "@id": "resin:Events/10014",
+            "name": "Change of Treaty",
+            "description": "Some treaties are amended or abolished",
+            "wd_node": "Q131569",
+            "wd_label": "treaty",
+            "wd_description": "express agreement under international law entered into by actors in international law",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "optional": true,
+            "@id": "resin:Events/10015",
+            "name": "Change of Alliance",
+            "description": "Some alliance relationships are broken and others are established",
+            "wd_node": "Q878249",
+            "wd_label": "alliance",
+            "wd_description": "the coalition made between two or more parties to secure common interests",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "optional": true,
+            "@id": "resin:Events/10016",
+            "name": "Change of Regime",
+            "description": "Some regimes are changed due to the outside pressure",
+            "wd_node": "Q5589178",
+            "wd_label": "regime",
+            "wd_description": "form of government or the set of rules, cultural or social norms, etc. that regulate the operation of a government or institution and its interactions with society",
+            "isSchema": true,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10017",
+            "name": "Coup",
+            "description": "The aggressing country had a change of national power structure",
+            "wd_node": "Q45382",
+            "wd_label": "coup_d'\u8305tat",
+            "wd_description": "sudden deposition of a government; illegal and overt seizure of a state by the military or other elites within the state apparatus",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20046",
+                    "roleName": "A0_pag_agent_coup_stager",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20047",
+                    "roleName": "A1_ppt_theme_overthrown_government",
+                    "entity": "resin:Entities/00047/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00047/",
+                    "name": "government",
+                    "wd_node": "Q7188",
+                    "wd_label": "government",
+                    "wd_description": "system or group of people governing an organized community, often a state"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10018",
+            "name": "Resource Crisis",
+            "description": "The decrease in natural resources",
+            "wd_node": "Q188460",
+            "wd_label": "natural resource",
+            "wd_description": "production resources",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10019",
+            "name": "Leader Inauguration",
+            "description": "A new leader of the aggressing country comes into power",
+            "wd_node": "Q1417098",
+            "wd_label": "inauguration",
+            "wd_description": "formal ceremony to mark the beginning of a major public leader's term of office, or official opening or beginning of an institution or structure",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20049",
+                    "roleName": "A0_pag_agent",
+                    "entity": "resin:Entities/00049/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00049/",
+                    "name": "person",
+                    "wd_node": "Q215627",
+                    "wd_label": "person",
+                    "wd_description": "being that has certain capacities or attributes constituting personhood (avoid use with P31; use Q5 for humans)"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10020",
+            "name": "Declaration of War",
+            "description": "a war is officially declared against the country being aggressed",
+            "wd_node": "Q334516",
+            "wd_label": "declaration of war",
+            "wd_description": "a formal announcement by which one state goes to war against another",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10021",
+            "name": "Economic Aggression",
+            "description": "economic policies are made to put pressure on the aggressed country",
+            "wd_node": "Q582577",
+            "wd_label": "economic policy",
+            "wd_description": "refers to the actions that governments take in the economic field",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10022",
+            "name": "Troop Movement",
+            "description": "military units are transported in preparation of physical aggression",
+            "wd_node": "Q2423459",
+            "wd_label": "military_deployment",
+            "wd_description": "movement of armed forces and their logistical support infrastructure around the world",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20053",
+                    "roleName": "A0_pag_Deployer",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20054",
+                    "roleName": "A1_ppt_Deployed",
+                    "entity": "resin:Entities/00054/"
+                },
+                {
+                    "@id": "resin:Participants/20055",
+                    "roleName": "A2_loc_deployed_where",
+                    "entity": "resin:Entities/00002/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00054/",
+                    "name": "army",
+                    "wd_node": "Q37726",
+                    "wd_label": "army",
+                    "wd_description": "military branch for ground warfare"
+                },
+                {
+                    "@id": "resin:Entities/00002/",
+                    "name": "geographic_entity",
+                    "wd_description": "place or entity that could be a place",
+                    "wd_label": "geographic entity",
+                    "wd_node": "Q27096213"
+                }
+            ],
+            "relations": [
+                {
+                    "@id": "resin:Relations/30003/",
+                    "name": "proximity",
+                    "relationSubject": "resin:Entities/00000/",
+                    "relationObject": "resin:Entities/00002/",
+                    "wd_node": "wd:Q19267375",
+                    "wd_description": "state of being near as in space, time, or relationship",
+                    "wd_label": "proximity"
+                }
+            ],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10023",
+            "name": "Military Operation",
+            "description": "military operations conducted as a part of the aggression",
+            "wd_node": "Q645883",
+            "wd_label": "military_operation",
+            "wd_description": "coordinated military actions of a state or a non-state actor in response to a developing situation",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20057",
+                    "roleName": "A0_pag_agent/entity_trying",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10024",
+            "name": "Trade War",
+            "description": "the economic aggression method with raise in tariffs and other taxes",
+            "wd_node": "Q645883",
+            "wd_label": "military_operation",
+            "wd_description": "coordinated military actions of a state or a non-state actor in response to a developing situation",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20061",
+                    "roleName": "A0_pag_agent/entity_trying",
+                    "entity": "resin:Entities/00010/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00010/",
+                    "name": "organization",
+                    "wd_node": "Q43229",
+                    "wd_label": "organization",
+                    "wd_description": "social entity established to meet needs or pursue goals"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10025",
+            "name": "Military Occupation",
+            "description": "the battlefield cities are occupied by troops",
+            "wd_node": "Q188686",
+            "wd_label": "military_occupation",
+            "wd_description": "effective provisional control of a certain power over a territory",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20065",
+                    "roleName": "A0_pag_occupier",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20066",
+                    "roleName": "A1_ppt_occupied",
+                    "entity": "resin:Entities/00000/"
+                },
+                {
+                    "@id": "resin:Participants/20068",
+                    "roleName": "AM_loc",
+                    "entity": "resin:Entities/00002/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                },
+                {
+                    "@id": "resin:Entities/00002/",
+                    "name": "geographic_entity",
+                    "wd_description": "place or entity that could be a place",
+                    "wd_label": "geographic entity",
+                    "wd_node": "Q27096213"
+                }
+            ],
+            "relations": [
+                {
+                    "@id": "resin:Relations/30004/",
+                    "name": "proximity",
+                    "relationSubject": "resin:Entities/00000/",
+                    "relationObject": "resin:Entities/00002/",
+                    "wd_node": "wd:Q19267375",
+                    "wd_description": "state of being near as in space, time, or relationship",
+                    "wd_label": "proximity"
+                }
+            ],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10026",
+            "name": "Demise",
+            "description": "the death of military and non-military units",
+            "wd_node": "Q18663901",
+            "wd_label": "death in battle",
+            "wd_description": "manner of death",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [],
+            "children_gate": "or",
+            "entities": [],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        },
+        {
+            "@id": "resin:Events/10027",
+            "name": "Economic Recession",
+            "description": "the domestic economy of the parties involved in aggression experiences recession",
+            "wd_node": "Q176494",
+            "wd_label": "recession",
+            "wd_description": "business cycle contraction; general slowdown in economic activity",
+            "isSchema": false,
+            "repeatable": false,
+            "outlinks": [],
+            "participants": [
+                {
+                    "@id": "resin:Participants/20069",
+                    "roleName": "A1_ppt_entity_suffering_a_recession",
+                    "entity": "resin:Entities/00000/"
+                }
+            ],
+            "children_gate": "or",
+            "entities": [
+                {
+                    "@id": "resin:Entities/00000/",
+                    "name": "country",
+                    "wd_description": "distinct region in geography; a broad term that can include political divisions",
+                    "wd_label": "country",
+                    "wd_node": "Q6256"
+                }
+            ],
+            "relations": [],
+            "importance": [],
+            "likelihood": []
+        }
+    ]
+}

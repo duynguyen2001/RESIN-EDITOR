@@ -5,8 +5,34 @@ import { json } from "d3";
 import { trackPromise } from "react-promise-tracker";
 import Node from "../components/Node";
 import Graph from "./Graph";
+import { JsonConvert } from "json2typescript";
+import {createProvenanceEntity, createEventNodes, EventNode} from "../components/Library.tsx";
 
-const DataReader = ({ data = defaultData, setEventsNode }) => {
+function extractUniqueAttributesObjects(objectsList) {
+    let uniqueObjects = [];
+    let attributeSet = new Set();
+  
+    for (const obj of objectsList) {
+      let attributes = Object.keys(obj);
+  
+      let hasNewAttribute = false;
+      for (const attribute of attributes) {
+        if (!attributeSet.has(attribute)) {
+          hasNewAttribute = true;
+          attributeSet.add(attribute);
+        }
+      }
+  
+      if (hasNewAttribute) {
+        uniqueObjects.push(obj);
+      }
+    }
+  
+    return uniqueObjects;
+  }
+
+const DataReader = ({ data = defaultData }) => {
+    let jsonConvert = new JsonConvert();
     const [jsonData, setJsonData] = React.useState([]);
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
@@ -20,81 +46,54 @@ const DataReader = ({ data = defaultData, setEventsNode }) => {
     const [subgrouplinks, setSubgrouplinks] = React.useState([]);
 
     useEffect(() => {
-        trackPromise(
-            jsonld
-                .expand(data)
-                .then((expanded) => {
-                    console.log("expanded", expanded);
-                    jsonld
-                        .flatten(expanded)
-                        .then((flattened) => {
-                            console.log("flattened", flattened);
-                            setJsonData(flattened);
-                            jsonld
-                                .compact(flattened, [
-                                    "https://kairos-sdf.s3.amazonaws.com/context/kairos-v2.3.jsonld",
-                                    {
-                                        resin: "https://cs.illinois.edu/",
-                                    },
-                                ])
-                                .then((compacted) => {
-                                    console.log(
-                                        "compacted",
-                                        compacted["@graph"]
-                                    );
-                                    setEntities(
-                                        compacted["@graph"].filter((node) =>
-                                            node["@id"].includes("Entities")
-                                        )
-                                    );
-                                    setEvents(
-                                        compacted["@graph"].filter((node) =>
-                                            node["@id"].includes("Events")
-                                        )
-                                    );
-                                    setParticipants(
-                                        compacted["@graph"].filter((node) =>
-                                            node["@id"].includes("Participants")
-                                        )
-                                    );
-                                    setProvenances(
-                                        compacted["@graph"].filter((node) =>
-                                            node["@id"].includes("b")
-                                        )
-                                    );
-                                    setValues(
-                                        compacted["@graph"].filter((node) =>
-                                            node["@id"].includes("Values")
-                                        )
-                                    );
-                                })
-                                .catch((err) => {
-                                    console.log("err", err);
-                                });
-                        })
-                        .catch((err) => {
-                            console.log("err", err);
-                        });
-                })
-                .catch((err) => {
-                    console.log("err", err);
-                })
-        );
+        console.log("rawdata", data);
+        if(data.instances) {
+        if (data.instances[0].entities) {
+            console.log("entities11", data.instances[0].entities);
+            setEntities(data.instances[0].entities);
+        }
+        if (data.instances[0].events) {
+            // let node = jsonConvert.deserializeObject(Events[0] !== undefined? Events[0]: {"@id":"", }, EventNode);
+            setEvents(jsonConvert.deserializeArray(data.instances[0].events, EventNode));
+        }
+        if (data.instances[0].events) {
+            setParticipants(data.instances[0].events.flatMap((event) => event.participants).filter((participant) => participant !== undefined));
+        }
+        if  (Participants) {
+            setValues(Participants.flatMap((participant) => participant.hasOwnProperty('values')? participant.values : []));
+        }
+    }
+
+    if (data.provenanceData) {
+        setProvenances(data.provenanceData.map(createProvenanceEntity));
+    }
+
     }, [data]);
 
     useEffect(() => {
         console.log("rawData", data);
+        console.log("Unique Participants", extractUniqueAttributesObjects(Participants) );
         console.log("Participants", Participants);
+        console.log("Unique Events", extractUniqueAttributesObjects(Events) );
+        console.log("Unique Events Attributes", Array.from(new Set(extractUniqueAttributesObjects(Events).flatMap(obj => Object.keys(obj)))) );
         console.log("Events", Events);
+        // console.log("node2222", node);
         console.log("flattened", jsonData);
+        console.log("Unique Entities", extractUniqueAttributesObjects(Entities) );
+        console.log("Unique Entities Attributes", Array.from(new Set(extractUniqueAttributesObjects(Entities).flatMap(obj => Object.keys(obj)))) );
         console.log("entityNode", Entities);
+        console.log("Unique Provenances", extractUniqueAttributesObjects(Provenances) );
+        console.log("Unique Provenances Attributes",Array.from( new Set(extractUniqueAttributesObjects(Provenances).flatMap(obj => Object.keys(obj)))) );
         console.log("Provenances", Provenances);
+        console.log("Unique Values", extractUniqueAttributesObjects(Values) );
+        console.log("Unique Values Attributes", Array.from(new Set(extractUniqueAttributesObjects(Values).flatMap(obj => Object.keys(obj)))) );
         console.log("Values", Values);
         console.log("EventNodes", EventNodes);
+        console.log("Events toplevel",Events.filter((event) => event.isTopLevel));
         console.log("ParticipantNodes", ParticipantNodes);
         console.log("outlinks", outlinks);
         console.log("subgrouplinks", subgrouplinks);
-    }, [subgrouplinks]);
+    }, [Provenances]);
 
     useEffect(() => {
         // setEventNodes(
@@ -121,11 +120,12 @@ const DataReader = ({ data = defaultData, setEventsNode }) => {
     //         })
     //     );
     // }, [Entities]);
-
+  
     return (
         <div style={{width: "100vw", height: "100vh"}}>
-            <h1>Event Nodes</h1>
-            <Graph nodes={Events} horizontalEdges={outlinks} verticalEdges={subgrouplinks} width={800} height={600} />
+            {/* <h1>Event Nodes</h1> */}
+            {/* <Graph nodes={Events} horizontalEdges={outlinks} verticalEdges={subgrouplinks} width={800} height={600} /> */}
+            <Graph eventNodes={Events}  />
 </div>);
 
     // const nodeObject = convertJsonToNode(data);
