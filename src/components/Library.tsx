@@ -54,8 +54,9 @@ abstract class NodeRenderingStrategy {
 
     render(
         options: RenderOptions = {},
-        isConnectable: boolean | undefined
+        isConnectable: boolean | undefined,
     ): ReactElement {
+
         return (
             <div>
                 {this.shape === "diamond" ? (
@@ -320,16 +321,39 @@ export class Participant {
         this.roleName = roleName;
         this.values = values;
     }
-    render(): ReactElement {
+     render(
+        options: RenderOptions = {},
+        isConnectable: boolean | undefined
+    ): ReactElement {
         return (
             <div style={{
                 width:50,
                 height:50,
                 backgroundColor: "green",
             }}>
-                <div>{this.id}</div>
-                <div>{this.entity}</div>
-                <div>{this.roleName}</div>
+                <Handle
+                    type="target"
+                    position={Position.Top}
+                    id={this.id}
+                    style={{ background: "#555" }}
+                    onConnect={(params) =>
+                        console.log("handle onConnect", params)
+                    }
+                    isConnectable={isConnectable}
+                />
+                <Handle
+                    type="source"
+                    position={Position.Bottom}
+                    id={this.id}
+                    style={{ background: "#555" }}
+                    onConnect={(params) =>
+                        console.log("handle onConnect", params)
+                    }
+                    isConnectable={isConnectable}
+                />
+                <text>ID: {this.id}</text>
+                <text>Entity: {this.entity}</text>
+                <text>RoleName: {this.roleName}</text>
             </div>);
     }
 }
@@ -381,7 +405,7 @@ export class EventNode {
     @JsonProperty("provenance", StringOrStringArrayConverter, true)
     provenance?: string | string[];
 
-    @JsonProperty("participants", [Participant], true)
+    @JsonProperty("participants", [Participant])
     participants?: Participant[];
 
     @JsonProperty("ta2wd_node", String, true)
@@ -396,6 +420,7 @@ export class EventNode {
     @JsonProperty("optional", Boolean, true)
     optional?: boolean;
 
+    isParticipantOpen: boolean = true;
     constructor(
         id: string,
         ta1ref: string = "none",
@@ -608,3 +633,51 @@ export function createProvenanceEntity(
 //     const jsonConvert = new JsonConvert();
 //     return jsonConvert.deserializeObject(jsonData, EventNode);
 // }
+
+@JsonObject("Entity")
+export class Entity {
+    @JsonProperty("@id", String)
+    id: string = undefined!;
+    @JsonProperty("name", String)
+    name: string = undefined!;
+
+    @JsonProperty("wd_node", StringOrStringArrayConverter, true)
+    wd_node?: string | [string];
+
+    @JsonProperty("wd_label", StringOrStringArrayConverter, true)
+    wd_label?: string | [string];
+
+    @JsonProperty("wd_description", StringOrStringArrayConverter, true)
+    wd_description?: string | [string];
+
+    @JsonProperty("ta2wd_node", StringOrStringArrayConverter, true)
+    ta2wd_node?: string| [string];
+
+    @JsonProperty("ta2wd_label", String, true)
+    ta2wd_label?: string | [string];
+
+    @JsonProperty("ta2wd_description", StringOrStringArrayConverter, true)
+    ta2wd_description?: string | [string];
+
+    constructor(
+        id: string,
+        wd_node: string = undefined!,
+        wd_label: string =undefined!,
+        wd_description: string = undefined!,
+        ta2wd_node: string = undefined!,
+        ta2wd_label: string = undefined!,
+        ta2wd_description: string  = undefined!
+    ) {
+        this.id = id;
+        this.wd_node = wd_node;
+        this.wd_label = wd_label;
+        this.wd_description = wd_description;
+
+        this.ta2wd_node = ta2wd_node;
+        this.ta2wd_label = ta2wd_label;
+        this.ta2wd_description = ta2wd_description;
+
+    }
+
+
+}
