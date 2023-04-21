@@ -22,18 +22,22 @@ function TableInfoPanel({ data }) {
     ) {
         const displayParticipantArray = data.map((participant) => {
             const entityObject = entitiesList.find(
-                (e) => e.id === participant.entity
+                (e) => e.id === participant.entity? participant.entity: participant.ta2entity
             );
             const values = [];
             if (entityObject.name) {
                 values.push(entityObject.name);
             }
-            participant.values?.forEach((value) => {
-                const valueEntity = entitiesList.find(
-                    (e) => e.id === value.ta2entity
-                );
-                values.push(valueEntity.name);
+            if (participant.values && participant.values instanceof String) {
+                values.push(participant.values);
+            } else if (participant.values&& participant.values instanceof Array) {
+                participant.values?.forEach((value) => {
+                    const valueEntity = entitiesList.find(
+                        (e) => e.id === value.ta2entity
+                    );
+                    values.push(valueEntity.name);
             });
+        }
             return {
                 id: participant.id,
                 entities: values && values.length > 0 ? values.join(", ") : "-",

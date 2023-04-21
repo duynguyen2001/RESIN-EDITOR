@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, createContext } from "react";
+import React, { useEffect, useRef, createContext, useContext } from "react";
 import defaultData from "../data/disease_outbreak_sdf_example.json";
-import * as jsonld from "jsonld";
-import { json } from "d3";
-import { trackPromise } from "react-promise-tracker";
-import Node from "../components/Node";
 import Graph from "./Graph";
 import { JsonConvert } from "json2typescript";
+
+import { ZipImageProvider, ZipImageContext } from './ImageDict';
 import {
     createProvenanceEntity,
     createEventNodes,
@@ -13,28 +11,6 @@ import {
     Entity
 } from "../components/Library.tsx";
 
-function extractUniqueAttributesObjects(objectsList) {
-    let uniqueObjects = [];
-    let attributeSet = new Set();
-
-    for (const obj of objectsList) {
-        let attributes = Object.keys(obj);
-
-        let hasNewAttribute = false;
-        for (const attribute of attributes) {
-            if (!attributeSet.has(attribute)) {
-                hasNewAttribute = true;
-                attributeSet.add(attribute);
-            }
-        }
-
-        if (hasNewAttribute) {
-            uniqueObjects.push(obj);
-        }
-    }
-
-    return uniqueObjects;
-}
 export const EntitiesContext = createContext([]);
 export const ProvenanceContext = createContext([]);
 export const EventsContext = createContext([]);
@@ -46,9 +22,10 @@ const DataReader = () => {
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
     const [Provenances, setProvenances] = React.useState([]);
-
+    const [imagesURLs, setImagesURLs] = React.useState();
     useEffect(() => {
         console.log("rawdata", data);
+
         if (data.instances) {
             if (data.instances[0].entities) {
                 console.log("entities11", data.instances[0].entities);
@@ -72,6 +49,8 @@ const DataReader = () => {
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
+
+      <ZipImageProvider>
             <DataContext.Provider value={[data, setData]}>
             <ProvenanceContext.Provider value={[Provenances, setProvenances]}>
                 <EntitiesContext.Provider value={[Entities, setEntities]}>
@@ -81,6 +60,7 @@ const DataReader = () => {
                 </EntitiesContext.Provider>
             </ProvenanceContext.Provider>
             </DataContext.Provider>
+        </ZipImageProvider>
         </div>
     );
 

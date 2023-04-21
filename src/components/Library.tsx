@@ -313,7 +313,7 @@ export class Participant {
     roleName: string;
 
     @JsonProperty("values", ValueOrValueArrayConverter, true)
-    values: Value | Value[];
+    values: Value | Value[] =[];
 
     constructor(id: string, entity: string, roleName: string, values: Value) {
         this.id = id;
@@ -405,7 +405,7 @@ export class EventNode {
     @JsonProperty("provenance", StringOrStringArrayConverter, true)
     provenance?: string | string[];
 
-    @JsonProperty("participants", [Participant])
+    @JsonProperty("participants", [Participant], true)
     participants?: Participant[];
 
     @JsonProperty("ta2wd_node", String, true)
