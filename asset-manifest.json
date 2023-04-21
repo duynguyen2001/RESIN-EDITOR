@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/static/css/main.f214240b.css",
-    "main.js": "/static/js/main.5c7ace31.js",
-    "static/js/787.745c57d2.chunk.js": "/static/js/787.745c57d2.chunk.js",
-    "index.html": "/index.html",
-    "main.f214240b.css.map": "/static/css/main.f214240b.css.map",
-    "main.5c7ace31.js.map": "/static/js/main.5c7ace31.js.map",
-    "787.745c57d2.chunk.js.map": "/static/js/787.745c57d2.chunk.js.map"
+    "main.css": "/kairos-visualization/static/css/main.f214240b.css",
+    "main.js": "/kairos-visualization/static/js/main.69cec37f.js",
+    "static/js/787.745c57d2.chunk.js": "/kairos-visualization/static/js/787.745c57d2.chunk.js",
+    "index.html": "/kairos-visualization/index.html",
+    "main.f214240b.css.map": "/kairos-visualization/static/css/main.f214240b.css.map",
+    "main.69cec37f.js.map": "/kairos-visualization/static/js/main.69cec37f.js.map",
+    "787.745c57d2.chunk.js.map": "/kairos-visualization/static/js/787.745c57d2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f214240b.css",
-    "static/js/main.5c7ace31.js"
+    "static/js/main.69cec37f.js"
   ]
 }
