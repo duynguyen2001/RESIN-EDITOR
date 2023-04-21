@@ -629,10 +629,6 @@ export function createProvenanceEntity(
         throw new Error(`Unsupported mediaType: ${jsonData.mediaType}`);
     }
 }
-// export function createEventNode (jsonData: object): EventNode {
-//     const jsonConvert = new JsonConvert();
-//     return jsonConvert.deserializeObject(jsonData, EventNode);
-// }
 
 @JsonObject("Entity")
 export class Entity {

@@ -19,7 +19,6 @@ function TableInfoPanel({ data }) {
                 (e) => e.id === participant.entity
             );
             const values = [];
-            console.log("entityObject", entityObject);
             if (entityObject.name) {
                 values.push(entityObject.name);
             }

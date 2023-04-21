@@ -41,17 +41,9 @@ export const EventsContext = createContext([]);
 
 const DataReader = ({ data = defaultData }) => {
     let jsonConvert = new JsonConvert();
-    const [jsonData, setJsonData] = React.useState([]);
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
-    const [Participants, setParticipants] = React.useState([]);
     const [Provenances, setProvenances] = React.useState([]);
-    const [Values, setValues] = React.useState([]);
-    const [EventNodes, setEventNodes] = React.useState([]);
-    const [ParticipantNodes, setParticipantNodes] = React.useState([]);
-    const [EntityNodes, setEntityNodes] = React.useState([]);
-    const [outlinks, setOutlinks] = React.useState([]);
-    const [subgrouplinks, setSubgrouplinks] = React.useState([]);
 
     useEffect(() => {
         console.log("rawdata", data);
