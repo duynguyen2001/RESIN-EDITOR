@@ -1,14 +1,20 @@
-import React, { useContext } from "react";
-import "./info-panel.css";
+import React, { useContext, useState } from "react";
 import { EventNode, Participant } from "../components/Library.tsx";
 import { EntitiesContext } from "./DataReader";
-import './panel.css'
+import "./panel.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faExpand,
+    faCompress,
+    faClose,
+} from "@fortawesome/free-solid-svg-icons";
 
 function TableInfoPanel({ data }) {
     const [entitiesList, setEntitiesList] = useContext(EntitiesContext);
     if (data === undefined) {
         return <></>;
     }
+
     if (
         data instanceof Array &&
         data.length > 0 &&
@@ -56,8 +62,6 @@ function TableInfoPanel({ data }) {
         );
     }
     const columns = Object.keys(data[0]);
-    console.log("data", data);
-    console.log("columns", columns);
     return (
         <div>
             <table>
@@ -84,19 +88,45 @@ function TableInfoPanel({ data }) {
         </div>
     );
 }
+
+export function Modal(props) {
+    return (
+        <div className="modal">
+            <FontAwesomeIcon
+                icon={props.isEnlarged ? faCompress : faExpand}
+                className="enlarge-button"
+                onClick={props.toggleEnlarged}
+            />
+            <FontAwesomeIcon
+                icon={faClose}
+                className="exit-button"
+                onClick={props.handleClick}
+            />
+        </div>
+    );
+}
+
 function EventNodeInfoPanel({ data, onClose }) {
+    const [isEnlarged, setIsEnlarged] = useState(false);
     function handleClick() {
         onClose();
     }
     if (data === undefined) {
         return <></>;
     }
-    if (data instanceof EventNode) {
-        console.log("data", data);
-        return (
-            <div className="info-panel">
 
-                <button className="close-button" onClick={handleClick}>&times;</button>
+    const toggleEnlarged = () => {
+        setIsEnlarged(!isEnlarged);
+    };
+    if (data instanceof EventNode) {
+        return (
+            <div className={isEnlarged ? "info-panel-enlarge" : "info-panel"}>
+                <Modal
+                    isEnlarged={isEnlarged}
+                    toggleEnlarged={toggleEnlarged}
+                    handleClick={onClose}
+                />
+
                 <h2>{data.name}</h2>
                 <p>{data.description}</p>
                 {data.participants && data.participants.length > 0 && (
@@ -111,7 +141,11 @@ function EventNodeInfoPanel({ data, onClose }) {
 
     return (
         <div className="info-panel">
-        <button className="close-button" onClick={handleClick}>&times;</button>
+            <Modal
+                    isEnlarged={isEnlarged}
+                    toggleEnlarged={toggleEnlarged}
+                    handleClick={onClose}
+                />
             <h2>{data.title}</h2>
             <p>{data.description}</p>
         </div>
@@ -129,9 +163,11 @@ export function InfoPanel({ data, onClose }) {
     }
 
     return (
-        <div className="info-panel" >
+        <div className="info-panel">
             <h2>{data.title}</h2>
-            <button className="close-button" onClick={handleClick}>&times;</button>
+            <button className="close-button" onClick={handleClick}>
+                &times;
+            </button>
             <p>{data.description}</p>
         </div>
     );

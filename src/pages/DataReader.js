@@ -38,8 +38,10 @@ function extractUniqueAttributesObjects(objectsList) {
 export const EntitiesContext = createContext([]);
 export const ProvenanceContext = createContext([]);
 export const EventsContext = createContext([]);
+export const DataContext = createContext({});
 
-const DataReader = ({ data = defaultData }) => {
+const DataReader = () => {
+    const [data, setData] = React.useState(defaultData);
     let jsonConvert = new JsonConvert();
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
@@ -70,6 +72,7 @@ const DataReader = ({ data = defaultData }) => {
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
+            <DataContext.Provider value={[data, setData]}>
             <ProvenanceContext.Provider value={[Provenances, setProvenances]}>
                 <EntitiesContext.Provider value={[Entities, setEntities]}>
                     {/* <h1>Event Nodes</h1> */}
@@ -77,6 +80,7 @@ const DataReader = ({ data = defaultData }) => {
                     <Graph eventNodes={Events} />
                 </EntitiesContext.Provider>
             </ProvenanceContext.Provider>
+            </DataContext.Provider>
         </div>
     );
 

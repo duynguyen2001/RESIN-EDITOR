@@ -21,6 +21,7 @@ import { CustomNode } from "./ExpandableNode";
 import "reactflow/dist/style.css";
 import "./graph.css";
 import { InfoPanel } from "./Panel";
+import Menu from "../components/Menu";
 const nodeTypes = {
     custom: CustomNode,
 };
@@ -304,6 +305,7 @@ export const Graph = ({ eventNodes }) => {
                         onClose={handleClosePanel}
                     />
                 )}
+                <Menu/>
             </div>
         </EdgeStyleContext.Provider>
     );
