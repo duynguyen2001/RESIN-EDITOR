@@ -2,6 +2,7 @@
   "name": "kairos-visualization",
   "version": "0.1.0",
   "private": true,
+  "domain": "https://duynguyen2001.github.io/kairos-visualization",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -9,6 +10,7 @@
     "cytoscape-fcose": "^2.2.0",
     "d3": "^7.8.4",
     "dagre": "^0.8.5",
+    "gh-pages": "^5.0.0",
     "json2typescript": "^1.5.1",
     "react": "^18.2.0",
     "react-cola": "^0.0.6",
@@ -22,7 +24,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
