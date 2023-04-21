@@ -65,7 +65,7 @@ const getLayoutedElements = (nodes, edges, direction = "TB") => {
     const isHorizontal = direction === "LR";
     dagreGraph.setGraph({
         rankdir: "TB",
-        ranker: "longest-path",
+        ranker: "tight-tree",
         minLen: (edge) => edge.data().weight,
     });
 

@@ -22,7 +22,6 @@ const DataReader = () => {
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
     const [Provenances, setProvenances] = React.useState([]);
-    const [imagesURLs, setImagesURLs] = React.useState();
     useEffect(() => {
         console.log("rawdata", data);
 

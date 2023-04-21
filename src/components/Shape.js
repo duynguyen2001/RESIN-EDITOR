@@ -10,13 +10,15 @@ export const Circle = () => {
     );
   };
 
-export const Square = () => {
+export const Square = ({children}) => {
     return (
       <div className="square" style={{
         width: '50px',
         height: '50px',
         backgroundColor: '#000',
-      }}></div>
+      }}>
+        {...children}
+      </div>
     );
   }
 
