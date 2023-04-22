@@ -28,7 +28,6 @@ interface TA2WDNode {
     ta2wd_label?: string;
     ta2wd_description?: string;
 }
-
 abstract class NodeRenderingStrategy {
     protected eventNode: EventNode;
     protected options: RenderOptions = {};

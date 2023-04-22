@@ -86,25 +86,23 @@ function TableInfoPanel({ data }) {
                         </tr>
                     ))}
                 </tbody>
-
-                {/* add any other table elements here */}
             </table>
         </div>
     );
 }
 
-export function Modal(props) {
+export function Modal({isEnlarged, toggleEnlarged, handleClick}) {
     return (
         <div className="modal">
             <FontAwesomeIcon
-                icon={props.isEnlarged ? faCompress : faExpand}
+                icon={isEnlarged ? faCompress : faExpand}
                 className="enlarge-button"
-                onClick={props.toggleEnlarged}
+                onClick={toggleEnlarged}
             />
             <FontAwesomeIcon
                 icon={faClose}
                 className="exit-button"
-                onClick={props.handleClick}
+                onClick={handleClick}
             />
         </div>
     );
@@ -112,9 +110,6 @@ export function Modal(props) {
 
 function EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
-    function handleClick() {
-        onClose();
-    }
     if (data === undefined) {
         return <></>;
     }
@@ -134,10 +129,10 @@ function EventNodeInfoPanel({ data, onClose }) {
                 <h2>{data.name}</h2>
                 <p>{data.description}</p>
                 {data.participants && data.participants.length > 0 && (
-                    <div>
-                        <h3>Participants</h3>
+                    <details>
+                        <summary className="flex items-center font-bold text-2xl">Participants</summary>
                         <TableInfoPanel data={data.participants} />
-                    </div>
+                    </details>
                 )}
             </div>
         );

@@ -11,6 +11,7 @@ import "./Menu.css";
 import { Modal } from "../pages/Panel";
 import { DataContext } from "../pages/DataReader";
 import JSZip from "jszip";
+import ZipReader from "./ZipReader";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -76,8 +77,8 @@ const MenuOptionPanel = ({ option, setOption }) => {
     };
 
     return (
-        <div className="menu-option-panel">
-            <Modal handleClick={closePanel} toggleEnlarged={toggleEnlarged} />
+        <div className={isEnlarged? "menu-option-panel-enlarged":"menu-option-panel"}>
+            <Modal isEnlarged={isEnlarged} handleClick={closePanel} toggleEnlarged={toggleEnlarged} />
             {option === "Add JSON" && <AddJSONPanel />}
         </div>
     );
@@ -85,7 +86,6 @@ const MenuOptionPanel = ({ option, setOption }) => {
 
 function AddJSONPanel() {
     const [jsonData, setJsonData] = useContext(DataContext);
-    const [images, setImages] = useState([]);
 
   const handleJSONUpload = (event) => {
     const fileReader = new FileReader();
@@ -95,29 +95,14 @@ function AddJSONPanel() {
       setJsonData(parsedJson);
     };
   };
-  const handleZipUpload = (event) => {
-    const file = event.target.files[0];
-    const zip = new JSZip();
-    zip.loadAsync(file).then((zipContents) => {
-      const imageFiles = Object.values(zipContents.files).filter(
-        (file) => file.name.match(/\.(jpg|jpeg|png|gif)$/i)
-      );
-      const imagePromises = imageFiles.map((imageFile) =>
-        imageFile.async('blob').then((blob) => URL.createObjectURL(blob))
-      );
-      Promise.all(imagePromises).then((imageUrls) => {
-        const imageObjects = imageUrls.map((imageUrl) => ({ original: imageUrl, thumbnail: imageUrl }));
-        setImages(imageObjects);
-      });
-    });
-  };
+
 
     return <div>
         <h2>Upload New JSON File</h2>
         <h3>JSON File</h3>
         <input type="file" accept=".json" onChange={handleJSONUpload} />
         <h3>Zip File</h3>
-        <input type="file" accept=".zip" onChange={handleZipUpload}/>
+        <ZipReader />
     </div>;
 }
 export default Menu;
