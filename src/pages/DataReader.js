@@ -1,38 +1,37 @@
 import React, { useEffect, useRef, createContext, useContext } from "react";
-import defaultData from "../data/disease_outbreak_sdf_example.json";
+import defaultData from "../data/new.json";
 import Graph from "./Graph";
 import { JsonConvert } from "json2typescript";
-
-import { ZipImageProvider } from "./ImageDict";
 import {
     createProvenanceEntity,
     EventNode,
     Entity,
 } from "../components/Library.tsx";
 
-export const EntitiesContext = createContext([]);
+export const EntitiesContext = createContext({});
 export const ProvenanceContext = createContext([]);
-export const EventsContext = createContext([]);
 export const DataContext = createContext({});
+export const ExtractedFilesContext = createContext({});
 
 const DataReader = () => {
     const [data, setData] = React.useState(defaultData);
     let jsonConvert = new JsonConvert();
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
-    const [Provenances, setProvenances] = React.useState([]);
+    const [Provenances, setProvenances] = React.useState({});
+    const [extractedFiles, setExtractedFiles] = React.useState([]);
     useEffect(() => {
         console.log("rawdata", data);
-
         if (data.instances) {
             if (data.instances[0].entities) {
-                console.log("entities11", data.instances[0].entities);
-                setEntities(
-                    jsonConvert.deserializeArray(
-                        data.instances[0].entities,
-                        Entity
-                    )
-                );
+                const entitiesMap = new Map();
+                jsonConvert.deserializeArray(
+                    data.instances[0].entities,
+                    Entity
+                ).forEach((entity) => {
+                    entitiesMap.set(entity.id, entity);
+                });
+                setEntities(entitiesMap);
             }
             if (data.instances[0].events) {
                 setEvents(
@@ -45,13 +44,22 @@ const DataReader = () => {
         }
 
         if (data.provenanceData) {
-            setProvenances(data.provenanceData.map(createProvenanceEntity));
+            const mapProvenance = new Map();
+            data.provenanceData.map(createProvenanceEntity).forEach((provenance) => {
+                mapProvenance.set(provenance.id, provenance);
+            });
+            setProvenances(mapProvenance);
         }
     }, [data]);
 
+    useEffect(() => {
+        console.log("entities", Entities);
+        console.log("events", Events);
+        console.log("provenances", Provenances);
+    }, [Entities, Events, Provenances]);
+
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
-            {/* <ZipImageProvider> */}
                 <DataContext.Provider value={[data, setData]}>
                     <ProvenanceContext.Provider
                         value={[Provenances, setProvenances]}
@@ -59,11 +67,12 @@ const DataReader = () => {
                         <EntitiesContext.Provider
                             value={[Entities, setEntities]}
                         >
-                            <Graph eventNodes={Events} />
+                            <ExtractedFilesContext.Provider value={[extractedFiles, setExtractedFiles]}>
+                                <Graph eventNodes={Events}/>
+                            </ExtractedFilesContext.Provider>
                         </EntitiesContext.Provider>
                     </ProvenanceContext.Provider>
                 </DataContext.Provider>
-            {/* </ZipImageProvider> */}
         </div>
     );
 };

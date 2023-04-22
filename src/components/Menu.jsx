@@ -7,11 +7,11 @@ import {
     faCog,
     faBars,
 } from "@fortawesome/free-solid-svg-icons";
-import "./Menu.css";
 import { Modal } from "../pages/Panel";
 import { DataContext } from "../pages/DataReader";
-import JSZip from "jszip";
 import ZipReader from "./ZipReader";
+import "../assets/css/Menu.css";
+import ProvenanceMap from "../pages/ProvenanceMap";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -80,6 +80,9 @@ const MenuOptionPanel = ({ option, setOption }) => {
         <div className={isEnlarged? "menu-option-panel-enlarged":"menu-option-panel"}>
             <Modal isEnlarged={isEnlarged} handleClick={closePanel} toggleEnlarged={toggleEnlarged} />
             {option === "Add JSON" && <AddJSONPanel />}
+            {option === "Download JSON" && <DownloadJSONPanel />}
+            {option === "See Legend" && <SeeLegendPanel />}
+            {option === "Option Change" && <OptionChangePanel />}
         </div>
     );
 };
@@ -105,4 +108,42 @@ function AddJSONPanel() {
         <ZipReader />
     </div>;
 }
+function DownloadJSONPanel () {
+
+    const [jsonData, setJsonData] = useContext(DataContext);
+    
+
+    const downloadJSON = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "data.json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    return <div>
+        <h2>Download JSON File</h2>
+        <button onClick={downloadJSON}>Download JSON</button>
+    </div>;
+
+}
+
+function SeeLegendPanel() {
+    return <div>
+        <h2>Legend</h2>
+
+        <ProvenanceMap />
+    </div>;
+};
+
+function OptionChangePanel() {
+    return <div>
+        <h2>Option Change</h2>
+    </div>;
+
+};
+
+
 export default Menu;

@@ -2,21 +2,24 @@ import React, {
     CSSProperties,
     ReactComponentElement,
     ReactElement,
+    useContext,
 } from "react";
 import { JsonObject, JsonProperty, JsonConvert } from "json2typescript";
 import {
+    ForceNumberArray,
+    ForceStringArray,
     NumberOrNumberArrayConverter,
     StringOrStringArrayConverter,
 } from "./TypeScriptUtils";
 import { Handle, Position } from "reactflow";
 import { JsonCustomConvert, JsonConverter } from "json2typescript";
+import { ProvenanceContext } from "../pages/DataReader";
 
 type RenderOptions = {
     shape?: string;
     border?: string;
     color?: string;
 };
-type Provenance = string | string[];
 interface WDNode {
     wd_node: string;
     wd_label?: string;
@@ -192,13 +195,13 @@ abstract class NodeRenderingStrategy {
 }
 
 class PredictedNodeStrategy extends NodeRenderingStrategy {
-    predictionProvenance: string | string[];
-    confidence: number;
+    predictionProvenance:  string[];
+    confidence: number[];
 
     constructor(
         eventNode: EventNode,
-        predictionProvenance: string | string[],
-        confidence: number
+        predictionProvenance: string[],
+        confidence: number[]
     ) {
         super(eventNode);
         this.predictionProvenance = predictionProvenance;
@@ -211,10 +214,10 @@ class PredictedNodeStrategy extends NodeRenderingStrategy {
 }
 
 class DetectedNodeStrategy extends NodeRenderingStrategy {
-    provenance: string;
-    confidence: number;
+    provenance: string[];
+    confidence: number[];
 
-    constructor(eventNode: EventNode, provenance: string, confidence: number) {
+    constructor(eventNode: EventNode, provenance: string[], confidence: number[]) {
         super(eventNode);
         this.provenance = provenance;
         this.confidence = confidence;
@@ -226,12 +229,12 @@ class DetectedNodeStrategy extends NodeRenderingStrategy {
 }
 
 class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
-    provenance: Provenance;
+    provenance: string | string[];
     confidence: number | number[];
 
     constructor(
         eventNode: EventNode,
-        provenance: Provenance,
+        provenance: string | string[],
         confidence: number | number[]
     ) {
         super(eventNode);
@@ -243,25 +246,25 @@ class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
         return "blue";
     }
 }
-
+ 
 @JsonObject("Value")
 export class Value {
     @JsonProperty("@id", String)
     id: string;
 
-    @JsonProperty("confidence", NumberOrNumberArrayConverter, true)
-    confidence: number | number[];
+    @JsonProperty("confidence", ForceNumberArray, true)
+    confidence: number[];
 
-    @JsonProperty("provenance", StringOrStringArrayConverter, true)
-    provenance: string | string[];
+    @JsonProperty("provenance", ForceStringArray, true)
+    provenance: string[];
 
     @JsonProperty("ta2entity", String, true)
     ta2entity: string;
 
     constructor(
         id: string,
-        confidence: number,
-        provenance: string,
+        confidence: number[],
+        provenance: string[],
         ta2entity: string
     ) {
         this.id = id;
@@ -386,11 +389,11 @@ export class EventNode {
     @JsonProperty("outlinks", [String], true)
     outlinks: string[];
 
-    @JsonProperty("predictionProvenance", StringOrStringArrayConverter, true)
-    predictionProvenance?: string | string[];
+    @JsonProperty("predictionProvenance", ForceStringArray, true)
+    predictionProvenance?: string[];
 
-    @JsonProperty("confidence", NumberOrNumberArrayConverter, true)
-    confidence?: number | number[];
+    @JsonProperty("confidence", ForceNumberArray, true)
+    confidence?: number[];
 
     @JsonProperty("wd_node", StringOrStringArrayConverter, true)
     wdNode?: string | string[];
@@ -401,8 +404,8 @@ export class EventNode {
     @JsonProperty("wd_description", String, true)
     wdDescription?: string;
 
-    @JsonProperty("provenance", StringOrStringArrayConverter, true)
-    provenance?: string | string[];
+    @JsonProperty("provenance", ForceStringArray, true)
+    provenance?: string[];
 
     @JsonProperty("participants", [Participant], true)
     participants?: Participant[];
@@ -420,6 +423,8 @@ export class EventNode {
     optional?: boolean;
 
     isParticipantOpen: boolean = true;
+
+
     constructor(
         id: string,
         ta1ref: string = "none",
@@ -430,12 +435,12 @@ export class EventNode {
         subgroupEvents?: string[],
         childrenGate?: string,
         outlinks?: string[],
-        predictionProvenance?: string | string[],
-        confidence?: number | number[],
+        predictionProvenance?: string[],
+        confidence?: number[],
         wdNode?: string,
         wdLabel?: string,
         wdDescription?: string,
-        provenance?: string | string[],
+        provenance?: string[],
         participants?: Participant[],
         ta2wdNode?: string,
         ta2wdLabel?: string,
@@ -452,11 +457,11 @@ export class EventNode {
         this.childrenGate = childrenGate || "";
         this.outlinks = outlinks || [];
         this.predictionProvenance = predictionProvenance;
-        this.confidence = confidence || 0;
+        this.confidence = confidence || [];
         this.wdNode = wdNode || "";
         this.wdLabel = wdLabel || "";
         this.wdDescription = wdDescription || "";
-        this.provenance = provenance || "";
+        this.provenance = provenance || [];
         this.participants = participants || [];
         this.ta2wdNode = ta2wdNode || "";
         this.ta2wdLabel = ta2wdLabel || "";
@@ -468,20 +473,20 @@ export class EventNode {
         if (this.predictionProvenance !== undefined) {
             return new PredictedNodeStrategy(
                 this,
-                this.predictionProvenance,
-                this.confidence as number
+                this.predictionProvenance as string[],
+                this.confidence as number[]
             );
         } else if (this.ta1ref === "none") {
             return new SourceOnlyNodeStrategy(
                 this,
-                this.provenance as Provenance,
-                this.confidence as number | number[]
+                this.provenance as string[],
+                this.confidence as number[]
             );
         } else {
             return new DetectedNodeStrategy(
                 this,
-                this.provenance as string,
-                this.confidence as number
+                this.provenance as string[],
+                this.confidence as number[]
             );
         }
     }
@@ -516,41 +521,18 @@ export class EventNode {
     }
 }
 
-class GraphManager {
-    nodes: EventNode[];
-
-    constructor() {
-        this.nodes = [];
-    }
-
-    addNode(node: EventNode): void {
-        this.nodes.push(node);
-    }
-
-    changeRenderingOptionsForType(
-        nodeType: typeof NodeRenderingStrategy,
-        options: RenderOptions
-    ): void {
-        this.nodes.forEach((node) => {
-            if (node.renderStrategy instanceof nodeType) {
-                node.renderStrategy.updateOptions(options);
-            }
-        });
-    }
-}
-
 // Define interfaces for the rendering strategy pattern
-interface RenderStrategy {
+interface ProvenanceRenderStrategy {
     render(): void;
 }
 
-class TextRenderStrategy implements RenderStrategy {
+class TextRenderStrategy implements ProvenanceRenderStrategy {
     render(): void {
         console.log("Rendering text/plain");
     }
 }
 
-class ImageRenderStrategy implements RenderStrategy {
+class ImageRenderStrategy implements ProvenanceRenderStrategy {
     render(): void {
         console.log("Rendering image/jpg");
     }
@@ -571,9 +553,9 @@ abstract class ProvenanceEntity {
     @JsonProperty("mediaType", String)
     mediaType: string = undefined!;
 
-    protected renderStrategy: RenderStrategy | undefined;
+    protected renderStrategy: ProvenanceRenderStrategy | undefined;
 
-    public abstract getRenderStrategy(): RenderStrategy;
+    public abstract getRenderStrategy(): ProvenanceRenderStrategy;
 
     public render(): void {
         this.getRenderStrategy().render();
@@ -589,7 +571,7 @@ class TextProvenance extends ProvenanceEntity {
     @JsonProperty("length", Number)
     length: number = 0;
 
-    public getRenderStrategy(): RenderStrategy {
+    public getRenderStrategy(): ProvenanceRenderStrategy {
         if (!this.renderStrategy) {
             this.renderStrategy = new TextRenderStrategy();
         }
@@ -603,7 +585,7 @@ class ImageProvenance extends ProvenanceEntity {
     @JsonProperty("boundingBox", [Number])
     boundingBox: number[] = [];
 
-    public getRenderStrategy(): RenderStrategy {
+    public getRenderStrategy(): ProvenanceRenderStrategy {
         if (!this.renderStrategy) {
             this.renderStrategy = new ImageRenderStrategy();
         }
@@ -613,6 +595,13 @@ class ImageProvenance extends ProvenanceEntity {
 interface ProvenanceData {
     mediaType: string;
     [key: string]: any;
+}
+
+class ProvenanceList{
+    provenanceList: ProvenanceEntity[] = [];
+
+
+
 }
 
 export function createProvenanceEntity(
@@ -676,3 +665,4 @@ export class Entity {
 
 
 }
+

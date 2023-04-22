@@ -28,3 +28,33 @@ export class NumberOrNumberArrayConverter implements JsonCustomConvert<number | 
     }
   }
 }
+
+
+@JsonConverter
+export class ForceNumberArray implements JsonCustomConvert<number | number[]> {
+  serialize(data: number[]): any {
+    return data.length > 1 ? data : data.length > 0? data[0]: undefined;
+  }
+
+  deserialize(json: any): number[] {
+    if (Array.isArray(json)) {
+      return json.map((item) => Number(item));
+    } else {
+      return [Number(json)];
+    }
+  }
+}
+@JsonConverter
+export class ForceStringArray implements JsonCustomConvert<string | string[]> {
+  serialize(data: string[]): any {
+    return data.length > 1 ? data : data.length > 0? data[0]: undefined;
+  }
+
+  deserialize(json: any): string[] {
+    if (Array.isArray(json)) {
+      return json.map((item) => String(item));
+    } else {
+      return [String(json)];
+    }
+  }
+}

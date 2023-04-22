@@ -10,7 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 function TableInfoPanel({ data }) {
-    const [entitiesList, setEntitiesList] = useContext(EntitiesContext);
+    const [entitiesMap] = useContext(EntitiesContext);
     if (data === undefined) {
         return <></>;
     }
@@ -21,9 +21,7 @@ function TableInfoPanel({ data }) {
         data[0] instanceof Participant
     ) {
         const displayParticipantArray = data.map((participant) => {
-            const entityObject = entitiesList.find(
-                (e) => e.id === participant.entity? participant.entity: participant.ta2entity
-            );
+            const entityObject = entitiesMap.get(participant.entity? participant.entity: participant.ta2entity)
             const values = [];
             if (entityObject.name) {
                 values.push(entityObject.name);
@@ -32,9 +30,7 @@ function TableInfoPanel({ data }) {
                 values.push(participant.values);
             } else if (participant.values&& participant.values instanceof Array) {
                 participant.values?.forEach((value) => {
-                    const valueEntity = entitiesList.find(
-                        (e) => e.id === value.ta2entity
-                    );
+                    const valueEntity = entitiesMap.get(value.ta2entity);
                     values.push(valueEntity.name);
             });
         }

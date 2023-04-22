@@ -77,7 +77,6 @@ const getLayoutedElements = (
         return node;
     });
     if (getGraph) {
-        console.log("dagreGraph", dagreGraph);
         return {
             nodes: nodes,
             edges: edges,
@@ -93,7 +92,6 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
     const edges = [];
     const subgraphs = [];
     if (firstNode) {
-        console.log("mapNodes", mapNodes);
         const subgraphs = chosenNodes.map((node) => {
             const subGraphNodes = mapNodes
                 .get(node)
@@ -140,8 +138,6 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                 target: `subgraph-${node}`,
             };
         });
-        console.log("subgraphsNodes", subgraphs);
-        console.log("subgraphEdges", subgraphEdges);
 
         subgraphs.push({
             id: `subgraph-${firstNode.parent}`,
@@ -164,7 +160,6 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
             "TB",
             true
         );
-        console.log("subgraphOuter", outerGraph);
         nodes.push(
             ...outerGraph.nodes.flatMap((parentNode) =>
                 parentNode.data.nodes.map((node) => ({
@@ -177,7 +172,6 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
             )
         );
     }
-    console.log("subgraphnodesAtTheEnd", nodes);
     return nodes;
 };
 
@@ -254,14 +248,6 @@ export const Graph = ({ eventNodes }) => {
         );
     }, [outlinkEdgeStyle]);
 
-    // useEffect(() => {
-    //     setDisplayNodes(Array.from(new Set([
-    //         ...chosenNodes.flatMap((node) => mapNodes.get(node).subgroupEvents),
-    //         ...chosenNodes,
-    //     ])));
-    //     console.log("displayNodes", displayNodes);
-    // }, [chosenNodes]);
-
     const options = {
         minZoom: 0.00001,
         maxZoom: 1000,
@@ -278,7 +264,6 @@ export const Graph = ({ eventNodes }) => {
     useEffect(() => {
         if (eventNodes.length > 0) {
             const firstNode = eventNodes.filter((node) => node.isTopLevel)[0];
-            console.log("firstNode", firstNode);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
@@ -297,7 +282,6 @@ export const Graph = ({ eventNodes }) => {
         }
         if (node && chosenNodes.includes(node)) {
             for (const child of objectNode.subgroupEvents) {
-                console.log("displaychild", child);
                 const childNode = mapNodes.get(child).id;
                 tractNodes.push(...getAllSubgroupEvents(childNode));
             }
@@ -352,9 +336,6 @@ export const Graph = ({ eventNodes }) => {
                 });
             });
         });
-        console.log("newEdges", newEdges);
-        console.log("layoutedNodes222", newNodes);
-        console.log("outLinksEdges", outLinksEdges);
 
         setNodes([...layoutedNodes]);
         setEdges(
@@ -368,8 +349,6 @@ export const Graph = ({ eventNodes }) => {
             )
         );
 
-        console.log("layoutedNodes", layoutedNodes);
-        console.log("layoutedEdges", edges);
     }, [chosenNodes]);
 
     const onConnect = useCallback(
@@ -396,15 +375,12 @@ export const Graph = ({ eventNodes }) => {
                 return;
             }
             if (node.data.isExpanded) {
-                console.log("nodeExpand", node);
                 node.data.isExpanded = false;
                 const allSubEvents = getAllSubgroupEvents(node.id);
-                console.log("allSubEvents", allSubEvents);
 
                 const newChosenNodes = chosenNodes.filter(
                     (n) => !allSubEvents.includes(n)
                 );
-                console.log("newChosenNodes", newChosenNodes);
                 setChosenNodes(newChosenNodes);
 
                 return;
@@ -414,9 +390,6 @@ export const Graph = ({ eventNodes }) => {
         },
         [chosenNodes]
     );
-    useEffect(() => {
-        console.log("chosenNodes", chosenNodes);
-    }, [chosenNodes]);
 
     // denote the color of the node in the minimap
     const nodeColor = (node) => node.data.renderStrategy.color;

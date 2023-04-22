@@ -55,7 +55,6 @@
   }
 
   .menu-option-panel-enlarged {
-
     position: fixed;
     top: 10px;
     left: 80px;
@@ -70,5 +69,4 @@
     box-shadow: 2px 2px 5px grey;
     max-height: 80vh;
     overflow: auto;
-
   }
