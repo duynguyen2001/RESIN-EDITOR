@@ -29,34 +29,6 @@ export const EdgeStyleContext = createContext();
 
 const nodeWidth = 200;
 const nodeHeight = 200;
-function sortArray(array) {
-    const indices = {};
-
-    // Create a hash table of indices for each object
-    for (let i = 0; i < array.length; i++) {
-        const obj = array[i];
-        indices[obj.id] = i;
-    }
-
-    // Update the position of each object with an outlinks property
-    for (let i = 0; i < array.length; i++) {
-        const obj = array[i];
-        if (obj.data.outlinks) {
-            for (let j = 0; j < obj.data.outlinks.length; j++) {
-                const linkedId = obj.data.outlinks[j];
-                if (indices[linkedId] > i) {
-                    console.log("swapping", array[i], array[indices[linkedId]]);
-                    array.splice(i, 0, array.splice(indices[linkedId], 1)[0]);
-                    indices[linkedId] = i;
-                    i--;
-                    break;
-                }
-            }
-        }
-    }
-
-    return array;
-}
 
 const getLayoutedElements = (
     nodes,
@@ -76,7 +48,6 @@ const getLayoutedElements = (
         minLen: (edge) => edge.data().weight,
     });
 
-    // nodes = sortArray(nodes);
     nodes.forEach((node) => {
         dagreGraph.setNode(node.id, {
             width: node.width ? node.width : nodeWidth,
@@ -209,35 +180,79 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
 };
 
 export const Graph = ({ eventNodes }) => {
-    const [displayNodes, setdisplayNodes] = useState([]);
     const [chosenNodes, setChosenNodes] = useState([]);
-    const [nodes, setNodes, onNodesChange] = useNodesState(displayNodes);
+    const [displayNodes, setDisplayNodes] = useState([]);
+    const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [mapNodes, setMapNodes] = useState({});
     const [clickedNode, setClickedNode] = useState(null);
     const [firstNode, setFirstNode] = useState(null);
     const [edgeStyle, setEdgeStyle] = useState({
+        or: {
         animated: false,
         type: ConnectionLineType.Straight,
-        markerEnd: { type: MarkerType.ArrowClosed, size: 20, color: "blue" },
         style: {
             stroke: "blue",
-            strokeWidth: 3,
-        },
+            strokeWidth: 1,
+            strokeDasharray: "5,5",
+        }},
+        xor:{
+            animated: false,
+            type: ConnectionLineType.Straight,
+            width: 5,
+            style: {
+                stroke: "green",
+                strokeDasharray: "4 1 2 3",
+                strokeWidth: 5,
+            }},
+            and:{
+                animated: false,
+                type: ConnectionLineType.Straight,
+                width: 5,
+                style: {
+                    stroke: "black",
+                    strokeWidth: 5,
+                }}   
     });
     const [outlinkEdgeStyle, setOutlinkEdgeStyle] = useState({
         animated: false,
         type: ConnectionLineType.Straight,
-        width: 5,
         markerEnd: { type: MarkerType.ArrowClosed, size: 20, color: "red" },
+        width: 10,
         style: {
             stroke: "red",
             strokeWidth: 5,
         },
     });
+    useEffect(() => {
+        setEdges(...edges.map(
+            (edge) => edge.type === "subgroup-edge"? ({
+                ...edge,
+                ...edgeStyle[edge.childrenGate]
+            }): edge
+        ))
+    }, [edgeStyle]);
+
+    useEffect(() => {
+        setEdges(...edges.map(
+            (edge) => edge.type === "outlink-edge"? ({
+                ...edge,
+                ...outlinkEdgeStyle
+            }): edge
+        ))
+    }, [outlinkEdgeStyle]);
+
+    // useEffect(() => {
+    //     setDisplayNodes(Array.from(new Set([
+    //         ...chosenNodes.flatMap((node) => mapNodes.get(node).subgroupEvents),
+    //         ...chosenNodes,
+    //     ])));
+    //     console.log("displayNodes", displayNodes);
+    // }, [chosenNodes]);
+
     const options = {
-        minZoom: 0.005,
-        maxZoom: 2,
+        minZoom: 0.00001,
+        maxZoom: 1000,
         zoomOnScroll: true,
         panOnScroll: true,
         snapToGrid: true,
@@ -252,44 +267,39 @@ export const Graph = ({ eventNodes }) => {
         if (eventNodes.length > 0) {
             const firstNode = eventNodes.filter((node) => node.isTopLevel)[0]
             console.log("firstNode", firstNode);
-            setdisplayNodes([firstNode.id]);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
             });
             setMapNodes(newMap);
             setFirstNode(firstNode);
+            setChosenNodes([firstNode.id]);
         }
     }, [eventNodes]);
 
-    const getAllsubgroupEvents = useCallback(
+    const getAllSubgroupEvents = 
         (node) => {
-            const nodes = [node];
+            const tractNodes = [node];
             const objectNode = mapNodes.get(node);
-            console.log("mapNode", objectNode);
             if (mapNodes.get(node).subgroupEvents === undefined) {
-                return nodes;
+                return tractNodes;
             }
+            if (node && chosenNodes.includes(node)) {
             for (const child of objectNode.subgroupEvents) {
-                const childNode = mapNodes.get(child).id;
-                if (childNode && !chosenNodes.includes(childNode)) {
-                    nodes.push(...getAllsubgroupEvents(childNode));
+                    console.log("displaychild", child);
+                    const childNode = mapNodes.get(child).id;
+                    tractNodes.push(...getAllSubgroupEvents(childNode));
                 }
             }
-            return nodes;
-        },
-        [mapNodes]
-    );
+        
+            return tractNodes;
+        }
 
     useEffect(() => {
         if (firstNode === null || mapNodes.size === 0) {
             return;
         }
-        console.log("firstNode222", firstNode);
-        console.log("mapNodes222", mapNodes);
         
-        // const { nodes: layoutedNodes, edges: layoutedEdges } =
-        //     getLayoutedElements(newNodes, newEdges);
         const newNodes = getLayoutedElementsNested(chosenNodes, mapNodes, firstNode);
         const outLinksEdges = [];
         const layoutedNodes = newNodes.map((node) => ({
@@ -300,19 +310,19 @@ export const Graph = ({ eventNodes }) => {
         const newEdges = [];
         chosenNodes.forEach((source) => {
             mapNodes.get(source).subgroupEvents?.forEach((target) => {
-                console.log("target2222", target);
+                const childrenGate = mapNodes.get(source).childrenGate;
                 newEdges.push({
                     id: `e-${source}-${target}`,
                     source: source,
                     target: target,
-                    ...edgeStyle,
+                    type: 'subgroup-edge',
+                    childrenGate: childrenGate,
+                    ...edgeStyle[childrenGate],
                 });
             });
         });
         newNodes.forEach((node) => {
-            console.log("node", node.data);
             node.data.outlinks?.forEach((outlink) => {
-                console.log("outlink", outlink);
                 outLinksEdges.push({
                     id: `e-${node.id}-${outlink}-outlink`,
                     source: node.id,
@@ -322,6 +332,7 @@ export const Graph = ({ eventNodes }) => {
                     targetHandle: outlink + "_left",
                     sourcePosition: Position.Right,
                     targetPosition: Position.Left,
+                    type: 'outlink-edge',
                     ...outlinkEdgeStyle,
                 });
             });
@@ -341,9 +352,10 @@ export const Graph = ({ eventNodes }) => {
                     )
             )
         );
+        
         console.log("layoutedNodes", layoutedNodes);
         console.log("layoutedEdges", edges);
-    }, [displayNodes]);
+    }, [chosenNodes]);
 
     const onConnect = useCallback(
         (params) =>
@@ -369,31 +381,32 @@ export const Graph = ({ eventNodes }) => {
                 return;
             }
             if (node.data.isExpanded) {
-                setChosenNodes(chosenNodes.filter((n) => n !== node.id));
+                console.log("nodeExpand", node);
                 node.data.isExpanded = false;
-                const allSubEvents = getAllsubgroupEvents(node.id).filter(
-                    (n) => n !== node.id
-                );
+                const allSubEvents = getAllSubgroupEvents(node.id);
                 console.log("allSubEvents", allSubEvents);
-                setdisplayNodes(
-                    displayNodes.filter((n) => !allSubEvents.includes(n))
+
+                const newChosenNodes = chosenNodes.filter((n) => !allSubEvents.includes(n));
+                console.log("newChosenNodes", newChosenNodes);
+                setChosenNodes(
+                    newChosenNodes
                 );
+
                 return;
             }
             setChosenNodes([...chosenNodes, node.id]);
-            setdisplayNodes([...displayNodes, ...node.data.subgroupEvents]);
             node.data.isExpanded = true;
-            console.log("node", node);
         },
-        [displayNodes]
+        [chosenNodes]
     );
     useEffect(() => {
         console.log("chosenNodes", chosenNodes);
     }, [chosenNodes]);
-    useEffect(() => {
-        getLayoutedElementsNested(chosenNodes, mapNodes, firstNode);
-    }, [firstNode, chosenNodes]);
-    return (
+
+    // denote the color of the node in the minimap
+    const nodeColor = (node) => node.data.renderStrategy.color;
+
+    return (    
         <EdgeStyleContext.Provider value={[edgeStyle, setEdgeStyle]}>
             <div className="layoutflow">
                 <ReactFlowProvider>
@@ -410,6 +423,7 @@ export const Graph = ({ eventNodes }) => {
                     />
                     <MiniMap
                         nodes={nodes}
+                        nodeColor={nodeColor}
                         nodeStrokeWidth={3}
                         zoomable
                         pannable
