@@ -27,9 +27,6 @@ const nodeTypes = {
 };
 export const EdgeStyleContext = createContext();
 
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-
 const nodeWidth = 200;
 const nodeHeight = 200;
 function sortArray(array) {
@@ -61,17 +58,30 @@ function sortArray(array) {
     return array;
 }
 
-const getLayoutedElements = (nodes, edges, direction = "TB") => {
+const getLayoutedElements = (
+    nodes,
+    edges,
+    direction = "TB",
+    getGraph = false
+) => {
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
     const isHorizontal = direction === "LR";
     dagreGraph.setGraph({
-        rankdir: "TB",
-        ranker: "tight-tree",
+        rankdir: direction,
+        edgesep: isHorizontal? 50:200,
+        ranker:  "tight-tree",
+        align:  isHorizontal?"UL": undefined,
+        nodesep: 50,
         minLen: (edge) => edge.data().weight,
     });
 
-    nodes = sortArray(nodes);
+    // nodes = sortArray(nodes);
     nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+        dagreGraph.setNode(node.id, {
+            width: node.width ? node.width : nodeWidth,
+            height: node.height ? node.height : nodeHeight,
+        });
     });
 
     edges.forEach((edge) => {
@@ -88,14 +98,114 @@ const getLayoutedElements = (nodes, edges, direction = "TB") => {
         // We are shifting the dagre node position (anchor=center center) to the top left
         // so it matches the React Flow node anchor point (top left).
         node.position = {
-            x: nodeWithPosition.x - nodeWidth / 2,
-            y: nodeWithPosition.y - nodeHeight / 2,
+            x: nodeWithPosition.x - (node.width ? node.width : nodeWidth) / 2,
+            y:
+                nodeWithPosition.y -
+                (node.height ? node.height : nodeHeight) / 2
         };
 
         return node;
     });
+    if (getGraph) {
+        console.log("dagreGraph", dagreGraph);
+        return {
+            nodes: nodes,
+            edges: edges,
+            width: dagreGraph.graph().width,
+            height: dagreGraph.graph().height,
+        };
+    }
 
     return { nodes, edges };
+};
+const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
+    const nodes = [];
+    const edges = [];
+    const subgraphs = [];
+    if (firstNode) {
+        console.log("mapNodes", mapNodes);
+        const subgraphs = chosenNodes.map((node) => {
+            const subGraphNodes = mapNodes
+                .get(node)
+                .subgroupEvents?.map((subNode) => {
+                    return {
+                        id: subNode,
+                        data: mapNodes.get(subNode),
+                        position: { x: 0, y: 0 },
+                    };
+                });
+            const subGraphEdges =
+                mapNodes.get(node).subgroupEvents?.flatMap((subNode) =>
+                    mapNodes.get(subNode).outlinks.map((outlinkNode) => ({
+                        id: `outlink-${subNode}-${outlinkNode}`,
+                        source: subNode,
+                        target: outlinkNode,
+                    }))
+                ) || [];
+
+            const graph = getLayoutedElements(
+                subGraphNodes,
+                subGraphEdges,
+                "LR",
+                true
+            );
+            return {
+                id: `subgraph-${node}`,
+                width: graph.width,
+                height: graph.height,
+                position: { x: 0, y: 0 },
+                data: {
+                    nodes: graph.nodes,
+                    edges: graph.edges,
+                },
+            };
+        });
+        const subgraphEdges = chosenNodes.flatMap((node) => {
+            const parentNode = mapNodes.get(node).parent
+                ? mapNodes.get(node).parent
+                : "root";
+            return {
+                id: `subgraph-edge-${parentNode}-${node}`,
+                source: `subgraph-${parentNode}`,
+                target: `subgraph-${node}`,
+            };
+        });
+        console.log("subgraphsNodes", subgraphs);
+        console.log("subgraphEdges", subgraphEdges);
+
+
+        subgraphs.push({
+            id: `subgraph-${firstNode.parent}`,
+            width: 200,
+            height: 200,
+            data: {
+                nodes: [{id:firstNode.id, 
+                    data: firstNode,
+                    position: { x: 0, y: 0 },}],
+                edges: [],
+            },
+        });
+        const outerGraph = getLayoutedElements(
+            subgraphs,
+            subgraphEdges,
+            "TB",
+            true
+        );
+        console.log("subgraphOuter", outerGraph);
+        nodes.push(
+            ...outerGraph.nodes.flatMap((parentNode) =>
+                parentNode.data.nodes.map((node) => ({
+                    ...node,
+                    position: {
+                        x: parentNode.position.x + node.position.x ,
+                        y: parentNode.position.y + node.position.y,
+                    },
+                }))
+            )
+        );
+    }
+    console.log("subgraphnodesAtTheEnd", nodes);
+    return nodes;
 };
 
 export const Graph = ({ eventNodes }) => {
@@ -105,6 +215,7 @@ export const Graph = ({ eventNodes }) => {
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [mapNodes, setMapNodes] = useState({});
     const [clickedNode, setClickedNode] = useState(null);
+    const [firstNode, setFirstNode] = useState(null);
     const [edgeStyle, setEdgeStyle] = useState({
         animated: false,
         type: ConnectionLineType.Straight,
@@ -140,14 +251,14 @@ export const Graph = ({ eventNodes }) => {
     useEffect(() => {
         if (eventNodes.length > 0) {
             const firstNode = eventNodes.filter((node) => node.isTopLevel)[0]
-                .id;
             console.log("firstNode", firstNode);
-            setdisplayNodes([firstNode]);
+            setdisplayNodes([firstNode.id]);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
             });
             setMapNodes(newMap);
+            setFirstNode(firstNode);
         }
     }, [eventNodes]);
 
@@ -171,14 +282,21 @@ export const Graph = ({ eventNodes }) => {
     );
 
     useEffect(() => {
-        const newNodes = displayNodes.map((node) => ({
-            data: mapNodes.get(node),
-            id: node,
+        if (firstNode === null || mapNodes.size === 0) {
+            return;
+        }
+        console.log("firstNode222", firstNode);
+        console.log("mapNodes222", mapNodes);
+        
+        // const { nodes: layoutedNodes, edges: layoutedEdges } =
+        //     getLayoutedElements(newNodes, newEdges);
+        const newNodes = getLayoutedElementsNested(chosenNodes, mapNodes, firstNode);
+        const outLinksEdges = [];
+        const layoutedNodes = newNodes.map((node) => ({
+            ...node,
             type: "custom",
-        }));
-
-        console.log("newNodes", newNodes);
-        console.log("current displayNodes", displayNodes);
+        }));;
+        
         const newEdges = [];
         chosenNodes.forEach((source) => {
             mapNodes.get(source).subgroupEvents?.forEach((target) => {
@@ -191,12 +309,7 @@ export const Graph = ({ eventNodes }) => {
                 });
             });
         });
-        console.log("newEdges", newEdges);
-        const { nodes: layoutedNodes, edges: layoutedEdges } =
-            getLayoutedElements(newNodes, newEdges);
-        const outLinksEdges = [];
-
-        layoutedNodes.forEach((node) => {
+        newNodes.forEach((node) => {
             console.log("node", node.data);
             node.data.outlinks?.forEach((outlink) => {
                 console.log("outlink", outlink);
@@ -213,11 +326,13 @@ export const Graph = ({ eventNodes }) => {
                 });
             });
         });
+        console.log("newEdges", newEdges);
+        console.log("layoutedNodes222", newNodes);        
         console.log("outLinksEdges", outLinksEdges);
 
         setNodes([...layoutedNodes]);
         setEdges(
-            [...layoutedEdges, ...outLinksEdges].filter(
+            [...newEdges, ...outLinksEdges].filter(
                 (edge, index, self) =>
                     index ===
                     self.findIndex(
@@ -275,7 +390,9 @@ export const Graph = ({ eventNodes }) => {
     useEffect(() => {
         console.log("chosenNodes", chosenNodes);
     }, [chosenNodes]);
-
+    useEffect(() => {
+        getLayoutedElementsNested(chosenNodes, mapNodes, firstNode);
+    }, [firstNode, chosenNodes]);
     return (
         <EdgeStyleContext.Provider value={[edgeStyle, setEdgeStyle]}>
             <div className="layoutflow">
@@ -305,7 +422,7 @@ export const Graph = ({ eventNodes }) => {
                         onClose={handleClosePanel}
                     />
                 )}
-                <Menu/>
+                <Menu />
             </div>
         </EdgeStyleContext.Provider>
     );
