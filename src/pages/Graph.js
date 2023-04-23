@@ -29,7 +29,7 @@ export const EdgeStyleContext = createContext();
 const nodeWidth = 200;
 const nodeHeight = 200;
 
-const getLayoutedElements = (
+export const getLayoutedElements = (
     nodes,
     edges,
     direction = "TB",
@@ -194,7 +194,9 @@ export const Graph = ({ eventNodes }) => {
         },
         xor: {
             animated: false,
-            type: ConnectionLineType.Straight,
+            type: ConnectionLineType.SmoothStep,
+            label: 'xor',
+            labelStyle:{fill: 'red', fontWeight: 700, fontSize: 32},
             width: 5,
             style: {
                 stroke: "green",

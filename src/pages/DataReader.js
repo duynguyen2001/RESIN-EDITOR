@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, createContext, useContext } from "react";
-import defaultData from "../data/new.json";
+import defaultData from "../data/disease_outbreak_sdf_example.json";
 import Graph from "./Graph";
 import { JsonConvert } from "json2typescript";
 import {

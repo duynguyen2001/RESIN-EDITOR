@@ -7,6 +7,7 @@ import { ExtractedFilesContext } from '../pages/DataReader';
 const ZipReader = () => {
   const inputRef = useRef();
   const [extractedFiles, setExtractedFiles] = useContext(ExtractedFilesContext);
+  const [extractedFilesList, setExtractedFilesList] = useState([]);
 
   useEffect(() => {
     console.log('extractedFiles: ', extractedFiles);
@@ -50,6 +51,17 @@ const ZipReader = () => {
 
     setExtractedFiles(allExtractedFiles);
   };
+  useEffect(() => {
+    console.log('extractedFiles: ', extractedFiles);
+    const newExtractedFilesList = [];
+    extractedFiles.forEach((value, key) => {
+      newExtractedFilesList.push(<tr key={key}>
+        <td>{key}</td>
+        <td>{value.entryName}</td>
+      </tr>);
+    });
+    setExtractedFilesList(newExtractedFilesList);
+  }, [extractedFiles]);
 
   return (
     <div>
@@ -60,23 +72,23 @@ const ZipReader = () => {
         multiple
         onChange={handleFileChange}
       />
-      <h2>Extracted files:</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Filename</th>
-            <th>Entry Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(extractedFiles).map(([filename, { entryName }]) => (
-            <tr key={filename}>
-              <td>{filename}</td>
-              <td>{entryName}</td>
+      {extractedFiles.size > 0 && (
+        <div>
+        <h2>Extracted files:</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Entry name</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {extractedFilesList}
+          </tbody>
+        </table>
+        </div>
+        )}
+      
     </div>
   );
 };

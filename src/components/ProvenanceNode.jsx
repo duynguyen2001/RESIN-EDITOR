@@ -5,7 +5,7 @@ import { ExtractedFilesContext, ProvenanceContext } from "../pages/DataReader";
 import ImageNode from "./ImageNode";
 
 const ProvenanceNode = ({ data }) => {
-    const [extractedFiles, setExtractedFiles] = useContext(
+    const [extractedFiles, _] = useContext(
         ExtractedFilesContext
     );
     if (!data) return <></>;
@@ -26,7 +26,6 @@ const ProvenanceNode = ({ data }) => {
     return (
         <div
             className="provenance-node"
-            style={{ background: "red", width: "70px", height: "70px" }}
         >
             <NodeResizer minWidth={100} minHeight={30} />
             <Handle

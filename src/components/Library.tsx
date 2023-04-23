@@ -13,7 +13,6 @@ import {
 } from "./TypeScriptUtils";
 import { Handle, Position } from "reactflow";
 import { JsonCustomConvert, JsonConverter } from "json2typescript";
-import { ProvenanceContext } from "../pages/DataReader";
 
 type RenderOptions = {
     shape?: string;
