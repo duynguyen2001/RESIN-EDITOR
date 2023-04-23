@@ -1,7 +1,7 @@
 // ProvenanceNode.jsx
-import React, { useContext } from "react";
-import { Handle } from "reactflow";
-import { ExtractedFilesContext } from "../pages/DataReader";
+import React, { useContext,memo } from "react";
+import { Handle, NodeResizer } from "reactflow";
+import { ExtractedFilesContext, ProvenanceContext } from "../pages/DataReader";
 import ImageNode from "./ImageNode";
 
 const ProvenanceNode = ({ data }) => {
@@ -9,25 +9,33 @@ const ProvenanceNode = ({ data }) => {
         ExtractedFilesContext
     );
     if (!data) return <></>;
-    console.log('extractedFiles: ', extractedFiles);
-if(extractedFiles && extractedFiles.size > 0){
-    const fileContent = extractedFiles.get(data.childId);
-    if (fileContent) {
-        if (data.mediaType.startsWith('image/')) {
-            return <ImageNode data={data} fileContent={fileContent} />;
+    console.log("extractedFiles: ", extractedFiles);
+
+    if (extractedFiles.size > 0) {
+        const fileContent = extractedFiles.get(data.childID);
+        console.log("fileContent: ", fileContent);
+        if (fileContent) {
+            if (data.mediaType.startsWith("image/")) {
+                return (
+                    <ImageNode data={data} fileContent={fileContent.content} />
+                );
+            }
         }
     }
-}
 
     return (
-        <div className="provenance-node" style={{background:"red", width:"70px", height: "70px"}}>
+        <div
+            className="provenance-node"
+            style={{ background: "red", width: "70px", height: "70px" }}
+        >
+            <NodeResizer minWidth={100} minHeight={30} />
             <Handle
                 type="target"
                 position="left"
                 style={{ borderRadius: "50%" }}
             />
             <div className="provenance-node-content">
-                <h3>{data.childId}</h3>
+                <h3>{data.childID}</h3>
                 <p>{data.parentID}</p>
                 <p>{data.mediaType}</p>
             </div>
@@ -40,4 +48,4 @@ if(extractedFiles && extractedFiles.size > 0){
     );
 };
 
-export default ProvenanceNode;
+export default memo(ProvenanceNode);

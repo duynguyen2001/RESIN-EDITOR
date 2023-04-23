@@ -411,6 +411,7 @@ export const Graph = ({ eventNodes }) => {
                     />
                     <MiniMap
                         nodes={nodes}
+                        edges={edges}
                         nodeColor={nodeColor}
                         nodeStrokeWidth={3}
                         zoomable

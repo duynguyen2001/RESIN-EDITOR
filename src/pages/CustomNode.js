@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {  memo } from "react";
 
 export const CustomNode = ({ data , isConnectable, onHover}) => {
   if (data === undefined) {
@@ -10,3 +10,5 @@ export const CustomNode = ({ data , isConnectable, onHover}) => {
       </div>
     );
   };
+
+  export default memo(CustomNode);
