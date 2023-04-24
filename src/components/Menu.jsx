@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faPlusSquare,
@@ -8,7 +8,7 @@ import {
     faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "../pages/Panel";
-import { DataContext } from "../pages/DataReader";
+import { DataContext, ExtractedTextsContext } from "../pages/DataReader";
 import ZipReader from "./ZipReader";
 import "../assets/css/Menu.css";
 import ProvenanceMap from "../pages/ProvenanceMap";
@@ -89,6 +89,7 @@ const MenuOptionPanel = ({ option, setOption }) => {
 
 function AddJSONPanel() {
     const [jsonData, setJsonData] = useContext(DataContext);
+    const [extractedTexts, setExtractedTexts] = useContext(ExtractedTextsContext);
 
   const handleJSONUpload = (event) => {
     const fileReader = new FileReader();
@@ -98,13 +99,36 @@ function AddJSONPanel() {
       setJsonData(parsedJson);
     };
   };
+  const handleParsedTextFile = (event) => {
+    const fileReader = new FileReader();
+    const extractedTexts = new Map();
+    fileReader.readAsText(event.target.files[0], 'UTF-8');
+    fileReader.onload = (e) => {
+      const parsedJson = JSON.parse(e.target.result);
+      if (parsedJson !== undefined && parsedJson.rsd_data !== undefined) {
+        console.log("parsedJson", parsedJson.rsd_data);
+        for (const [_, listValue] of Object.entries(parsedJson.rsd_data)) {
+            for (const [key, value] of Object.entries(listValue)) {
+                extractedTexts.set(key, value);
+            }
+        }
+        setExtractedTexts(extractedTexts);
 
+      }
+    };
+  };
+
+  useEffect(() => {
+    console.log("extractedTexts", extractedTexts);
+    }, [extractedTexts]);
 
     return <div>
         <h2>Upload New JSON File</h2>
-        <h3>JSON File</h3>
+        <h3>JSON Event File</h3>
         <input type="file" accept=".json" onChange={handleJSONUpload} />
-        <h3>Zip File</h3>
+        <h3>JSON Provenance TExt File</h3>
+        <input type="file" accept=".json" onChange={handleParsedTextFile} />
+        <h3>Image Zip File</h3>
         <ZipReader />
     </div>;
 }
@@ -133,8 +157,7 @@ function DownloadJSONPanel () {
 function SeeLegendPanel() {
     return <div>
         <h2>Legend</h2>
-
-        <ProvenanceMap />
+        
     </div>;
 };
 

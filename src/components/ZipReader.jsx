@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import JSZip from 'jszip';
-import { ExtractedFilesContext } from '../pages/DataReader';
+import { ExtractedFilesContext, ExtractedTextsContext } from '../pages/DataReader';
 
 
 

@@ -12,6 +12,7 @@ export const EntitiesContext = createContext({});
 export const ProvenanceContext = createContext([]);
 export const DataContext = createContext({});
 export const ExtractedFilesContext = createContext({});
+export const ExtractedTextsContext = createContext({});
 
 const DataReader = () => {
     const [data, setData] = React.useState(defaultData);
@@ -20,17 +21,18 @@ const DataReader = () => {
     const [Events, setEvents] = React.useState([]);
     const [Provenances, setProvenances] = React.useState({});
     const [extractedFiles, setExtractedFiles] = React.useState([]);
+    const [extractedTexts, setExtractedTexts] = React.useState([]);
+
     useEffect(() => {
         console.log("rawdata", data);
         if (data.instances) {
             if (data.instances[0].entities) {
                 const entitiesMap = new Map();
-                jsonConvert.deserializeArray(
-                    data.instances[0].entities,
-                    Entity
-                ).forEach((entity) => {
-                    entitiesMap.set(entity.id, entity);
-                });
+                jsonConvert
+                    .deserializeArray(data.instances[0].entities, Entity)
+                    .forEach((entity) => {
+                        entitiesMap.set(entity.id, entity);
+                    });
                 setEntities(entitiesMap);
             }
             if (data.instances[0].events) {
@@ -45,9 +47,11 @@ const DataReader = () => {
 
         if (data.provenanceData) {
             const mapProvenance = new Map();
-            data.provenanceData.map(createProvenanceEntity).forEach((provenance) => {
-                mapProvenance.set(provenance.id, provenance);
-            });
+            data.provenanceData
+                .map(createProvenanceEntity)
+                .forEach((provenance) => {
+                    mapProvenance.set(provenance.id, provenance);
+                });
             setProvenances(mapProvenance);
         }
     }, [data]);
@@ -60,19 +64,23 @@ const DataReader = () => {
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
-                <DataContext.Provider value={[data, setData]}>
-                    <ProvenanceContext.Provider
-                        value={[Provenances, setProvenances]}
-                    >
-                        <EntitiesContext.Provider
-                            value={[Entities, setEntities]}
+            <DataContext.Provider value={[data, setData]}>
+                <ProvenanceContext.Provider
+                    value={[Provenances, setProvenances]}
+                >
+                    <EntitiesContext.Provider value={[Entities, setEntities]}>
+                        <ExtractedTextsContext.Provider
+                            value={[extractedTexts, setExtractedTexts]}
                         >
-                            <ExtractedFilesContext.Provider value={[extractedFiles, setExtractedFiles]}>
-                                <Graph eventNodes={Events}/>
+                            <ExtractedFilesContext.Provider
+                                value={[extractedFiles, setExtractedFiles]}
+                            >
+                                <Graph eventNodes={Events} />
                             </ExtractedFilesContext.Provider>
-                        </EntitiesContext.Provider>
-                    </ProvenanceContext.Provider>
-                </DataContext.Provider>
+                        </ExtractedTextsContext.Provider>
+                    </EntitiesContext.Provider>
+                </ProvenanceContext.Provider>
+            </DataContext.Provider>
         </div>
     );
 };

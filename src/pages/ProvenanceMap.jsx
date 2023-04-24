@@ -32,7 +32,6 @@ const ProvenanceMap = ({
       });
     }
     useEffect(() => {
-        console.log("ProvenanceMap useEffect");
         console.log("provenance: ", provenance);
         const elements = ids.map((id) => {
             const node = provenance.get(id);
@@ -58,10 +57,8 @@ const ProvenanceMap = ({
     return (
         <div
             style={{
-                height: "100vh",
+                height: "80vh",
                 width: "100%",
-                backgroundColor: "#222",
-                zIndex:3000,
             }}
             ref={ref}
         >
@@ -74,6 +71,7 @@ const ProvenanceMap = ({
                 
             >
                 <Background variant="dots" gap={12} size={1} />
+
                 <MiniMap />
                 <Controls />
             </ReactFlow>

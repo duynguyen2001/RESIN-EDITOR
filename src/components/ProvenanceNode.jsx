@@ -1,13 +1,19 @@
 // ProvenanceNode.jsx
 import React, { useContext,memo } from "react";
 import { Handle, NodeResizer } from "reactflow";
-import { ExtractedFilesContext, ProvenanceContext } from "../pages/DataReader";
+import { ExtractedFilesContext, ExtractedTextsContext } from "../pages/DataReader";
 import ImageNode from "./ImageNode";
+import TextNode from "./TextNode";
 
 const ProvenanceNode = ({ data }) => {
     const [extractedFiles, _] = useContext(
         ExtractedFilesContext
     );
+
+    const [extractedTexts, __] = useContext(
+        ExtractedTextsContext
+    );
+
     if (!data) return <></>;
     console.log("extractedFiles: ", extractedFiles);
 
@@ -18,6 +24,18 @@ const ProvenanceNode = ({ data }) => {
             if (data.mediaType.startsWith("image/")) {
                 return (
                     <ImageNode data={data} fileContent={fileContent.content} />
+                );
+            } 
+        } 
+    }
+
+    if (extractedTexts.size > 0) {
+        const textContent = extractedTexts.get(data.childID);
+        console.log("textContent: ", textContent);
+        if (textContent) {
+            if (data.mediaType.startsWith("text/")) {
+                return (
+                    <TextNode data={data} fileContent={textContent} />
                 );
             }
         }

@@ -8,6 +8,7 @@ import {
     faCompress,
     faClose,
 } from "@fortawesome/free-solid-svg-icons";
+import ProvenancePopup from "../components/ProvenancePopup.jsx";
 
 function TableInfoPanel({ data }) {
     const [entitiesMap] = useContext(EntitiesContext);
@@ -21,19 +22,24 @@ function TableInfoPanel({ data }) {
         data[0] instanceof Participant
     ) {
         const displayParticipantArray = data.map((participant) => {
-            const entityObject = entitiesMap.get(participant.entity? participant.entity: participant.ta2entity)
+            const entityObject = entitiesMap.get(
+                participant.entity ? participant.entity : participant.ta2entity
+            );
             const values = [];
             if (entityObject.name) {
                 values.push(entityObject.name);
             }
             if (participant.values && participant.values instanceof String) {
                 values.push(participant.values);
-            } else if (participant.values&& participant.values instanceof Array) {
+            } else if (
+                participant.values &&
+                participant.values instanceof Array
+            ) {
                 participant.values?.forEach((value) => {
                     const valueEntity = entitiesMap.get(value.ta2entity);
                     values.push(valueEntity.name);
-            });
-        }
+                });
+            }
             return {
                 id: participant.id,
                 entities: values && values.length > 0 ? values.join(", ") : "-",
@@ -87,7 +93,7 @@ function TableInfoPanel({ data }) {
     );
 }
 
-export function Modal({isEnlarged, toggleEnlarged, handleClick}) {
+export function Modal({ isEnlarged, toggleEnlarged, handleClick }) {
     return (
         <div className="modal">
             <FontAwesomeIcon
@@ -106,6 +112,7 @@ export function Modal({isEnlarged, toggleEnlarged, handleClick}) {
 
 function EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
+    const [showProvenance, setShowProvenance] = useState(false);
     if (data === undefined) {
         return <></>;
     }
@@ -113,6 +120,11 @@ function EventNodeInfoPanel({ data, onClose }) {
     const toggleEnlarged = () => {
         setIsEnlarged(!isEnlarged);
     };
+    const toggleProvenance = () => {
+        setShowProvenance(!showProvenance);
+    };
+    console.log("event data: ", data);
+    const provenanceExisted = data.provenance && data.provenance.length > 0;
     if (data instanceof EventNode) {
         return (
             <div className={isEnlarged ? "info-panel-enlarge" : "info-panel"}>
@@ -124,9 +136,29 @@ function EventNodeInfoPanel({ data, onClose }) {
 
                 <h2>{data.name}</h2>
                 <p>{data.description}</p>
+                {provenanceExisted && (
+                    <a onClick={toggleProvenance}>
+                        <u>
+                            <h3>Show Source</h3>
+                        </u>
+                    </a>
+                )}
+                {showProvenance && provenanceExisted && (
+                    <ProvenancePopup
+                        ids={data.provenance}
+                        onClose={toggleProvenance}
+                    />
+                )}
                 {data.participants && data.participants.length > 0 && (
                     <details>
-                        <summary className="flex items-center font-bold text-2xl">Participants</summary>
+                        <summary
+                            style={{
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Participants
+                        </summary>
                         <TableInfoPanel data={data.participants} />
                     </details>
                 )}
@@ -137,10 +169,10 @@ function EventNodeInfoPanel({ data, onClose }) {
     return (
         <div className="info-panel">
             <Modal
-                    isEnlarged={isEnlarged}
-                    toggleEnlarged={toggleEnlarged}
-                    handleClick={onClose}
-                />
+                isEnlarged={isEnlarged}
+                toggleEnlarged={toggleEnlarged}
+                handleClick={onClose}
+            />
             <h2>{data.title}</h2>
             <p>{data.description}</p>
         </div>
