@@ -29,7 +29,7 @@ const TextNode = ({ data, fileContent }) => {
             start += 1;
         }
 
-        let end = length;
+        let end = offset+length;
         while (end < text.length && !text[end].match(/[.!?]/)) {
             end += 1;
         }
