@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, createContext, useContext } from "react";
 import defaultData from "../data/disease_outbreak_sdf_example.json";
+import defaultText from "../data/results.json";
 import Graph from "./Graph";
 import { JsonConvert } from "json2typescript";
 import {
@@ -13,7 +14,17 @@ export const ProvenanceContext = createContext([]);
 export const DataContext = createContext({});
 export const ExtractedFilesContext = createContext({});
 export const ExtractedTextsContext = createContext({});
-
+const defaultExtractedText = () => {
+    const mapText = new Map();
+    for (const [_, listValue] of Object.entries(defaultText.rsd_data)) {
+        for (const [key, value] of Object.entries(listValue)) {
+            mapText.set(key, value);
+        }
+    }
+    console.log("mapText", mapText);
+    return mapText;
+}
+    
 const DataReader = () => {
     const [data, setData] = React.useState(defaultData);
     let jsonConvert = new JsonConvert();
@@ -21,7 +32,7 @@ const DataReader = () => {
     const [Events, setEvents] = React.useState([]);
     const [Provenances, setProvenances] = React.useState({});
     const [extractedFiles, setExtractedFiles] = React.useState([]);
-    const [extractedTexts, setExtractedTexts] = React.useState([]);
+    const [extractedTexts, setExtractedTexts] = React.useState(defaultExtractedText());
 
     useEffect(() => {
         console.log("rawdata", data);

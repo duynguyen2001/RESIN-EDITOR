@@ -11,7 +11,6 @@ import { Modal } from "../pages/Panel";
 import { DataContext, ExtractedTextsContext } from "../pages/DataReader";
 import ZipReader from "./ZipReader";
 import "../assets/css/Menu.css";
-import ProvenanceMap from "../pages/ProvenanceMap";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);

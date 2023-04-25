@@ -16,7 +16,7 @@ import ReactFlow, {
     Position,
 } from "reactflow";
 import dagre from "dagre";
-import { CustomNode } from "./CustomNode";
+import { CustomNode } from "../components/CustomNode";
 import "reactflow/dist/style.css";
 import "./graph.css";
 import { InfoPanel } from "./Panel";
