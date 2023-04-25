@@ -1,19 +1,3 @@
-// import React from "react";
-// import './TextNode.css';
-
-// // const TextNode = ({ data, fileContent }) => {
-// //     console.log("fileContent: ", fileContent);
-// //     const textContent = fileContent.slice(data.offset, data.offset +  data.length);
-// //     console.log("data: ", data);
-// //     console.log("textContent: ", textContent);
-// //     return (
-// //         <div className="text-node">
-// //             <mark>{textContent}</mark>
-// //         </div>
-// //     );
-// // }
-
-// // export default TextNode;
 import React from 'react';
 import './TextNode.css';
 
