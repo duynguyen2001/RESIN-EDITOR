@@ -23,8 +23,8 @@ const defaultExtractedText = () => {
     }
     console.log("mapText", mapText);
     return mapText;
-}
-    
+};
+
 const DataReader = () => {
     const [data, setData] = React.useState(defaultData);
     let jsonConvert = new JsonConvert();
@@ -32,7 +32,9 @@ const DataReader = () => {
     const [Events, setEvents] = React.useState([]);
     const [Provenances, setProvenances] = React.useState({});
     const [extractedFiles, setExtractedFiles] = React.useState([]);
-    const [extractedTexts, setExtractedTexts] = React.useState(defaultExtractedText());
+    const [extractedTexts, setExtractedTexts] = React.useState(
+        defaultExtractedText()
+    );
 
     useEffect(() => {
         console.log("rawdata", data);

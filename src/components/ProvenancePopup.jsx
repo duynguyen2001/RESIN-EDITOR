@@ -12,15 +12,16 @@ const ProvenancePopup = ({ ids, onClose }) => {
         <div
             style={{
                 position: "fixed",
-                top: 10,
-                left: 10,
-                
-                right: 10,
+                top: "10%",
+                left: "10%",
+                right: "10%",
+                bottom: "10%",
                 background: "white",
                 opacity:1,
                 zIndex: 9000,
                 padding: 30,
-
+                border: "2px solid #000",
+                shadow: "0 0 10px #000",
             }}
         >
             <div 

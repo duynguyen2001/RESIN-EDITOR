@@ -5,12 +5,12 @@ import ReactFlow, {
     MiniMap,
     useNodesState,
 } from "reactflow";
-import ProvenanceMapNode from "../components/ProvenanceNode";
+import ProvenanceNode from "../components/ProvenanceNode";
 import { ProvenanceContext } from "../pages/DataReader";
 import {useResizeDetector} from "react-resize-detector";
 import "reactflow/dist/style.css";
 
-const nodeTypes = { provenanceMapNode: ProvenanceMapNode }
+const nodeTypes = { provenanceMapNode: ProvenanceNode }
 
 const ProvenanceMap = ({
     ids = [],
@@ -62,7 +62,7 @@ const ProvenanceMap = ({
             }}
             ref={ref}
         >
-            <ReactFlow
+            {/* <ReactFlow
                 nodes={nodes}
                 snapToGrid={true}
                 snapGrid={[30, 30]}
@@ -74,7 +74,12 @@ const ProvenanceMap = ({
 
                 <MiniMap />
                 <Controls />
-            </ReactFlow>
+            </ReactFlow> */}
+             {nodes.map((item) => (
+        <div key={item.id}>
+            <ProvenanceNode data={item.data} />
+        </div>
+      ))}
         </div>
     );
 };
