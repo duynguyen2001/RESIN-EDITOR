@@ -1,0 +1,23 @@
+/* EditableText.css */
+.text-style-h2 {
+    font-size: 2rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 1.2rem;
+  }
+  
+  .text-style-h3 {
+    font-size: 1.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  
+  .editable-text input.text-style-h2,
+  .editable-text input.text-style-h3 {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    width: 100%;
+  }
+  

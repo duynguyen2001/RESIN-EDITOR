@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { EventNode, Participant } from "../components/Library.tsx";
-import { EntitiesContext } from "./DataReader";
+import { EntitiesContext, EventsContext } from "./DataReader";
 import "./panel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,6 +9,7 @@ import {
     faClose,
 } from "@fortawesome/free-solid-svg-icons";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
+import EditableText from "./EditableText.jsx";
 
 function TableInfoPanel({ data }) {
     const [entitiesMap] = useContext(EntitiesContext);
@@ -113,6 +114,9 @@ export function Modal({ isEnlarged, toggleEnlarged, handleClick }) {
 function EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
     const [showProvenance, setShowProvenance] = useState(false);
+    const [EventNodes, setEventNodes] = useContext(EventsContext);
+    const [name, setName] = useState(data.name);
+    const [description, setDescription] = useState(data.description);
     if (data === undefined) {
         return <></>;
     }
@@ -125,6 +129,24 @@ function EventNodeInfoPanel({ data, onClose }) {
     };
     console.log("event data: ", data);
     const provenanceExisted = data.provenance && data.provenance.length > 0;
+    const handleOnSave = (value, field) => {
+        console.log("value: ", value);
+        console.log("field: ", field);
+
+        setEventNodes((nds) => nds.map((nd) => {
+            if (nd.id === data.id) {
+                nd[field] = value;
+                }
+                return nd;
+                }));
+        if (field == "name") {
+            setName(value);
+        }
+        if (field == "description") {
+            setDescription(value);
+        }
+
+    };
     if (data instanceof EventNode) {
         return (
             <div className={isEnlarged ? "info-panel-enlarge" : "info-panel"}>
@@ -134,8 +156,10 @@ function EventNodeInfoPanel({ data, onClose }) {
                     handleClick={onClose}
                 />
 
-                <h2>{data.name}</h2>
-                <p>{data.description}</p>
+                {data.name &&<EditableText value={name} variant="h2" onSave = {handleOnSave} field="name"/>}
+                {data.description && <EditableText value={description} variant="p" onSave = {handleOnSave} field="description"/>}
+                {/* <h2>{data.name}</h2>
+                <p>{data.description}</p> */}
                 {provenanceExisted && (
                     <a onClick={toggleProvenance}>
                         <u>

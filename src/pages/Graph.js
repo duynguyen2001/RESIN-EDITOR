@@ -1,9 +1,4 @@
-import React, {
-    useCallback,
-    useEffect,
-    useState,
-    createContext,
-} from "react";
+import React, { useCallback, useEffect, useState, createContext } from "react";
 import ReactFlow, {
     addEdge,
     ConnectionLineType,
@@ -21,10 +16,12 @@ import "reactflow/dist/style.css";
 import "./graph.css";
 import { InfoPanel } from "./Panel";
 import Menu from "../components/Menu";
+import { EventNodeType, RenderOptions } from "../components/Library";
 const nodeTypes = {
     custom: CustomNode,
 };
 export const EdgeStyleContext = createContext();
+export const NodeRerenderContext = createContext();
 
 const nodeWidth = 200;
 const nodeHeight = 200;
@@ -89,8 +86,6 @@ export const getLayoutedElements = (
 };
 const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
     const nodes = [];
-    const edges = [];
-    const subgraphs = [];
     if (firstNode) {
         const subgraphs = chosenNodes.map((node) => {
             const subGraphNodes = mapNodes
@@ -182,12 +177,30 @@ export const Graph = ({ eventNodes }) => {
     const [mapNodes, setMapNodes] = useState({});
     const [clickedNode, setClickedNode] = useState(null);
     const [firstNode, setFirstNode] = useState(null);
+    // style related nodes
+    const [nodeChanges, setNodeChanges] = useState(0);
+
+    useEffect(() => {
+        console.log("nodesnodes", nodes);
+    }, [nodes]);
+
+    useEffect(() => {
+        console.log("Change node style");
+        setNodes((nds) => nds.map((node) => {
+            node.renderStrategy = null;
+            node.style = {
+                ...node.style,
+            }
+            return node;
+        }));
+    }, [nodeChanges]);
+
     const [edgeStyle, setEdgeStyle] = useState({
         or: {
             animated: false,
             type: ConnectionLineType.Straight,
             style: {
-                stroke: "blue",
+                stroke: "#0000FF",
                 strokeWidth: 1,
                 strokeDasharray: "5,5",
             },
@@ -195,11 +208,11 @@ export const Graph = ({ eventNodes }) => {
         xor: {
             animated: false,
             type: ConnectionLineType.SmoothStep,
-            label: 'xor',
-            labelStyle:{fill: 'red', fontWeight: 700, fontSize: 32},
+            label: "xor",
+            labelStyle: { fill: "red", fontWeight: 700, fontSize: 32 },
             width: 5,
             style: {
-                stroke: "green",
+                stroke: "#00FF00",
                 strokeDasharray: "4 1 2 3",
                 strokeWidth: 5,
             },
@@ -209,7 +222,7 @@ export const Graph = ({ eventNodes }) => {
             type: ConnectionLineType.Straight,
             width: 5,
             style: {
-                stroke: "black",
+                stroke: "#000",
                 strokeWidth: 5,
             },
         },
@@ -224,22 +237,26 @@ export const Graph = ({ eventNodes }) => {
             strokeWidth: 5,
         },
     });
+
+    // edge style related effects
     useEffect(() => {
-        setEdges(
-            ...edges.map((edge) =>
-                edge.type === "subgroup-edge"
-                    ? {
-                          ...edge,
-                          ...edgeStyle[edge.childrenGate],
-                      }
-                    : edge
+        console.log("Change edge style", edges);
+        setEdges(eds =>
+            eds.map((edge) =>
+                {
+                    const newEdge = {...edge};
+                    newEdge.style = {
+                        ...newEdge.style,
+                    }
+                    return newEdge;
+                }
             )
         );
     }, [edgeStyle]);
 
     useEffect(() => {
         setEdges(
-            ...edges.map((edge) =>
+            edges.map((edge) =>
                 edge.type === "outlink-edge"
                     ? {
                           ...edge,
@@ -263,6 +280,7 @@ export const Graph = ({ eventNodes }) => {
         setClickedNode(null);
     };
 
+    // layout related functions
     useEffect(() => {
         if (eventNodes.length > 0) {
             const firstNode = eventNodes.filter((node) => node.isTopLevel)[0];
@@ -350,7 +368,6 @@ export const Graph = ({ eventNodes }) => {
                     )
             )
         );
-
     }, [chosenNodes]);
 
     const onConnect = useCallback(
@@ -397,39 +414,41 @@ export const Graph = ({ eventNodes }) => {
     const nodeColor = (node) => node.data.renderStrategy.color;
 
     return (
-        <EdgeStyleContext.Provider value={[edgeStyle, setEdgeStyle]}>
-            <div className="layoutflow">
-                <ReactFlowProvider>
-                    <ReactFlow
-                        nodes={nodes}
-                        edges={edges}
-                        onNodesChange={onNodesChange}
-                        onEdgesChange={onEdgesChange}
-                        onNodeClick={onNodeClick}
-                        onConnect={onConnect}
-                        nodeTypes={nodeTypes}
-                        options={options}
-                        fitView
-                    />
-                    <MiniMap
-                        nodes={nodes}
-                        edges={edges}
-                        nodeColor={nodeColor}
-                        nodeStrokeWidth={3}
-                        zoomable
-                        pannable
-                    />
-                    <Controls />
-                </ReactFlowProvider>
-                {clickedNode && (
-                    <InfoPanel
-                        data={clickedNode.data}
-                        onClose={handleClosePanel}
-                    />
-                )}
-                <Menu />
-            </div>
-        </EdgeStyleContext.Provider>
+        <NodeRerenderContext.Provider value={[nodeChanges, setNodeChanges]}>
+            <EdgeStyleContext.Provider value={[edgeStyle, setEdgeStyle]}>
+                <div className="layoutflow">
+                    <ReactFlowProvider>
+                        <ReactFlow
+                            nodes={nodes}
+                            edges={edges}
+                            onNodesChange={onNodesChange}
+                            onEdgesChange={onEdgesChange}
+                            onNodeClick={onNodeClick}
+                            onConnect={onConnect}
+                            nodeTypes={nodeTypes}
+                            options={options}
+                            fitView
+                        />
+                        <MiniMap
+                            nodes={nodes}
+                            edges={edges}
+                            nodeColor={nodeColor}
+                            nodeStrokeWidth={3}
+                            zoomable
+                            pannable
+                        />
+                        <Controls />
+                    </ReactFlowProvider>
+                    {clickedNode && (
+                        <InfoPanel
+                            data={clickedNode.data}
+                            onClose={handleClosePanel}
+                        />
+                    )}
+                    <Menu />
+                </div>
+            </EdgeStyleContext.Provider>
+        </NodeRerenderContext.Provider>
     );
 };
 export default Graph;

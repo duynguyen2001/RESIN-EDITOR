@@ -70,3 +70,10 @@
     max-height: 80vh;
     overflow: auto;
   }
+
+  .legend-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+  }

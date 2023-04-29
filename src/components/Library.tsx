@@ -8,56 +8,49 @@ import { JsonObject, JsonProperty, JsonConvert } from "json2typescript";
 import {
     ForceNumberArray,
     ForceStringArray,
-    NumberOrNumberArrayConverter,
     StringOrStringArrayConverter,
 } from "./TypeScriptUtils";
 import { Handle, Position } from "reactflow";
 import { JsonCustomConvert, JsonConverter } from "json2typescript";
 
-type RenderOptions = {
-    shape?: string;
-    border?: string;
+export type RenderOptions = {
     color?: string;
 };
-interface WDNode {
-    wd_node: string;
-    wd_label?: string;
-    wd_description?: string;
-}
-
-interface TA2WDNode {
-    ta2wd_node: string;
-    ta2wd_label?: string;
-    ta2wd_description?: string;
-}
-abstract class NodeRenderingStrategy {
+export type TreeRenderOptions = {
+    leafNode?: string;
+    parentNode?: string;
+};
+export abstract class NodeRenderingStrategy {
     protected eventNode: EventNode;
-    protected options: RenderOptions = {};
+    static nodeOptions: TreeRenderOptions = {};
 
     abstract get color(): string;
-    get shape(): string {
-        return this.options.shape
-            ? this.options.shape
-            : this.eventNode.subgroupEvents.length > 0
-            ? "diamond"
-            : "circle";
-    }
+
     get border(): string {
-        return this.options.border
-            ? this.options.border
-            : this.eventNode.optional
-            ? "dotted"
-            : "solid";
+        return "solid";
+    }
+
+    get shape(): string {
+        console.log(NodeRenderingStrategy.nodeOptions);
+        if (this.eventNode.subgroupEvents.length > 0) {
+            return NodeRenderingStrategy.nodeOptions.parentNode
+                ? NodeRenderingStrategy.nodeOptions.parentNode
+                : "diamond";
+        } else {
+            return NodeRenderingStrategy.nodeOptions.leafNode
+                ? NodeRenderingStrategy.nodeOptions.leafNode
+                : "circle";
+        }
+    }
+
+    get size(): number {
+        return 50;
     }
     constructor(eventNode: EventNode) {
         this.eventNode = eventNode;
     }
 
-    render(
-        options: RenderOptions = {},
-        isConnectable: boolean | undefined,
-    ): ReactElement {
-
+    render(isConnectable: boolean | undefined): ReactElement {
         return (
             <div>
                 {this.shape === "diamond" ? (
@@ -65,24 +58,23 @@ abstract class NodeRenderingStrategy {
                         className="diamond"
                         style={{
                             position: "relative",
-                            width: "50px",
-                            height: "50px",
-                            margin: "50px auto",
+                            width: `${this.size}px`,
+                            height: `${this.size}px`,
+                            margin: `${this.size}px auto`,
                             border: `2px ${this.border} black`,
                             borderBottomColor: "#000",
                             backgroundColor: this.color,
                             transform: "rotate(45deg)",
-
                         }}
                     >
                         <div
                             className="diamond__inner"
                             style={{
                                 position: "absolute",
-                                top: "-14px",
-                                left: "-14px",
-                                right: "-14px",
-                                bottom: "-14px",
+                                top: `-${this.size * 0.28}px`,
+                                left: `-${this.size * 0.28}px`,
+                                right: `-${this.size * 0.28}px`,
+                                bottom: `-${this.size * 0.28}px`,
                                 transform: "rotate(-45deg)",
                                 backgroundColor: "none",
                             }}
@@ -128,18 +120,19 @@ abstract class NodeRenderingStrategy {
                             />
                         </div>
                     </div>
-                ) : (
-                    <div className="circle_outer"
-                    style={{
-                        position: "relative",
-                        width: 50,
-                        height: 50,
-                        backgroundColor: this.color || "white",
-                        border: `3px ${this.border} black`,
-                        borderRadius: "50%",
-                        alignItems: "center",
-                        justifyContent: "center",
-                    }}>
+                ) : this.shape === "square" ? (
+                    <div
+                        className="square"
+                        style={{
+                            position: "relative",
+                            width: `${this.size}px`,
+                            height: `${this.size}px`,
+                            margin: `${this.size}px auto`,
+                            border: `2px ${this.border} black`,
+                            borderBottomColor: "#000",
+                            backgroundColor: this.color,
+                        }}
+                    >
                         <Handle
                             type="target"
                             position={Position.Top}
@@ -181,21 +174,73 @@ abstract class NodeRenderingStrategy {
                             }
                             isConnectable={isConnectable}
                         />
-                        
+                    </div>
+                ) : (
+                    <div
+                        className="circle_outer"
+                        style={{
+                            position: "relative",
+                            width: this.size,
+                            height: this.size,
+                            backgroundColor: this.color || "white",
+                            border: `3px ${this.border} black`,
+                            borderRadius: "50%",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <Handle
+                            type="target"
+                            position={Position.Top}
+                            id={this.eventNode.id}
+                            style={{ background: "#555" }}
+                            onConnect={(params) =>
+                                console.log("handle onConnect", params)
+                            }
+                            isConnectable={isConnectable}
+                        />
+                        <Handle
+                            type="source"
+                            position={Position.Bottom}
+                            id={this.eventNode.id}
+                            style={{ background: "#555" }}
+                            onConnect={(params) =>
+                                console.log("handle onConnect", params)
+                            }
+                            isConnectable={isConnectable}
+                        />
+                        <Handle
+                            type="target"
+                            id={this.eventNode.id + "_left"}
+                            position={Position.Left}
+                            style={{ background: "#555" }}
+                            onConnect={(params) =>
+                                console.log("handle onConnect", params)
+                            }
+                            isConnectable={isConnectable}
+                        />
+
+                        <Handle
+                            type="source"
+                            position={Position.Right}
+                            id={this.eventNode.id + "_right"}
+                            style={{ background: "#555" }}
+                            onConnect={(params) =>
+                                console.log("handle onConnect", params)
+                            }
+                            isConnectable={isConnectable}
+                        />
                     </div>
                 )}
             </div>
         );
     }
-
-    updateOptions(options: RenderOptions): void {
-        this.options = Object.assign({}, this.options, options);
-    }
 }
 
-class PredictedNodeStrategy extends NodeRenderingStrategy {
-    predictionProvenance:  string[];
+export class PredictedNodeStrategy extends NodeRenderingStrategy {
+    predictionProvenance: string[];
     confidence: number[];
+    static options: RenderOptions = {};
 
     constructor(
         eventNode: EventNode,
@@ -208,28 +253,41 @@ class PredictedNodeStrategy extends NodeRenderingStrategy {
     }
 
     get color(): string {
-        return "yellow";
+        return PredictedNodeStrategy.options.color
+            ? PredictedNodeStrategy.options.color
+            : "yellow";
     }
 }
 
-class DetectedNodeStrategy extends NodeRenderingStrategy {
+export class DetectedNodeStrategy extends NodeRenderingStrategy {
     provenance: string[];
     confidence: number[];
+    static options: RenderOptions = {};
 
-    constructor(eventNode: EventNode, provenance: string[], confidence: number[]) {
+    constructor(
+        eventNode: EventNode,
+        provenance: string[],
+        confidence: number[]
+    ) {
         super(eventNode);
         this.provenance = provenance;
         this.confidence = confidence;
     }
 
     get color(): string {
-        return "red";
+        return DetectedNodeStrategy.options.color
+            ? DetectedNodeStrategy.options.color
+            : "red";
+    }
+    get border(): string {
+        return this.eventNode.optional ? "dotted" : "solid";
     }
 }
 
-class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
+export class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
     provenance: string | string[];
     confidence: number | number[];
+    static options: RenderOptions = {};
 
     constructor(
         eventNode: EventNode,
@@ -242,10 +300,12 @@ class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
     }
 
     get color(): string {
-        return "blue";
+        return SourceOnlyNodeStrategy.options.color
+            ? SourceOnlyNodeStrategy.options.color
+            : "blue";
     }
 }
- 
+
 @JsonObject("Value")
 export class Value {
     @JsonProperty("@id", String)
@@ -314,7 +374,7 @@ export class Participant {
     roleName: string;
 
     @JsonProperty("values", ValueOrValueArrayConverter, true)
-    values: Value | Value[] =[];
+    values: Value | Value[] = [];
 
     constructor(id: string, entity: string, roleName: string, values: Value) {
         this.id = id;
@@ -322,16 +382,18 @@ export class Participant {
         this.roleName = roleName;
         this.values = values;
     }
-     render(
+    render(
         options: RenderOptions = {},
         isConnectable: boolean | undefined
     ): ReactElement {
         return (
-            <div style={{
-                width:50,
-                height:50,
-                backgroundColor: "green",
-            }}>
+            <div
+                style={{
+                    width: 50,
+                    height: 50,
+                    backgroundColor: "green",
+                }}
+            >
                 <Handle
                     type="target"
                     position={Position.Top}
@@ -355,8 +417,14 @@ export class Participant {
                 <text>ID: {this.id}</text>
                 <text>Entity: {this.entity}</text>
                 <text>RoleName: {this.roleName}</text>
-            </div>);
+            </div>
+        );
     }
+}
+export enum EventNodeType {
+    Predicted,
+    SourceOnly,
+    Detected,
 }
 
 @JsonObject("EventNode")
@@ -423,6 +491,14 @@ export class EventNode {
 
     isParticipantOpen: boolean = true;
 
+    get type(): EventNodeType {
+        if (this.predictionProvenance !== undefined) {
+            return EventNodeType.Predicted;
+        } else if (this.ta1ref === "none") {
+            return EventNodeType.SourceOnly;
+        }
+        return EventNodeType.Detected;
+    }
 
     constructor(
         id: string,
@@ -444,7 +520,7 @@ export class EventNode {
         ta2wdNode?: string,
         ta2wdLabel?: string,
         ta2wdDescription?: string,
-        optional?: boolean,
+        optional?: boolean
     ) {
         this.id = id;
         this.ta1ref = ta1ref || "none";
@@ -469,13 +545,13 @@ export class EventNode {
     }
 
     get renderStrategy(): NodeRenderingStrategy {
-        if (this.predictionProvenance !== undefined) {
+        if (this.type === EventNodeType.Predicted) {
             return new PredictedNodeStrategy(
                 this,
                 this.predictionProvenance as string[],
                 this.confidence as number[]
             );
-        } else if (this.ta1ref === "none") {
+        } else if (this.type === EventNodeType.SourceOnly) {
             return new SourceOnlyNodeStrategy(
                 this,
                 this.provenance as string[],
@@ -497,26 +573,10 @@ export class EventNode {
         // console.log("Rendering node: " + this.id);
         return (
             <div>
-                {this.renderStrategy.render(options, isConnectable)}
+                {this.renderStrategy.render(isConnectable)}
                 <div className="text-lg font-bold">{this.name}</div>
             </div>
         );
-    }
-
-    getRenderProperties(options: RenderOptions = {}): RenderOptions {
-        const shape = options.shape
-            ? options.shape
-            : this.subgroupEvents.length > 0
-            ? "diamond"
-            : "circle";
-        const border = options.border
-            ? options.border
-            : this.optional
-            ? "dotted"
-            : "solid";
-        const color = options.color ? options.color : this.renderStrategy.color;
-
-        return { shape, border, color };
     }
 }
 
@@ -596,11 +656,8 @@ interface ProvenanceData {
     [key: string]: any;
 }
 
-class ProvenanceList{
+class ProvenanceList {
     provenanceList: ProvenanceEntity[] = [];
-
-
-
 }
 
 export function createProvenanceEntity(
@@ -634,7 +691,7 @@ export class Entity {
     wd_description?: string | [string];
 
     @JsonProperty("ta2wd_node", StringOrStringArrayConverter, true)
-    ta2wd_node?: string| [string];
+    ta2wd_node?: string | [string];
 
     @JsonProperty("ta2wd_label", String, true)
     ta2wd_label?: string | [string];
@@ -645,23 +702,18 @@ export class Entity {
     constructor(
         id: string,
         wd_node: string = undefined!,
-        wd_label: string =undefined!,
+        wd_label: string = undefined!,
         wd_description: string = undefined!,
         ta2wd_node: string = undefined!,
         ta2wd_label: string = undefined!,
-        ta2wd_description: string  = undefined!
+        ta2wd_description: string = undefined!
     ) {
         this.id = id;
         this.wd_node = wd_node;
         this.wd_label = wd_label;
         this.wd_description = wd_description;
-
         this.ta2wd_node = ta2wd_node;
         this.ta2wd_label = ta2wd_label;
         this.ta2wd_description = ta2wd_description;
-
     }
-
-
 }
-

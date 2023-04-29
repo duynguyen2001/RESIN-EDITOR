@@ -14,6 +14,7 @@ export const ProvenanceContext = createContext([]);
 export const DataContext = createContext({});
 export const ExtractedFilesContext = createContext({});
 export const ExtractedTextsContext = createContext({});
+export const EventsContext = createContext([]);
 const defaultExtractedText = () => {
     const mapText = new Map();
     for (const [_, listValue] of Object.entries(defaultText.rsd_data)) {
@@ -81,6 +82,7 @@ const DataReader = () => {
                 <ProvenanceContext.Provider
                     value={[Provenances, setProvenances]}
                 >
+                    <EventsContext.Provider value={[Events, setEvents]}>
                     <EntitiesContext.Provider value={[Entities, setEntities]}>
                         <ExtractedTextsContext.Provider
                             value={[extractedTexts, setExtractedTexts]}
@@ -92,6 +94,7 @@ const DataReader = () => {
                             </ExtractedFilesContext.Provider>
                         </ExtractedTextsContext.Provider>
                     </EntitiesContext.Provider>
+                    </EventsContext.Provider>
                 </ProvenanceContext.Provider>
             </DataContext.Provider>
         </div>
