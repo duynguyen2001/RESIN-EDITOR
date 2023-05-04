@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { EventNode, Participant } from "../components/Library.tsx";
-import { EntitiesContext, EventsContext } from "./DataReader";
+import { EntitiesContext, EventsContext, ProvenanceContext } from "./DataReader";
 import "./panel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,6 +13,7 @@ import EditableText from "./EditableText.jsx";
 
 function TableInfoPanel({ data }) {
     const [entitiesMap] = useContext(EntitiesContext);
+    const [provenance, _] = useContext(ProvenanceContext);
     if (data === undefined) {
         return <></>;
     }
@@ -52,8 +53,8 @@ function TableInfoPanel({ data }) {
                 <table>
                     <thead>
                         <tr>
-                            <th>Participant</th>
-                            <th>Value</th>
+                            <th>Role</th>
+                            <th>Filler</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -115,8 +116,6 @@ function EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
     const [showProvenance, setShowProvenance] = useState(false);
     const [EventNodes, setEventNodes] = useContext(EventsContext);
-    const [name, setName] = useState(data.name);
-    const [description, setDescription] = useState(data.description);
     if (data === undefined) {
         return <></>;
     }
@@ -133,19 +132,14 @@ function EventNodeInfoPanel({ data, onClose }) {
         console.log("value: ", value);
         console.log("field: ", field);
 
-        setEventNodes((nds) => nds.map((nd) => {
-            if (nd.id === data.id) {
-                nd[field] = value;
+        setEventNodes((nds) =>
+            nds.map((nd) => {
+                if (nd.id === data.id) {
+                    nd[field] = value;
                 }
                 return nd;
-                }));
-        if (field == "name") {
-            setName(value);
-        }
-        if (field == "description") {
-            setDescription(value);
-        }
-
+            })
+        );
     };
     if (data instanceof EventNode) {
         return (
@@ -155,11 +149,24 @@ function EventNodeInfoPanel({ data, onClose }) {
                     toggleEnlarged={toggleEnlarged}
                     handleClick={onClose}
                 />
+                
 
-                {data.name &&<EditableText value={name} variant="h2" onSave = {handleOnSave} field="name"/>}
-                {data.description && <EditableText value={description} variant="p" onSave = {handleOnSave} field="description"/>}
-                {/* <h2>{data.name}</h2>
-                <p>{data.description}</p> */}
+                {data.name && (
+                    <EditableText
+                        values={data.name}
+                        variant="h2"
+                        onSave={handleOnSave}
+                        field="name"
+                    />
+                )}
+                {data.description && (
+                    <EditableText
+                        values={data.description}
+                        variant="p"
+                        onSave={handleOnSave}
+                        field="description"
+                    />
+                )}
                 {provenanceExisted && (
                     <a onClick={toggleProvenance}>
                         <u>
@@ -173,8 +180,35 @@ function EventNodeInfoPanel({ data, onClose }) {
                         onClose={toggleProvenance}
                     />
                 )}
+                {data.wdLabel &&
+                    data.wdLabel !== null &&
+                    data.wdLabel !== "null" && (
+                        <details open>
+                            <summary
+                                style={{
+                                    fontWeight: "bold",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                Event Type
+                            </summary>
+                            <EditableText
+                                values={data.wdLabel}
+                                variant="h3"
+                                onSave={handleOnSave}
+                                field="wdLabel"
+                            />
+                            <EditableText
+                                values={data.wdDescription}
+                                variant="p"
+                                onSave={handleOnSave}
+                                field="wdDescription"
+                            />
+                        </details>
+                    )}
+                
                 {data.participants && data.participants.length > 0 && (
-                    <details>
+                    <details open>
                         <summary
                             style={{
                                 fontWeight: "bold",

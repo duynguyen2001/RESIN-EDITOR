@@ -220,7 +220,7 @@ function SeeLegendPanel() {
             ...NodeRenderingStrategy.nodeOptions,
             [key]: e.target.value,
         }
-        setNodeRerender(nodeRerender + 1); 
+        setNodeRerender((nodeRerender + 1)% 2); 
     };
 
     const handleEdgeStyleChange = (e, childrenGate, key) => {
@@ -281,7 +281,7 @@ function SeeLegendPanel() {
             {Object.entries(shapes).map(([key, value]) => (
                 <div key={key}>
                     
-                    <h4>{key === "parentNode"? "Expandable Node": "Leaf Node"}</h4>
+                    <h4>{key === "parentNode"? "Chapter Event": "Primitive Event"}</h4>
                     {key === "parentNode"? <CustomNode data={parentNode}/> : <CustomNode data={new EventNode(1)}/>}
                     <select
                         value={value}

@@ -15,6 +15,7 @@ import { JsonCustomConvert, JsonConverter } from "json2typescript";
 
 export type RenderOptions = {
     color?: string;
+    pattern?: string;
 };
 export type TreeRenderOptions = {
     leafNode?: string;

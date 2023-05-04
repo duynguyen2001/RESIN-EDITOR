@@ -1,23 +1,43 @@
 /* EditableText.css */
-.text-style-h2 {
-    font-size: 2rem;
-    font-weight: 500;
-    line-height: 1.2;
-    margin-bottom: 1.2rem;
-  }
+.text-style{
+    width: 100%;
+    height: fit-content;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  font-style: italic;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
   
-  .text-style-h3 {
-    font-size: 1.75rem;
-    font-weight: 500;
-    line-height: 1.2;
-    margin-bottom: 1rem;
-  }
-  
-  .editable-text input.text-style-h2,
-  .editable-text input.text-style-h3 {
+}
+.text-style::placeholder{
+
+  color: #999;
+  font-style: italic;
+}
+.editable-text input.text-style-h2,
+.editable-text input.text-style-h3 {
     border: none;
     outline: none;
     background-color: transparent;
     width: 100%;
-  }
-  
+}
+.editable-text {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.edit-button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+.save-button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}

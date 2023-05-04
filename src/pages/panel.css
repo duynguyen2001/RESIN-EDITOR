@@ -98,3 +98,11 @@ th, td {
     background-color: #000000;
     color: #FFFFFF;
   }
+  summary:after {
+    content: "";
+    display: block;
+    border-bottom: 1px solid black;
+  }
+  details{
+    margin-bottom: 20px;
+  }
