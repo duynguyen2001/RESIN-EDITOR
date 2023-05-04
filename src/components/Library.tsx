@@ -182,7 +182,6 @@ export abstract class NodeRenderingStrategy {
                     </div>
                 ) : (
                     <div
-                        className="circle_outer"
                         style={{
                             position: "relative",
                             width: this.size,
@@ -190,8 +189,6 @@ export abstract class NodeRenderingStrategy {
                             backgroundColor: this.color || "white",
                             border: `3px ${this.border} black`,
                             borderRadius: "50%",
-                            alignItems: "center",
-                            justifyContent: "center",
                         }}
                     >
                         <Handle
