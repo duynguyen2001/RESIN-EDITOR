@@ -15,6 +15,7 @@ import { DetectedNodeStrategy, PredictedNodeStrategy, SourceOnlyNodeStrategy, No
 import { ReactFlowProvider } from "reactflow";
 import { NodeRerenderContext, EdgeStyleContext } from "../pages/Graph";
 import CustomNode from "./CustomNode";
+import ProvenancePopup from "./ProvenancePopup";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -324,6 +325,9 @@ function OptionChangePanel() {
     return (
         <div>
             <h2>Option Change</h2>
+            <ReactFlowProvider>
+            <ProvenancePopup ids={["resin:Provenance/10477/", "resin:Provenance/10469/","resin:Provenance/10477/", ]}/>
+            </ReactFlowProvider>
         </div>
     );
 }

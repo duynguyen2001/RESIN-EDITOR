@@ -22,6 +22,7 @@ const ProvenancePopup = ({ ids, onClose }) => {
                 padding: 30,
                 border: "2px solid #000",
                 shadow: "0 0 10px #000",
+                overflowY:"scroll"
             }}
         >
             <div 

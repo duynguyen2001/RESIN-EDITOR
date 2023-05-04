@@ -9,7 +9,7 @@ const EditableText = ({values, field, onSave, variant,...props}) => {
   useEffect(() => {
     setValue(values);
   }, [values]);
-  
+
   const handleEditClick = () => {
     setIsEditMode(true);
   };
@@ -33,7 +33,6 @@ const EditableText = ({values, field, onSave, variant,...props}) => {
           <button
             className="edit-button"
             onClick={handleEditClick}
-            style={{  }}
           >
             <i className="fa fa-pencil" />
           </button>

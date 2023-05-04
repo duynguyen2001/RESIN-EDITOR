@@ -3,7 +3,8 @@ table {
     width: 100%;
 }
 
-th, td {
+th,
+td {
     text-align: left;
     padding: 8px;
     text-align: left;
@@ -21,8 +22,8 @@ th, td {
     border: 1px solid black;
     z-index: 998;
     box-shadow: 2px 2px 5px grey;
-  }
-  .info-panel-enlarge {
+}
+.info-panel-enlarge {
     position: fixed;
     top: 10px;
     right: 10px;
@@ -35,8 +36,8 @@ th, td {
     border: 1px solid black;
     box-shadow: 2px 2px 5px grey;
     z-index: 998;
-  }
-  
+}
+
 .close-button {
     position: absolute;
     top: 5px;
@@ -47,19 +48,19 @@ th, td {
     color: black;
     text-align: center;
     cursor: pointer;
-  }
+}
 
-  .modal {
+.modal {
     position: relative;
     height: "10px";
     display: flex;
     justify-content: right;
     align-items: center;
     z-index: 999;
-  }
-  
-  .enlarge-button {
-    background-color: #FFFFFF;
+}
+
+.enlarge-button {
+    background-color: #ffffff;
     color: #000000;
     padding: 8px;
     border: none;
@@ -67,24 +68,20 @@ th, td {
     font-size: 10px;
     font-weight: bold;
     cursor: pointer;
-  }
-  
-  .enlarge-button:hover {
-    background-color: #000000;
-    color: #FFFFFF;
-  }
-  
-  
-  .enlarged .enlarge-button:hover {
-    background-color: #FFFFFF;
-    color: #000000;
-  }
-  
-  
+}
 
+.enlarge-button:hover {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.enlarged .enlarge-button:hover {
+    background-color: #ffffff;
+    color: #000000;
+}
 
 .exit-button {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     color: #000000;
     padding: 8px;
     border: none;
@@ -92,17 +89,22 @@ th, td {
     font-size: 10px;
     font-weight: bold;
     cursor: pointer;
-  }
-  
-  .exit-button:hover {
+}
+
+.exit-button:hover {
     background-color: #000000;
-    color: #FFFFFF;
-  }
-  summary:after {
+    color: #ffffff;
+}
+summary:after {
     content: "";
     display: block;
     border-bottom: 1px solid black;
-  }
-  details{
+}
+details {
     margin-bottom: 20px;
-  }
+}
+.clickable-text {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: underline;
+}

@@ -1,6 +1,10 @@
 import React, { useContext, useState, useRef } from "react";
 import { EventNode, Participant } from "../components/Library.tsx";
-import { EntitiesContext, EventsContext, ProvenanceContext } from "./DataReader";
+import {
+    EntitiesContext,
+    EventsContext,
+    ProvenanceContext,
+} from "./DataReader";
 import "./panel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,24 +18,38 @@ import { NodeRerenderContext } from "./Graph.js";
 
 function TableInfoPanel({ data }) {
     const [entitiesMap] = useContext(EntitiesContext);
-    const [provenance, _] = useContext(ProvenanceContext);
+    const [showProvenance, setShowProvenance] = useState(false);
+    const [currentProvenance, setCurrentProvenance] = useState(null);
+
     if (data === undefined) {
         return <></>;
     }
+    const closeProvenance = () => {
+        setShowProvenance(false);
+    };
+    const openProvenanceMap = (provenanceIds) => {
+        // Add logic here to open the provenance map with the specified provenanceId
+        // console.log(`Opening provenance map for id: ${provenanceId}`);
+        if (provenanceIds instanceof Array && provenanceIds.length > 0) {
+            setCurrentProvenance(provenanceIds);
+            setShowProvenance(true);
+        } else if (provenanceIds instanceof String) {
+            setCurrentProvenance([provenanceIds]);
+            setShowProvenance(true);
+        }
+    };
 
-    if (
-        data instanceof Array &&
-        data.length > 0 &&
-        data[0] instanceof Participant
-    ) {
-        const displayParticipantArray = data.map((participant) => {
+    const getDisplayParticipantArray = (data) => {
+        return data.map((participant) => {
             const entityObject = entitiesMap.get(
                 participant.entity ? participant.entity : participant.ta2entity
             );
             const values = [];
+
             if (entityObject.name) {
                 values.push(entityObject.name);
             }
+
             if (participant.values && participant.values instanceof String) {
                 values.push(participant.values);
             } else if (
@@ -40,15 +58,48 @@ function TableInfoPanel({ data }) {
             ) {
                 participant.values?.forEach((value) => {
                     const valueEntity = entitiesMap.get(value.ta2entity);
-                    values.push(valueEntity.name);
+                    if (value.provenance) {
+                        // Add a clickable text to open the provenance map
+                        values.push(
+                            <span
+                                key={value.ta2entity}
+                                className="clickable-text"
+                                onClick={() =>
+                                    openProvenanceMap(value.provenance)
+                                }
+                            >
+                                {valueEntity.name}
+                            </span>
+                        );
+                    } else {
+                        values.push(valueEntity.name);
+                    }
                 });
             }
+
             return {
                 id: participant.id,
-                entities: values && values.length > 0 ? values.join(", ") : "-",
+                entities:
+                    values && values.length > 0
+                        ? values.map((value, index) => (
+                              <React.Fragment key={index}>
+                                  {index > 0 && ", "}
+                                  {value}
+                              </React.Fragment>
+                          ))
+                        : "-",
                 roleName: participant.roleName,
             };
         });
+    };
+
+    if (
+        data instanceof Array &&
+        data.length > 0 &&
+        data[0] instanceof Participant
+    ) {
+        const displayParticipantArray = getDisplayParticipantArray(data);
+
         return (
             <div>
                 <table>
@@ -67,10 +118,18 @@ function TableInfoPanel({ data }) {
                         ))}
                     </tbody>
                 </table>
+                {showProvenance && (
+                    <ProvenancePopup
+                        ids={currentProvenance}
+                        onClose={closeProvenance}
+                    />
+                )}
             </div>
         );
     }
+
     const columns = Object.keys(data[0]);
+
     return (
         <div>
             <table>
@@ -81,7 +140,6 @@ function TableInfoPanel({ data }) {
                         ))}
                     </tr>
                 </thead>
-
                 <tbody>
                     {data.map((item, index) => (
                         <tr key={index}>
@@ -141,8 +199,8 @@ function EventNodeInfoPanel({ data, onClose }) {
             }
             return nd;
         });
-        
-        setNodeRerender((nodeRerender + 1)% 2); 
+
+        setNodeRerender((nodeRerender + 1) % 2);
     };
     if (data instanceof EventNode) {
         return (
@@ -152,7 +210,6 @@ function EventNodeInfoPanel({ data, onClose }) {
                     toggleEnlarged={toggleEnlarged}
                     handleClick={onClose}
                 />
-                
 
                 {data.name && (
                     <EditableText
@@ -209,7 +266,7 @@ function EventNodeInfoPanel({ data, onClose }) {
                             />
                         </details>
                     )}
-                
+
                 {data.participants && data.participants.length > 0 && (
                     <details open>
                         <summary

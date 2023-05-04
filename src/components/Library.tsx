@@ -33,7 +33,6 @@ export abstract class NodeRenderingStrategy {
     }
 
     get shape(): string {
-        console.log(NodeRenderingStrategy.nodeOptions);
         if (this.eventNode.subgroupEvents.length > 0) {
             return NodeRenderingStrategy.nodeOptions.parentNode
                 ? NodeRenderingStrategy.nodeOptions.parentNode

@@ -3,14 +3,14 @@ import React, { useContext,memo } from "react";
 import { Handle, NodeResizer } from "reactflow";
 import { ExtractedFilesContext, ExtractedTextsContext } from "../pages/DataReader";
 import ImageNode from "./ImageNode";
-import TextNode from "./TextNode";
+import EditableTextNode from "./TextNode";
 
 const ProvenanceNode = ({ data }) => {
     const [extractedFiles, _] = useContext(
         ExtractedFilesContext
     );
 
-    const [extractedTexts, __] = useContext(
+    const [extractedTexts, setExtractedTexts] = useContext(
         ExtractedTextsContext
     );
 
@@ -35,8 +35,8 @@ const ProvenanceNode = ({ data }) => {
         if (textContent) {
             if (data.mediaType.startsWith("text/")) {
                 return (
-                    <TextNode data={data} fileContent={textContent} />
-                );
+                    <EditableTextNode data={data} fileContent={textContent} />
+                    );
             }
         }
     }
