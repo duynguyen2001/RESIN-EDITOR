@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef } from "react";
 import { EventNode, Participant } from "../components/Library.tsx";
 import { EntitiesContext, EventsContext, ProvenanceContext } from "./DataReader";
 import "./panel.css";
@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import EditableText from "./EditableText.jsx";
+import { NodeRerenderContext } from "./Graph.js";
 
 function TableInfoPanel({ data }) {
     const [entitiesMap] = useContext(EntitiesContext);
@@ -115,7 +116,10 @@ export function Modal({ isEnlarged, toggleEnlarged, handleClick }) {
 function EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
     const [showProvenance, setShowProvenance] = useState(false);
-    const [EventNodes, setEventNodes] = useContext(EventsContext);
+    const [EventNodes, _] = useContext(EventsContext);
+    const eventNodeRef = useRef(EventNodes);
+    const [nodeRerender, setNodeRerender] = useContext(NodeRerenderContext);
+
     if (data === undefined) {
         return <></>;
     }
@@ -131,15 +135,14 @@ function EventNodeInfoPanel({ data, onClose }) {
     const handleOnSave = (value, field) => {
         console.log("value: ", value);
         console.log("field: ", field);
-
-        setEventNodes((nds) =>
-            nds.map((nd) => {
-                if (nd.id === data.id) {
-                    nd[field] = value;
-                }
-                return nd;
-            })
-        );
+        eventNodeRef.current = eventNodeRef.current.map((nd) => {
+            if (nd.id === data.id) {
+                nd[field] = value;
+            }
+            return nd;
+        });
+        
+        setNodeRerender((nodeRerender + 1)% 2); 
     };
     if (data instanceof EventNode) {
         return (

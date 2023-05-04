@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useState, createContext } from "react";
+import React, {
+    useCallback,
+    useEffect,
+    useState,
+    createContext,
+    useMemo,
+} from "react";
 import ReactFlow, {
     addEdge,
     ConnectionLineType,
@@ -186,13 +192,15 @@ export const Graph = ({ eventNodes }) => {
 
     useEffect(() => {
         console.log("Change node style");
-        setNodes((nds) => nds.map((node) => {
-            node.renderStrategy = null;
-            node.style = {
-                ...node.style,
-            }
-            return node;
-        }));
+        setNodes((nds) =>
+            nds.map((node) => {
+                node.renderStrategy = null;
+                node.style = {
+                    ...node.style,
+                };
+                return node;
+            })
+        );
     }, [nodeChanges]);
 
     const [edgeStyle, setEdgeStyle] = useState({
@@ -241,16 +249,14 @@ export const Graph = ({ eventNodes }) => {
     // edge style related effects
     useEffect(() => {
         console.log("Change edge style", edges);
-        setEdges(eds =>
-            eds.map((edge) =>
-                {
-                    const newEdge = {...edge};
-                    newEdge.style = {
-                        ...newEdge.style,
-                    }
-                    return newEdge;
-                }
-            )
+        setEdges((eds) =>
+            eds.map((edge) => {
+                const newEdge = { ...edge };
+                newEdge.style = {
+                    ...newEdge.style,
+                };
+                return newEdge;
+            })
         );
     }, [edgeStyle]);
 
@@ -279,11 +285,10 @@ export const Graph = ({ eventNodes }) => {
     const handleClosePanel = () => {
         setClickedNode(null);
     };
-
     // layout related functions
     useEffect(() => {
         if (eventNodes.length > 0) {
-            const firstNode = eventNodes.filter((node) => node.isTopLevel)[0];
+            const firstNode = eventNodes.find((node) => node.isTopLevel);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
@@ -294,21 +299,34 @@ export const Graph = ({ eventNodes }) => {
         }
     }, [eventNodes]);
 
-    const getAllSubgroupEvents = (node) => {
-        const tractNodes = [node];
-        const objectNode = mapNodes.get(node);
-        if (mapNodes.get(node).subgroupEvents === undefined) {
-            return tractNodes;
-        }
-        if (node && chosenNodes.includes(node)) {
-            for (const child of objectNode.subgroupEvents) {
-                const childNode = mapNodes.get(child).id;
-                tractNodes.push(...getAllSubgroupEvents(childNode));
+    const getAllSubgroupEvents = useCallback(
+        (node) => {
+            const tractNodes = [node];
+            const objectNode = mapNodes.get(node);
+            if (mapNodes.get(node).subgroupEvents === undefined) {
+                return tractNodes;
             }
-        }
+            if (node && chosenNodes.includes(node)) {
+                for (const child of objectNode.subgroupEvents) {
+                    const childNode = mapNodes.get(child).id;
+                    tractNodes.push(...getAllSubgroupEvents(childNode));
+                }
+            }
 
-        return tractNodes;
-    };
+            return tractNodes;
+        },
+        [mapNodes, chosenNodes]
+    );
+
+    const memoizedAllSubgroupEvents = useMemo(() => {
+        const memo = new Map();
+        return (node) => {
+            if (!memo.has(node)) {
+                memo.set(node, getAllSubgroupEvents(node));
+            }
+            return memo.get(node);
+        };
+    }, [getAllSubgroupEvents]);
 
     useEffect(() => {
         if (firstNode === null || mapNodes.size === 0) {

@@ -138,11 +138,11 @@ function AddJSONPanel() {
 
     return (
         <div>
-            <h2>Upload New JSON File</h2>
-            <h3>JSON Event File</h3>
+            <h2>Upload</h2>
+            <h3>RESIN TA2 File</h3>
             {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
             <input type="file" accept=".json" onChange={handleJSONUpload} />
-            <h3>JSON Provenance Text File</h3>
+            <h3>Provenance Source Text File</h3>
             {extractedTexts && (
                 <h4>Number of Extracted Text: {extractedTexts.size}</h4>
             )}
@@ -211,7 +211,7 @@ function SeeLegendPanel() {
             }
             console.log(new PredictedNodeStrategy())
         }
-        setNodeRerender(nodeRerender + 1); 
+        setNodeRerender((nodeRerender + 1)%2); 
     };
 
     const handleShapeChange = (e, key) => {

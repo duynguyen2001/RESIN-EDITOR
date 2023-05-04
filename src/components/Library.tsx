@@ -12,6 +12,7 @@ import {
 } from "./TypeScriptUtils";
 import { Handle, Position } from "reactflow";
 import { JsonCustomConvert, JsonConverter } from "json2typescript";
+import './Library.css';
 
 export type RenderOptions = {
     color?: string;
@@ -53,7 +54,10 @@ export abstract class NodeRenderingStrategy {
 
     render(isConnectable: boolean | undefined): ReactElement {
         return (
-            <div>
+            <div className="hover-container">
+                <span className="hover-text">
+                    {this.eventNode.description}
+                </span>
                 {this.shape === "diamond" ? (
                     <div
                         className="diamond"
