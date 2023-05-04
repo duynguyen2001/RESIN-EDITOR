@@ -1,11 +1,15 @@
 // EditableText.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./EditableText.css";
 
 const EditableText = ({values, field, onSave, variant,...props}) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [value, setValue] = useState(values);
 
+  useEffect(() => {
+    setValue(values);
+  }, [values]);
+  
   const handleEditClick = () => {
     setIsEditMode(true);
   };
