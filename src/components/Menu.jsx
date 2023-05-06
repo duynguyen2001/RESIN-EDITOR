@@ -326,7 +326,7 @@ function OptionChangePanel() {
         <div>
             <h2>Option Change</h2>
             <ReactFlowProvider>
-            <ProvenancePopup ids={["resin:Provenance/10477/", "resin:Provenance/10469/","resin:Provenance/10477/", ]}/>
+            <ProvenancePopup ids={["resin:Provenance/10478/", "resin:Provenance/10469/","resin:Provenance/10477/", ]}/>
             </ReactFlowProvider>
         </div>
     );
