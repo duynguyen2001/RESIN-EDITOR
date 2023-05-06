@@ -1,9 +1,6 @@
 // ImageNode.jsx
 import React from "react";
-import { Handle, NodeResizer } from "reactflow";
-import { useMeasure } from "react-use";
-import { useState, useEffect, useContext, memo } from "react";
-import Draggable from "react-draggable";
+import { useState, useEffect, useContext, memo, useRef } from "react";
 import { ProvenanceContext } from "../pages/DataReader";
 import { Rnd } from "react-rnd";
 
@@ -12,8 +9,6 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
     // Calculate the bounding box dimensions and position
     const [x, y, x_end, y_end] = data.boundingBox;
     const [provenances, setProvenances] = useContext(ProvenanceContext);
-
-    const [width, setWidth] = useState(0);
     const [scale, setScale] = useState(1);
     const [boundingBoxWidth, setBoundingBoxWidth] = useState(x_end - x);
     const [boundingBoxHeight, setBoundingBoxHeight] = useState(y_end - y);
@@ -41,7 +36,6 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
         const originalHeight = event.target.naturalHeight;
         console.log("originalWidth: ", originalWidth);
         console.log("originalHeight: ", originalHeight);
-        setWidth(originalWidth);
         setScale(containerWidth / originalWidth);
     };
 
@@ -100,8 +94,6 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
                     position: "relative",
                     width: containerWidth,
                     height: "auto",
-                    padding: 2,
-                    background: "yellow",
                 }}
             >
                 <img
@@ -114,7 +106,7 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
                         background: "blue",
                     }}
                 />
-                {editing ? boundingBoxWidth && boundingBoxHeight && boundingBoxX && boundingBoxY && (
+                {editing ? (
                     <Rnd
                         style={{
                             border: "1px solid red",
@@ -132,7 +124,12 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
                     <div className="bounding-box" style={style}></div>
                 )}
             </div>
-            <div>
+            <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
                 <button
                     onClick={() => setEditing(!editing)}
                     style={{
@@ -156,18 +153,35 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
     );
 }
 
-const ImageNode = ({ data, fileContent, scale = 0.5 }) => {
+const ImageNode = ({ data, fileContent }) => {
+  const divRef = useRef(null);
+  const [divWidth, setDivWidth] = useState(0);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (divRef.current) {
+        setDivWidth(divRef.current.clientWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, []);
     return (
         <div
             className="image-node"
             style={{
                 padding: 10,
                 background: "white",
-                width: "fit-content",
-                height: "fit-content",
+                width: "500px",
             }}
+            ref={divRef}
         >
-            <ImageWithBox data={data} url={fileContent} />
+            <ImageWithBox data={data} url={fileContent}  containerWidth ={divWidth}/>
             <p>{data.title}</p>
         </div>
     );
