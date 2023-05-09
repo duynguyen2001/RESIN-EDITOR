@@ -1,13 +1,13 @@
 import React from "react";
 import ProvenanceMap from "../pages/ProvenanceMap";
 import { Modal } from "../pages/Panel";
+import AddSource from "./AddSource";
 
-const ProvenancePopup = ({ ids, onClose }) => {
+const ProvenancePopup = ({ ids, onClose, parentId }) => {
     const [isEnlarged, setIsEnlarged] = React.useState(false);
     const toggleEnlarged = () => {
         setIsEnlarged(!isEnlarged);
     };
-    console.log("ids: ", ids);
     return (
         <div
             style={{
@@ -36,7 +36,8 @@ const ProvenancePopup = ({ ids, onClose }) => {
                     handleClick={onClose}
                 />
                 <h1>All Sources</h1>
-                <ProvenanceMap ids={ids} />
+                {/* <AddSource parentId={parentId} /> */}
+                <ProvenanceMap ids={ids} parentId={parentId}/>
             </div>
         </div>
     );

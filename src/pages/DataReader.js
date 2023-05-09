@@ -15,6 +15,7 @@ export const DataContext = createContext({});
 export const ExtractedFilesContext = createContext({});
 export const ExtractedTextsContext = createContext({});
 export const EventsContext = createContext([]);
+
 const defaultExtractedText = () => {
     const mapText = new Map();
     for (const [_, listValue] of Object.entries(defaultText.rsd_data)) {

@@ -56,11 +56,11 @@ function Menu() {
                             title="See Legend"
                         />
                     </div>
-                    <div onClick={() => setOption("Option Change")}>
+                    <div onClick={() => setOption("Demo Image Change")}>
                         <FontAwesomeIcon
                             icon={faCog}
                             className="menu-item"
-                            title="Option Change"
+                            title="Demo Image Change"
                         />
                     </div>
                 </div>
@@ -94,7 +94,7 @@ const MenuOptionPanel = ({ option, setOption }) => {
             {option === "Add JSON" && <AddJSONPanel />}
             {option === "Download JSON" && <DownloadJSONPanel />}
             {option === "See Legend" && <SeeLegendPanel />}
-            {option === "Option Change" && <OptionChangePanel />}
+            {option === "Demo Image Change" && <OptionChangePanel />}
         </div>
     );
 };
@@ -239,7 +239,6 @@ function SeeLegendPanel() {
     };
     const handleEdgeLabelChange = (e, childrenGate, index) => {
         const newEdgeStyle = {...edgeStyle, [childrenGate]:{...edgeStyle[childrenGate],label: e.target.value}};
-        // console.log("newEdgeStyle", newEdgeStyle)
         console.log("nnedgeStyle", edgeStyle[childrenGate].style.stroke)
         setEdgeStyle(newEdgeStyle);
 
@@ -322,11 +321,15 @@ function SeeLegendPanel() {
 }
 
 function OptionChangePanel() {
+    const [opened, setOpen] = useState(false);
+    const parentId = "resin:Events/10478/";
+
     return (
         <div>
-            <h2>Option Change</h2>
+            <h2>Demo Image Change</h2>
             <ReactFlowProvider>
-            <ProvenancePopup ids={["resin:Provenance/10478/", "resin:Provenance/10469/","resin:Provenance/10477/", ]}/>
+            <button onClick={() => setOpen(true)}>Open Demo</button>
+            {opened && <ProvenancePopup ids={["resin:Provenance/10478/", "resin:Provenance/10469/","resin:Provenance/10477/", ]} onClose={() => setOpen(false)} parentId={parentId}/>}
             </ReactFlowProvider>
         </div>
     );

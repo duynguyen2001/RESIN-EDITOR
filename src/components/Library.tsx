@@ -347,7 +347,7 @@ export class ValueOrValueArrayConverter
             return json.map(
                 (item) =>
                     new Value(
-                        item.id,
+                        item["@id"],
                         item.confidence,
                         item.provenance,
                         item.ta2entity
@@ -355,7 +355,7 @@ export class ValueOrValueArrayConverter
             );
         } else {
             return new Value(
-                json.id,
+                json["@id"],
                 json.confidence,
                 json.provenance,
                 json.ta2entity

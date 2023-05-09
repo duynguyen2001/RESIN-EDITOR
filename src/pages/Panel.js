@@ -16,9 +16,10 @@ import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import EditableText from "./EditableText.jsx";
 import { NodeRerenderContext } from "./Graph.js";
 
-function TableInfoPanel({ data }) {
+function TableInfoPanel({ data, parentId }) {
     const [entitiesMap] = useContext(EntitiesContext);
     const [showProvenance, setShowProvenance] = useState(false);
+    const [keyProvenance, setKeyProvenance] = useState(null);
     const [currentProvenance, setCurrentProvenance] = useState(null);
 
     if (data === undefined) {
@@ -27,19 +28,21 @@ function TableInfoPanel({ data }) {
     const closeProvenance = () => {
         setShowProvenance(false);
     };
-    const openProvenanceMap = (provenanceIds) => {
+    const openProvenanceMap = (provenanceIds, key) => {
         // Add logic here to open the provenance map with the specified provenanceId
         // console.log(`Opening provenance map for id: ${provenanceId}`);
         if (provenanceIds instanceof Array && provenanceIds.length > 0) {
             setCurrentProvenance(provenanceIds);
+            setKeyProvenance(key);
             setShowProvenance(true);
         } else if (provenanceIds instanceof String) {
             setCurrentProvenance([provenanceIds]);
+            setKeyProvenance(key);
             setShowProvenance(true);
         }
     };
 
-    const getDisplayParticipantArray = (data) => {
+    const getDisplayParticipantArray = (data, parentId) => {
         return data.map((participant) => {
             const entityObject = entitiesMap.get(
                 participant.entity ? participant.entity : participant.ta2entity
@@ -60,12 +63,13 @@ function TableInfoPanel({ data }) {
                     const valueEntity = entitiesMap.get(value.ta2entity);
                     if (value.provenance) {
                         // Add a clickable text to open the provenance map
+                    console.log("valueEntity", value);
                         values.push(
                             <span
                                 key={value.ta2entity}
                                 className="clickable-text"
                                 onClick={() =>
-                                    openProvenanceMap(value.provenance)
+                                    openProvenanceMap(value.provenance, [parentId, participant.id, value.id])
                                 }
                             >
                                 {valueEntity.name}
@@ -98,8 +102,8 @@ function TableInfoPanel({ data }) {
         data.length > 0 &&
         data[0] instanceof Participant
     ) {
-        const displayParticipantArray = getDisplayParticipantArray(data);
-
+        const displayParticipantArray = getDisplayParticipantArray(data, parentId);
+        
         return (
             <div>
                 <table>
@@ -122,6 +126,7 @@ function TableInfoPanel({ data }) {
                     <ProvenancePopup
                         ids={currentProvenance}
                         onClose={closeProvenance}
+                        parentId={keyProvenance}
                     />
                 )}
             </div>
@@ -188,11 +193,9 @@ function EventNodeInfoPanel({ data, onClose }) {
     const toggleProvenance = () => {
         setShowProvenance(!showProvenance);
     };
-    console.log("event data: ", data);
+
     const provenanceExisted = data.provenance && data.provenance.length > 0;
     const handleOnSave = (value, field) => {
-        console.log("value: ", value);
-        console.log("field: ", field);
         eventNodeRef.current = eventNodeRef.current.map((nd) => {
             if (nd.id === data.id) {
                 nd[field] = value;
@@ -238,6 +241,7 @@ function EventNodeInfoPanel({ data, onClose }) {
                     <ProvenancePopup
                         ids={data.provenance}
                         onClose={toggleProvenance}
+                        parentId={data.id}
                     />
                 )}
                 {data.wdLabel &&
@@ -277,7 +281,7 @@ function EventNodeInfoPanel({ data, onClose }) {
                         >
                             Participants
                         </summary>
-                        <TableInfoPanel data={data.participants} />
+                        <TableInfoPanel data={data.participants} parentId= {data.id} />
                     </details>
                 )}
             </div>
