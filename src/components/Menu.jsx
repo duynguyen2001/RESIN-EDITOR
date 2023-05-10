@@ -121,12 +121,10 @@ function AddJSONPanel() {
             const parsedJson = JSON.parse(e.target.result);
             if (parsedJson !== undefined && parsedJson.rsd_data !== undefined) {
                 console.log("parsedJson", parsedJson.rsd_data);
-                for (const [_, listValue] of Object.entries(
-                    parsedJson.rsd_data
+                for (const [key, value] of Object.entries(
+                    parsedJson.rsd_data.en
                 )) {
-                    for (const [key, value] of Object.entries(listValue)) {
                         extractedTexts.set(key, value);
-                    }
                 }
                 setExtractedTexts(extractedTexts);
             }
