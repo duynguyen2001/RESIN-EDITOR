@@ -23,8 +23,10 @@ import "./graph.css";
 import { InfoPanel } from "./Panel";
 import Menu from "../components/Menu";
 import { EventNodeType, RenderOptions } from "../components/Library";
+import Gate from "../components/Gate";
 const nodeTypes = {
     custom: CustomNode,
+    gate: Gate,
 };
 export const EdgeStyleContext = createContext();
 export const NodeRerenderContext = createContext();
@@ -43,11 +45,11 @@ export const getLayoutedElements = (
     const isHorizontal = direction === "LR";
     dagreGraph.setGraph({
         rankdir: direction,
-        edgesep: isHorizontal ? 20 : 20,
+        edgesep: isHorizontal ? 80 : 400,
         ranker: "tight-tree",
         align: isHorizontal ? "UL" : undefined,
-        nodesep: 50,
-        minLen: (edge) => edge.data().weight,
+        nodesep: isHorizontal ? 40: 800,
+        minlen: isHorizontal ? 80: 400,
     });
 
     nodes.forEach((node) => {
@@ -124,7 +126,8 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                 height: graph.height,
                 position: { x: 0, y: 0 },
                 data: {
-                    nodes: graph.nodes,
+                    nodes: [...graph.nodes, { id: `gate-${node}`, data: {type: mapNodes.get(node).childrenGate, isGate: true, renderStrategy: {color: "green"}
+                        }, position: { x: graph.width / 2, y: -100 } }],
                     edges: graph.edges,
                 },
             };
@@ -133,11 +136,15 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
             const parentNode = mapNodes.get(node).parent
                 ? mapNodes.get(node).parent
                 : "root";
-            return {
-                id: `subgraph-edge-${parentNode}-${node}`,
+            return [{
+                id: `subgraph-edge-${parentNode}-gate-${parentNode}`,
                 source: `subgraph-${parentNode}`,
+                target: `gate-${parentNode}`,
+            },{
+                id: `subgraph-edge-gate-${parentNode}-${node}`,
+                source: `gate-${parentNode}`,
                 target: `subgraph-${node}`,
-            };
+            }];
         });
 
         subgraphs.push({
@@ -341,22 +348,30 @@ export const Graph = ({ eventNodes }) => {
         const outLinksEdges = [];
         const layoutedNodes = newNodes.map((node) => ({
             ...node,
-            type: "custom",
+            type: node.data.isGate? "gate": "custom",
         }));
 
         const newEdges = [];
         chosenNodes.forEach((source) => {
-            mapNodes.get(source).subgroupEvents?.forEach((target) => {
+            if (mapNodes.get(source).subgroupEvents) {
                 const childrenGate = mapNodes.get(source).childrenGate;
                 newEdges.push({
-                    id: `e-${source}-${target}`,
+                    id: `e-${source}-subgroup-to-gate`,
                     source: source,
+                    target: `gate-${source}`,
+                    ...edgeStyle[childrenGate],
+            })
+            mapNodes.get(source).subgroupEvents?.forEach((target) => {
+                newEdges.push({
+                    id: `e-gate-${source}-${target}`,
+                    source: `gate-${source}`,
                     target: target,
                     type: "subgroup-edge",
                     childrenGate: childrenGate,
                     ...edgeStyle[childrenGate],
                 });
             });
+        }
         });
         newNodes.forEach((node) => {
             node.data.outlinks?.forEach((outlink) => {

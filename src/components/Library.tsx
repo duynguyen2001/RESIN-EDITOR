@@ -607,8 +607,8 @@ abstract class ProvenanceEntity {
     @JsonProperty("childID", String)
     childID: string = undefined!;
 
-    @JsonProperty("parentIDs", String)
-    parentIDs: string = undefined!;
+    @JsonProperty("parentIDs", ForceStringArray)
+    parentIDs: string[] = undefined!;
 
     @JsonProperty("mediaType", String)
     mediaType: string = undefined!;
@@ -631,6 +631,9 @@ class TextProvenance extends ProvenanceEntity {
     @JsonProperty("length", Number)
     length: number = 0;
 
+    @JsonProperty("sourceURL", ForceStringArray)
+    sourceURL: string[] = [];
+
     public getRenderStrategy(): ProvenanceRenderStrategy {
         if (!this.renderStrategy) {
             this.renderStrategy = new TextRenderStrategy();
@@ -644,6 +647,9 @@ class TextProvenance extends ProvenanceEntity {
 class ImageProvenance extends ProvenanceEntity {
     @JsonProperty("boundingBox", [Number])
     boundingBox: number[] = [];
+
+    @JsonProperty("sourceURL", ForceStringArray)
+    sourceURL: string[] = [];
 
     public getRenderStrategy(): ProvenanceRenderStrategy {
         if (!this.renderStrategy) {

@@ -113,6 +113,7 @@ const EditableTextNode = ({ data, fileContent }) => {
         setEndHighlight(nendHighlight);
         setEnd(nend);
     }, [editing, showWholeParagraph]);
+    console.log("data sourceURL: ", data.sourceURL);
 
     return (
         <div className="text-node">
@@ -143,6 +144,20 @@ const EditableTextNode = ({ data, fileContent }) => {
             >
                 { <i className="fa fa-paragraph" />}
             </button>
+            {data.sourceURL &&  data.sourceURL[0] !== 'undefined' && <button
+                style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    fontSize: '16px',
+                    color: 'blue'
+                }}
+
+            >
+                <a href={data.sourceURL[0]} rel="noreferrer" target="_blank"><i className="fa fa-link" /></a>
+            </button>
+            }
             </div>
             
         </div>
