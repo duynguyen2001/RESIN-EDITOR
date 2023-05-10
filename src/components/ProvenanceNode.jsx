@@ -1,6 +1,5 @@
 // ProvenanceNode.jsx
 import React, { useContext,memo } from "react";
-import { Handle, NodeResizer } from "reactflow";
 import { ExtractedFilesContext, ExtractedTextsContext } from "../pages/DataReader";
 import ImageNode from "./ImageNode";
 import EditableTextNode from "./TextNode";
@@ -23,7 +22,7 @@ const ProvenanceNode = ({ data }) => {
         if (fileContent) {
             if (data.mediaType.startsWith("image/")) {
                 return (
-                    <ImageNode data={data} fileContent={fileContent.content} />
+                    <ImageNode data={data} fileContent={fileContent} />
                 );
             } 
         } 
@@ -45,22 +44,11 @@ const ProvenanceNode = ({ data }) => {
         <div
             className="provenance-node"
         >
-            <NodeResizer minWidth={100} minHeight={30} />
-            <Handle
-                type="target"
-                position="left"
-                style={{ borderRadius: "50%" }}
-            />
             <div className="provenance-node-content">
                 <h3>{data.childID}</h3>
                 <p>{data.parentID}</p>
                 <p>{data.mediaType}</p>
             </div>
-            <Handle
-                type="source"
-                position="right"
-                style={{ borderRadius: "50%" }}
-            />
         </div>
     );
 };

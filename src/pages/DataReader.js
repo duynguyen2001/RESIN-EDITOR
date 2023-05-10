@@ -12,7 +12,7 @@ import {
 export const EntitiesContext = createContext({});
 export const ProvenanceContext = createContext([]);
 export const DataContext = createContext({});
-export const ExtractedFilesContext = createContext({});
+export const ExtractedFilesContext = createContext(new Map());
 export const ExtractedTextsContext = createContext({});
 export const EventsContext = createContext([]);
 
@@ -33,7 +33,7 @@ const DataReader = () => {
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
     const [Provenances, setProvenances] = React.useState({});
-    const [extractedFiles, setExtractedFiles] = React.useState([]);
+    const [extractedFiles, setExtractedFiles] = React.useState(new Map());
     const [extractedTexts, setExtractedTexts] = React.useState(
         defaultExtractedText()
     );

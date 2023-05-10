@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import JSZip from 'jszip';
+import { addImage } from './provenancedb';
 import { ExtractedFilesContext } from '../pages/DataReader';
-
 
 
 const ZipReader = () => {
@@ -23,6 +23,7 @@ const ZipReader = () => {
 
     let allExtractedFiles = new Map();
 
+    
     for (const file of files) {
       const zip = await JSZip.loadAsync(file);
       const filePromises = [];
@@ -41,9 +42,10 @@ const ZipReader = () => {
 
       extractedFiles.forEach(({ filename, content, entryName }) => {
         const [extractedFilename, extractedFileType] = extractFilenameFromPath(entryName);
+        addImage(entryName, content);
         if (filename && filename !== '' && !allExtractedFiles.get(extractedFilename) )
         {
-          allExtractedFiles.set(extractedFilename, { entryName, content: URL.createObjectURL(content, extractedFileType) });
+          allExtractedFiles.set(extractedFilename, {entryName, extractedFileType});
         }
 
       });
@@ -57,6 +59,7 @@ const ZipReader = () => {
     extractedFiles.forEach((value, key) => {
       newExtractedFilesList.push(<tr key={key}>
         <td>{key}</td>
+        <td>{value.extractedFileType}</td>
         <td>{value.entryName}</td>
       </tr>);
     });
@@ -79,7 +82,8 @@ const ZipReader = () => {
           <thead>
             <tr>
               <th>Filename</th>
-              <th>Entry name</th>
+              <th>File Type</th>
+              <th>File Path</th>
             </tr>
           </thead>
           <tbody>

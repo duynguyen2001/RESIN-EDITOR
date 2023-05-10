@@ -3,6 +3,7 @@ import React from "react";
 import { useState, useEffect, useContext, memo, useRef } from "react";
 import { ProvenanceContext } from "../pages/DataReader";
 import { Rnd } from "react-rnd";
+import { getImage } from "./provenancedb";
 
 function ImageWithBox({ data, url, containerWidth = 500 }) {
     
@@ -70,13 +71,15 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
         });
         onProvenanceUpdate({
             ...data,
-            boundingBox: [x /scale ,y/ scale,(x + boundingBoxWidth) /scale, (y + boundingBoxHeight)  / scale],
+            boundingBox: [x/scale,y/scale,(x + boundingBoxWidth) / scale, (y + boundingBoxHeight)  / scale],
         });
     };
     const handleResize = (event, direction, ref, delta, position ) => {
         console.log("handle resize");
         setBoundingBoxHeight(ref.offsetHeight);
         setBoundingBoxWidth(ref.offsetWidth);
+        console.log("Delta: ", delta);
+        console.log("Position: ", position);
         setStyle({
             ...style,
             width: `${ref.offsetWidth}px`,
@@ -84,7 +87,7 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
         });
         onProvenanceUpdate({
           ...data,
-          boundingBox: [x/scale,y/scale,(x + ref.offsetWidth) / scale, (y + ref.offsetHeight)  / scale],
+          boundingBox: [position.x/scale,position.y/scale,(position.x + ref.offsetWidth) / scale, (position.y + ref.offsetHeight)  / scale],
       });
     };
     return (
@@ -156,8 +159,20 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
 const ImageNode = ({ data, fileContent }) => {
   const divRef = useRef(null);
   const [divWidth, setDivWidth] = useState(0);
+  const [url, setUrl] = useState("");
 
   useEffect(() => {
+    async function fetchImage() {
+        try {
+          const url = await getImage(fileContent.entryName);
+          setUrl(url);
+        } catch (error) {
+          console.log("Error fetching image: ", error);
+        }
+      }
+  
+      fetchImage();
+  
     const updateWidth = () => {
       if (divRef.current) {
         setDivWidth(divRef.current.clientWidth);
@@ -181,7 +196,7 @@ const ImageNode = ({ data, fileContent }) => {
             }}
             ref={divRef}
         >
-            <ImageWithBox data={data} url={fileContent}  containerWidth ={divWidth}/>
+            <ImageWithBox data={data} url={url}  containerWidth ={divWidth}/>
             <p>{data.title}</p>
         </div>
     );
