@@ -13,7 +13,7 @@ import ZipReader from "./ZipReader";
 import "../assets/css/Menu.css";
 import { DetectedNodeStrategy, PredictedNodeStrategy, SourceOnlyNodeStrategy, NodeRenderingStrategy, EventNode } from "./Library";
 import { ReactFlowProvider } from "reactflow";
-import { NodeRerenderContext, EdgeStyleContext } from "../pages/Graph";
+import { NodeRerenderContext, EdgeStyleContext, EdgeRerenderContext } from "../pages/Graph";
 import CustomNode from "./CustomNode";
 import ProvenancePopup from "./ProvenancePopup";
 
@@ -176,7 +176,9 @@ function DownloadJSONPanel() {
 
 function SeeLegendPanel() {
     const [nodeRerender, setNodeRerender] = useContext(NodeRerenderContext);
+    const [edgeRerender, setEdgeRerender] = useContext(EdgeRerenderContext);
     const [edgeStyle, setEdgeStyle] = useContext(EdgeStyleContext);
+    
     const [colors, setColors] = useState({
         detected: DetectedNodeStrategy.options.color? DetectedNodeStrategy.options.color: "#ff0000",
         sourceOnly: SourceOnlyNodeStrategy.options.color? SourceOnlyNodeStrategy.options.color: "#0000ff",
@@ -234,11 +236,14 @@ function SeeLegendPanel() {
             };
             console.log("newEdgeStyle", newEdgeStyle)
         setEdgeStyle(newEdgeStyle);
+        setEdgeRerender((edgeRerender + 1)% 2);
+
     };
     const handleEdgeLabelChange = (e, childrenGate, index) => {
         const newEdgeStyle = {...edgeStyle, [childrenGate]:{...edgeStyle[childrenGate],label: e.target.value}};
-        console.log("nnedgeStyle", edgeStyle[childrenGate].style.stroke)
+        console.log("newEdgeType", edgeStyle[childrenGate].style.stroke)
         setEdgeStyle(newEdgeStyle);
+        setEdgeRerender((edgeRerender + 1)% 2);
 
     };
     const parentNode = new EventNode(0)
@@ -293,24 +298,48 @@ function SeeLegendPanel() {
             ))}
 
             <h3>Children Gate</h3>
-            {["or", "and", "xor"].map((childrenGate, index) => (
+            {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
                 <div key={index}>
                     <h4>{childrenGate}:</h4>
+                    
+                    <div>
+    <table>
+        <tbody>
+            <tr>
+                <td>Color</td>
+                <td>
                     <input
                         type="color"
                         value={edgeStyle[childrenGate].style.stroke}
                         onChange={(e) => handleEdgeStyleChange(e, childrenGate, "stroke")}
+                        label="color"
                     />
+                </td>
+            </tr>
+            <tr>
+                <td>Stroke Width</td>
+                <td>
                     <input
                         type="number"
                         value={edgeStyle[childrenGate].style.strokeWidth}
                         onChange={(e) => handleEdgeStyleChange(e, childrenGate, "strokeWidth")}
                     />
+                </td>
+            </tr>
+            <tr>
+                <td>Label</td>
+                <td>
                     <input
                         type="text"
                         value={edgeStyle[childrenGate].label}
                         onChange={(e) => handleEdgeLabelChange(e, childrenGate, "label")}
                     />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
                 </div>
             ))}
             </ReactFlowProvider>

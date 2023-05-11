@@ -63,13 +63,17 @@ function TableInfoPanel({ data, parentId }) {
                     const valueEntity = entitiesMap.get(value.ta2entity);
                     if (value.provenance) {
                         // Add a clickable text to open the provenance map
-                    console.log("valueEntity", value);
+                        console.log("valueEntity", value);
                         values.push(
                             <span
                                 key={value.ta2entity}
                                 className="clickable-text"
                                 onClick={() =>
-                                    openProvenanceMap(value.provenance, [parentId, participant.id, value.id])
+                                    openProvenanceMap(value.provenance, [
+                                        parentId,
+                                        participant.id,
+                                        value.id,
+                                    ])
                                 }
                             >
                                 {valueEntity.name}
@@ -102,8 +106,11 @@ function TableInfoPanel({ data, parentId }) {
         data.length > 0 &&
         data[0] instanceof Participant
     ) {
-        const displayParticipantArray = getDisplayParticipantArray(data, parentId);
-        
+        const displayParticipantArray = getDisplayParticipantArray(
+            data,
+            parentId
+        );
+
         return (
             <div>
                 <table>
@@ -205,73 +212,48 @@ function EventNodeInfoPanel({ data, onClose }) {
 
         setNodeRerender((nodeRerender + 1) % 2);
     };
-    if (data instanceof EventNode) {
-        return (
-            <div className={isEnlarged ? "info-panel-enlarge" : "info-panel"}>
-                <Modal
-                    isEnlarged={isEnlarged}
-                    toggleEnlarged={toggleEnlarged}
-                    handleClick={onClose}
+
+    return (
+        <div className={isEnlarged ? "info-panel-enlarge" : "info-panel"}>
+            <Modal
+                isEnlarged={isEnlarged}
+                toggleEnlarged={toggleEnlarged}
+                handleClick={onClose}
+            />
+
+            {data.name && (
+                <EditableText
+                    values={data.name}
+                    variant="h2"
+                    onSave={handleOnSave}
+                    field="name"
                 />
-
-                {data.name && (
-                    <EditableText
-                        values={data.name}
-                        variant="h2"
-                        onSave={handleOnSave}
-                        field="name"
-                    />
-                )}
-                {data.description && (
-                    <EditableText
-                        values={data.description}
-                        variant="p"
-                        onSave={handleOnSave}
-                        field="description"
-                    />
-                )}
-                {provenanceExisted && (
-                    <a onClick={toggleProvenance}>
-                        <u>
-                            <h3>Show Source</h3>
-                        </u>
-                    </a>
-                )}
-                {showProvenance && provenanceExisted && (
-                    <ProvenancePopup
-                        ids={data.provenance}
-                        onClose={toggleProvenance}
-                        parentId={data.id}
-                    />
-                )}
-                {data.wdLabel &&
-                    data.wdLabel !== null &&
-                    data.wdLabel !== "null" && (
-                        <details open>
-                            <summary
-                                style={{
-                                    fontWeight: "bold",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Event Type
-                            </summary>
-                            <EditableText
-                                values={data.wdLabel}
-                                variant="h3"
-                                onSave={handleOnSave}
-                                field="wdLabel"
-                            />
-                            <EditableText
-                                values={data.wdDescription}
-                                variant="p"
-                                onSave={handleOnSave}
-                                field="wdDescription"
-                            />
-                        </details>
-                    )}
-
-                {data.participants && data.participants.length > 0 && (
+            )}
+            {data.description && (
+                <EditableText
+                    values={data.description}
+                    variant="p"
+                    onSave={handleOnSave}
+                    field="description"
+                />
+            )}
+            {provenanceExisted && (
+                <a onClick={toggleProvenance}>
+                    <u>
+                        <h3>Show Source</h3>
+                    </u>
+                </a>
+            )}
+            {showProvenance && provenanceExisted && (
+                <ProvenancePopup
+                    ids={data.provenance}
+                    onClose={toggleProvenance}
+                    parentId={data.id}
+                />
+            )}
+            {data.wdLabel &&
+                data.wdLabel !== null &&
+                data.wdLabel !== "null" && (
                     <details open>
                         <summary
                             style={{
@@ -279,45 +261,45 @@ function EventNodeInfoPanel({ data, onClose }) {
                                 cursor: "pointer",
                             }}
                         >
-                            Participants
+                            Event Type
                         </summary>
-                        <TableInfoPanel data={data.participants} parentId= {data.id} />
+                        <EditableText
+                            values={data.wdLabel}
+                            variant="h3"
+                            onSave={handleOnSave}
+                            field="wdLabel"
+                        />
+                        <EditableText
+                            values={data.wdDescription}
+                            variant="p"
+                            onSave={handleOnSave}
+                            field="wdDescription"
+                        />
                     </details>
                 )}
-            </div>
-        );
-    }
 
-    return (
-        <div className="info-panel">
-            <Modal
-                isEnlarged={isEnlarged}
-                toggleEnlarged={toggleEnlarged}
-                handleClick={onClose}
-            />
-            <h2>{data.title}</h2>
-            <p>{data.description}</p>
+            {data.participants && data.participants.length > 0 && (
+                <details open>
+                    <summary
+                        style={{
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                        }}
+                    >
+                        Participants
+                    </summary>
+                    <TableInfoPanel
+                        data={data.participants}
+                        parentId={data.id}
+                    />
+                </details>
+            )}
         </div>
     );
 }
 export function InfoPanel({ data, onClose }) {
-    function handleClick() {
-        onClose();
-    }
     if (data === undefined) {
         return <></>;
     }
-    if (data instanceof EventNode) {
-        return <EventNodeInfoPanel data={data} onClose={onClose} />;
-    }
-
-    return (
-        <div className="info-panel">
-            <h2>{data.title}</h2>
-            <button className="close-button" onClick={handleClick}>
-                &times;
-            </button>
-            <p>{data.description}</p>
-        </div>
-    );
+    return <EventNodeInfoPanel data={data} onClose={onClose} />;
 }

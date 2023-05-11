@@ -30,6 +30,7 @@ const nodeTypes = {
 };
 export const EdgeStyleContext = createContext();
 export const NodeRerenderContext = createContext();
+export const EdgeRerenderContext = createContext();
 
 const nodeWidth = 200;
 const nodeHeight = 200;
@@ -48,8 +49,8 @@ export const getLayoutedElements = (
         edgesep: isHorizontal ? 80 : 400,
         ranker: "tight-tree",
         align: isHorizontal ? "UL" : undefined,
-        nodesep: isHorizontal ? 40: 800,
-        minlen: isHorizontal ? 80: 400,
+        nodesep: isHorizontal ? 40 : 800,
+        minlen: isHorizontal ? 80 : 400,
     });
 
     nodes.forEach((node) => {
@@ -126,8 +127,18 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                 height: graph.height,
                 position: { x: 0, y: 0 },
                 data: {
-                    nodes: [...graph.nodes, { id: `gate-${node}`, data: {gate: mapNodes.get(node).childrenGate, isGate: true, renderStrategy: {color: "green"}
-                        }, position: { x: graph.width / 2, y: -150 } }],
+                    nodes: [
+                        ...graph.nodes,
+                        {
+                            id: `gate-${node}`,
+                            data: {
+                                gate: mapNodes.get(node).childrenGate,
+                                isGate: true,
+                                renderStrategy: { color: "green" },
+                            },
+                            position: { x: graph.width / 2, y: -150 },
+                        },
+                    ],
                     edges: graph.edges,
                 },
             };
@@ -136,15 +147,18 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
             const parentNode = mapNodes.get(node).parent
                 ? mapNodes.get(node).parent
                 : "root";
-            return [{
-                id: `subgraph-edge-${parentNode}-gate-${parentNode}`,
-                source: `subgraph-${parentNode}`,
-                target: `gate-${parentNode}`,
-            },{
-                id: `subgraph-edge-gate-${parentNode}-${node}`,
-                source: `gate-${parentNode}`,
-                target: `subgraph-${node}`,
-            }];
+            return [
+                {
+                    id: `subgraph-edge-${parentNode}-gate-${parentNode}`,
+                    source: `subgraph-${parentNode}`,
+                    target: `gate-${parentNode}`,
+                },
+                {
+                    id: `subgraph-edge-gate-${parentNode}-${node}`,
+                    source: `gate-${parentNode}`,
+                    target: `subgraph-${node}`,
+                },
+            ];
         });
 
         subgraphs.push({
@@ -192,6 +206,7 @@ export const Graph = ({ eventNodes }) => {
     const [firstNode, setFirstNode] = useState(null);
     // style related nodes
     const [nodeChanges, setNodeChanges] = useState(0);
+    const [edgeChanges, setEdgeChanges] = useState(0);
 
     useEffect(() => {
         console.log("nodesnodes", nodes);
@@ -240,15 +255,15 @@ export const Graph = ({ eventNodes }) => {
                 strokeWidth: 5,
             },
         },
-    });
-    const [outlinkEdgeStyle, setOutlinkEdgeStyle] = useState({
-        animated: false,
-        type: ConnectionLineType.Straight,
-        markerEnd: { type: MarkerType.ArrowClosed, size: 20, color: "red" },
-        width: 10,
-        style: {
-            stroke: "red",
-            strokeWidth: 5,
+        outlink: {
+            animated: false,
+            type: ConnectionLineType.Straight,
+            markerEnd: { type: MarkerType.ArrowClosed, size: 20, color: "#903b1c" },
+            width: 10,
+            style: {
+                stroke: "#903b1c",
+                strokeWidth: 5,
+            },
         },
     });
 
@@ -257,27 +272,10 @@ export const Graph = ({ eventNodes }) => {
         console.log("Change edge style", edges);
         setEdges((eds) =>
             eds.map((edge) => {
-                const newEdge = { ...edge };
-                newEdge.style = {
-                    ...newEdge.style,
-                };
-                return newEdge;
+                return { ...edge, ...edgeStyle[edge.edgeType] };
             })
         );
-    }, [edgeStyle]);
-
-    useEffect(() => {
-        setEdges(
-            edges.map((edge) =>
-                edge.type === "outlink-edge"
-                    ? {
-                          ...edge,
-                          ...outlinkEdgeStyle,
-                      }
-                    : edge
-            )
-        );
-    }, [outlinkEdgeStyle]);
+    }, [edgeChanges]);
 
     const options = {
         minZoom: 0.00001,
@@ -324,16 +322,6 @@ export const Graph = ({ eventNodes }) => {
         [mapNodes, chosenNodes]
     );
 
-    const memoizedAllSubgroupEvents = useMemo(() => {
-        const memo = new Map();
-        return (node) => {
-            if (!memo.has(node)) {
-                memo.set(node, getAllSubgroupEvents(node));
-            }
-            return memo.get(node);
-        };
-    }, [getAllSubgroupEvents]);
-
     useEffect(() => {
         if (firstNode === null || mapNodes.size === 0) {
             return;
@@ -347,18 +335,28 @@ export const Graph = ({ eventNodes }) => {
         const outLinksEdges = [];
         const layoutedNodes = newNodes.map((node) => ({
             ...node,
-            type: node.data.isGate? "gate": "custom",
-            data: node.data.isGate? {
-                ...node.data,
-                gate: node.data.gate,
-                name: node.data.gate === "and"? "AND gate": node.data.gate === "or"? "OR gate": "XOR gate",
-                description: node.data.gate === "and"? "AND gate": node.data.gate === "or"? "OR gate": "XOR gate",
-                renderStrategy:
-                {
-                    color: edgeStyle[node.data.gate].style.stroke,
-                }
-            }: node.data,
-
+            type: node.data.isGate ? "gate" : "custom",
+            data: node.data.isGate
+                ? {
+                      ...node.data,
+                      gate: node.data.gate,
+                      name:
+                          node.data.gate === "and"
+                              ? "AND gate"
+                              : node.data.gate === "or"
+                              ? "OR gate"
+                              : "XOR gate",
+                      description:
+                          node.data.gate === "and"
+                              ? "AND gate"
+                              : node.data.gate === "or"
+                              ? "OR gate"
+                              : "XOR gate",
+                      renderStrategy: {
+                          color: edgeStyle[node.data.gate].style.stroke,
+                      },
+                  }
+                : node.data,
         }));
 
         const newEdges = [];
@@ -370,18 +368,18 @@ export const Graph = ({ eventNodes }) => {
                     source: source,
                     target: `gate-${source}`,
                     ...edgeStyle[childrenGate],
-            })
-            mapNodes.get(source).subgroupEvents?.forEach((target) => {
-                newEdges.push({
-                    id: `e-gate-${source}-${target}`,
-                    source: `gate-${source}`,
-                    target: target,
-                    type: "subgroup-edge",
-                    childrenGate: childrenGate,
-                    ...edgeStyle[childrenGate],
                 });
-            });
-        }
+                mapNodes.get(source).subgroupEvents?.forEach((target) => {
+                    newEdges.push({
+                        id: `e-gate-${source}-${target}`,
+                        source: `gate-${source}`,
+                        target: target,
+                        edgeType: childrenGate,
+                        childrenGate: childrenGate,
+                        ...edgeStyle[childrenGate],
+                    });
+                });
+            }
         });
         newNodes.forEach((node) => {
             node.data.outlinks?.forEach((outlink) => {
@@ -389,13 +387,12 @@ export const Graph = ({ eventNodes }) => {
                     id: `e-${node.id}-${outlink}-outlink`,
                     source: node.id,
                     target: outlink,
-                    animated: false,
                     sourceHandle: node.id + "_right",
                     targetHandle: outlink + "_left",
                     sourcePosition: Position.Right,
                     targetPosition: Position.Left,
-                    type: "outlink-edge",
-                    ...outlinkEdgeStyle,
+                    edgeType: "outlink",
+                    ...edgeStyle.outlink,
                 });
             });
         });
@@ -458,39 +455,41 @@ export const Graph = ({ eventNodes }) => {
 
     return (
         <NodeRerenderContext.Provider value={[nodeChanges, setNodeChanges]}>
-            <EdgeStyleContext.Provider value={[edgeStyle, setEdgeStyle]}>
-                <div className="layoutflow">
-                    <ReactFlowProvider>
-                        <ReactFlow
-                            nodes={nodes}
-                            edges={edges}
-                            onNodesChange={onNodesChange}
-                            onEdgesChange={onEdgesChange}
-                            onNodeClick={onNodeClick}
-                            onConnect={onConnect}
-                            nodeTypes={nodeTypes}
-                            options={options}
-                            fitView
-                        />
-                        <MiniMap
-                            nodes={nodes}
-                            edges={edges}
-                            nodeColor={nodeColor}
-                            nodeStrokeWidth={3}
-                            zoomable
-                            pannable
-                        />
-                        <Controls />
-                    </ReactFlowProvider>
-                    {clickedNode && (
-                        <InfoPanel
-                            data={clickedNode.data}
-                            onClose={handleClosePanel}
-                        />
-                    )}
-                    <Menu />
-                </div>
-            </EdgeStyleContext.Provider>
+            <EdgeRerenderContext.Provider value={[edgeChanges, setEdgeChanges]}>
+                <EdgeStyleContext.Provider value={[edgeStyle, setEdgeStyle]}>
+                    <div className="layoutflow">
+                        <ReactFlowProvider>
+                            <ReactFlow
+                                nodes={nodes}
+                                edges={edges}
+                                onNodesChange={onNodesChange}
+                                onEdgesChange={onEdgesChange}
+                                onNodeClick={onNodeClick}
+                                onConnect={onConnect}
+                                nodeTypes={nodeTypes}
+                                options={options}
+                                fitView
+                            />
+                            <MiniMap
+                                nodes={nodes}
+                                edges={edges}
+                                nodeColor={nodeColor}
+                                nodeStrokeWidth={3}
+                                zoomable
+                                pannable
+                            />
+                            <Controls />
+                        </ReactFlowProvider>
+                        {clickedNode && (
+                            <InfoPanel
+                                data={clickedNode.data}
+                                onClose={handleClosePanel}
+                            />
+                        )}
+                        <Menu />
+                    </div>
+                </EdgeStyleContext.Provider>
+            </EdgeRerenderContext.Provider>
         </NodeRerenderContext.Provider>
     );
 };
