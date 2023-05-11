@@ -8,17 +8,18 @@ import {
     ExtractedFilesContext,
     EntitiesContext,
 } from "../pages/DataReader";
+import { CountContext } from "../pages/newdataIndexes";
 
-import { v4 } from 'uuid';
+import { v4 } from "uuid";
 const getListIndex = (list, id) => {
     for (let i = 0; i < list.length; i++) {
         let jsonObject = list[i];
         if (jsonObject.id === id) {
-            return i;        
+            return i;
         }
-      }
-    };
-const AddSource = ({parentId}) => {
+    }
+};
+const AddSource = ({ parentId }) => {
     const [provenances, setProvenances] = useContext(ProvenanceContext);
     const [extractedTexts, setExtractedTexts] = useContext(
         ExtractedTextsContext
@@ -30,8 +31,11 @@ const AddSource = ({parentId}) => {
     const [Events, setEvents] = useContext(EventsContext);
     const [showDropdown, setShowDropdown] = useState(false);
     const [showSubDropdown, setShowSubDropdown] = useState(null);
+    const [showTextTable, setShowTextTable] = useState(false);
+    const [count, setCount] = useContext(CountContext);
     const [files, setFiles] = useState([]);
     const [images, setImages] = useState([]);
+
     const [showNewSource, setShowNewSource] = useState(false);
     const [parentNode, setParentNode] = useState(null);
     const [eventIndex, setEventIndex] = useState(null);
@@ -40,19 +44,24 @@ const AddSource = ({parentId}) => {
         setShowDropdown(false);
         setShowSubDropdown(null);
     };
+    const showTextSources = () => {
+        setShowNewSource(false);
+        setShowDropdown(false);
+        setShowSubDropdown(null);
+
+        setShowTextTable(true);
+    };
     useEffect(() => {
         console.log("parentId: ", parentId);
         if (parentId instanceof Array) {
-
             const index = getListIndex(Events, parentId[0]);
             setEventIndex(index);
             setParentNode(Events[index]);
-
-        }else if(parentId.includes("Events")) {
+        } else if (parentId.includes("Events")) {
             const index = getListIndex(Events, parentId);
             setEventIndex(index);
             setParentNode(Events[index]);
-        } 
+        }
     }, []);
     useEffect(() => {
         console.log(files);
@@ -60,55 +69,38 @@ const AddSource = ({parentId}) => {
     useEffect(() => {
         console.log(images);
     }, [images]);
-    useEffect(
-        () => () => {
-            // Make sure to revoke the data uris to avoid memory leaks
-            files.forEach((file) => URL.revokeObjectURL(file.preview));
-        },
-        [files]
-    );
 
     const { getRootProps, getInputProps } = useDropzone({
-        accept: "text/plain, image/*",
+        accept: "text/plain",
         onDrop: (acceptedFiles) => {
-            setFiles(
-                acceptedFiles.map((file) =>
-                    Object.assign(file, {
-                        preview: URL.createObjectURL(file),
-                    })
-                )
+            acceptedFiles.map((file) =>
+                Object.assign(file, {
+                    preview: URL.createObjectURL(file),
+                })
             );
-
-                acceptedFiles
-                    .filter((file) => file.type.startsWith("image/"))
-                    .map((file) =>{
-                        const newId = v4();
-                        const newImages = extractedFiles;
-                        newImages.set(newId, file);
-                        setExtractedFiles(newImages);
-
+        },
     });
-}
-});
     useEffect(() => {
         console.log("parentNode: ", parentNode);
     }, [parentNode]);
-    
+    const addTextProvenance = (key, value) => {
+        // Here you can add your provenance
+        console.log(`Add provenance for ${key}: ${value}`);
+    };
 
     const handleDropdownClick = (e) => {
         e.stopPropagation();
         setShowDropdown(!showDropdown);
-        console.log("showDropdown: ", showDropdown);
-        console.log("Provence: ", provenances);
-        console.log("Extracted Texts: ", extractedTexts);
-        console.log("Extracted Files: ", extractedFiles);
-        console.log("Entities: ", entities);
-        console.log("parentID: ", parentId);
+        // console.log("showDropdown: ", showDropdown);
+        // console.log("Provence: ", provenances);
+        // console.log("Extracted Texts: ", extractedTexts);
+        // console.log("Extracted Files: ", extractedFiles);
+        // console.log("Entities: ", entities);
+        // console.log("parentID: ", parentId);
     };
 
     const handleSubDropdownClick = (type) => {
         setShowSubDropdown(type);
-        
     };
 
     return (
@@ -127,7 +119,8 @@ const AddSource = ({parentId}) => {
                         </button>
                         {showSubDropdown === "text" && (
                             <ul className="sub-dropdown-menu">
-                                <button className="dropdown-button">
+                                <button className="dropdown-button"
+                                 onClick={showTextSources}>
                                     Existing Text Provenance
                                 </button>
                                 <button
@@ -162,34 +155,20 @@ const AddSource = ({parentId}) => {
                     </li>
                 </ul>
             )}
-
-            {files.length > 0 && (
-                <div>
-                    <h4>Text Sources</h4>
-                    <ul>
-                        {files
-                            .filter((file) => file.type === "text/plain")
-                            .map((file, index) => (
-                                <li key={index}>{file.name}</li>
-                            ))}
-                    </ul>
-                </div>
-            )}
-
-            {images.length > 0 && (
-                <div>
-                    <h4>Image Sources</h4>
-                    <div className="image-gallery">
-                        {images.map((image, index) => (
-                            <img
-                                key={index}
-                                src={image.preview}
-                                alt="preview"
-                                className="thumbnail"
-                            />
+            {showTextTable && (
+                <table>
+                    <tbody>
+                        {Object.entries(extractedTexts).map(([key, value]) => (
+                            <tr
+                                key={key}
+                                onClick={() => addTextProvenance(key, value)}
+                            >
+                                <td>{key}</td>
+                                <td>{value}</td>
+                            </tr>
                         ))}
-                    </div>
-                </div>
+                    </tbody>
+                </table>
             )}
             {showNewSource && (
                 <div {...getRootProps()} className="dropzone">

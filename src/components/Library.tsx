@@ -256,7 +256,7 @@ export class PredictedNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return PredictedNodeStrategy.options.color
             ? PredictedNodeStrategy.options.color
-            : "yellow";
+            : "#FED59E";
     }
 }
 
@@ -278,7 +278,7 @@ export class DetectedNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return DetectedNodeStrategy.options.color
             ? DetectedNodeStrategy.options.color
-            : "red";
+            : "#E4745E";
     }
     get border(): string {
         return this.eventNode.optional ? "dotted" : "solid";
@@ -303,7 +303,7 @@ export class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return SourceOnlyNodeStrategy.options.color
             ? SourceOnlyNodeStrategy.options.color
-            : "blue";
+            : "#2A4C65";
     }
 }
 
@@ -662,6 +662,7 @@ interface ProvenanceData {
     mediaType: string;
     [key: string]: any;
 }
+
 export function createProvenanceEntity(
     jsonData: ProvenanceData
 ): ProvenanceEntity {

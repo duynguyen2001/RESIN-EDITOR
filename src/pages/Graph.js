@@ -2,8 +2,7 @@ import React, {
     useCallback,
     useEffect,
     useState,
-    createContext,
-    useMemo,
+    createContext
 } from "react";
 import ReactFlow, {
     addEdge,
@@ -22,7 +21,6 @@ import "reactflow/dist/style.css";
 import "./graph.css";
 import { InfoPanel } from "./Panel";
 import Menu from "../components/Menu";
-import { EventNodeType, RenderOptions } from "../components/Library";
 import Gate from "../components/Gate";
 const nodeTypes = {
     custom: CustomNode,
@@ -230,7 +228,7 @@ export const Graph = ({ eventNodes }) => {
             animated: false,
             type: ConnectionLineType.Straight,
             style: {
-                stroke: "#0000FF",
+                stroke: "#BECBD3",
                 strokeWidth: 1,
                 strokeDasharray: "5,5",
             },
@@ -238,10 +236,10 @@ export const Graph = ({ eventNodes }) => {
         xor: {
             animated: false,
             type: ConnectionLineType.SmoothStep,
-            labelStyle: { fill: "red", fontWeight: 700, fontSize: 32 },
+            labelStyle: { fill: "#C5AB89", fontWeight: 700, fontSize: 32 },
             width: 5,
             style: {
-                stroke: "#00FF00",
+                stroke: "#C5AB89",
                 strokeDasharray: "4 1 2 3",
                 strokeWidth: 5,
             },
@@ -251,17 +249,21 @@ export const Graph = ({ eventNodes }) => {
             type: ConnectionLineType.Straight,
             width: 5,
             style: {
-                stroke: "#000",
+                stroke: "#4E6E62",
                 strokeWidth: 5,
             },
         },
         outlink: {
             animated: false,
             type: ConnectionLineType.Straight,
-            markerEnd: { type: MarkerType.ArrowClosed, size: 20, color: "#903b1c" },
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+                size: 20,
+                color: "#8C736F",
+            },
             width: 10,
             style: {
-                stroke: "#903b1c",
+                stroke: "#8C736F",
                 strokeWidth: 5,
             },
         },
@@ -289,6 +291,7 @@ export const Graph = ({ eventNodes }) => {
     const handleClosePanel = () => {
         setClickedNode(null);
     };
+
     // layout related functions
     useEffect(() => {
         if (eventNodes.length > 0) {

@@ -1,15 +1,9 @@
-import React, { useContext, useEffect, memo, useRef, useState } from "react";
-import {
-    useNodesState,
-} from "reactflow";
+import React, { useContext, memo } from "react";
 import ProvenanceNode from "../components/ProvenanceNode";
 import { ProvenanceContext } from "../pages/DataReader";
-import {useResizeDetector} from "react-resize-detector";
 import "reactflow/dist/style.css";
 
-const ProvenanceMap = ({
-    ids = [],
-}) => {
+const ProvenanceMap = ({ ids = [] }) => {
     const [provenance, _] = useContext(ProvenanceContext);
 
     return (
@@ -19,11 +13,11 @@ const ProvenanceMap = ({
                 width: "100%",
             }}
         >
-             {ids.map((id) => (
-        <div key={id}>
-            <ProvenanceNode data={provenance.get(id)} />
-        </div>
-      ))}
+            {ids.map((id) => (
+                <div key={id}>
+                    <ProvenanceNode data={provenance.get(id)} />
+                </div>
+            ))}
         </div>
     );
 };

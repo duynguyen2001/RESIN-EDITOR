@@ -8,6 +8,7 @@ import {
     EventNode,
     Entity,
 } from "../components/Library.tsx";
+import CountProvider from "./newdataIndexes";
 
 export const EntitiesContext = createContext({});
 export const ProvenanceContext = createContext([]);
@@ -79,6 +80,7 @@ const DataReader = () => {
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
+            <CountProvider>
             <DataContext.Provider value={[data, setData]}>
                 <ProvenanceContext.Provider
                     value={[Provenances, setProvenances]}
@@ -98,6 +100,7 @@ const DataReader = () => {
                     </EventsContext.Provider>
                 </ProvenanceContext.Provider>
             </DataContext.Provider>
+            </CountProvider>
         </div>
     );
 };

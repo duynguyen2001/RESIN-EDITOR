@@ -192,13 +192,13 @@ function SeeLegendPanel() {
     const [colors, setColors] = useState({
         detected: DetectedNodeStrategy.options.color
             ? DetectedNodeStrategy.options.color
-            : "#ff0000",
+            : new DetectedNodeStrategy().color,
         sourceOnly: SourceOnlyNodeStrategy.options.color
             ? SourceOnlyNodeStrategy.options.color
-            : "#0000ff",
+            : new SourceOnlyNodeStrategy().color,
         predicted: PredictedNodeStrategy.options.color
             ? PredictedNodeStrategy.options.color
-            : "#ffff00",
+            : new PredictedNodeStrategy().color,
     });
 
     const [shapes, setShapes] = useState({

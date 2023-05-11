@@ -1,5 +1,5 @@
 import { createContext } from "react";
-const CountContext = createContext({
+export const CountContext = createContext({
     ProvenanceCount: 0,
     EventsCount: 0,
     EntitiesCount: 0,
