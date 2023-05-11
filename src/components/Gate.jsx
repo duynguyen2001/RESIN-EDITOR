@@ -1,42 +1,72 @@
 import React from "react";
 import { Handle } from "reactflow";
-import xorGate from "../assets/gates/xor.svg"
+import { AndGate, OrGate, XorGate } from "./Gates.jsx";
 
 function Gate({ data, isConnectable = true }) {
-  console.log("Gate data: ", data);
+    console.log("Gate data: ", data);
     return (
         <div
             style={{
-                background: "lightgray",
-                padding: "10px",
-                borderRadius: "5px solid black",
+                background: "transparent",
             }}
         >
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          
-          }}><Handle
-                type="target"
-                position="top"
-                style={{ background: "#555", borderRadius: "50%" }}
-                onConnect={(params) => console.log("handle onConnect", params)}
-                isConnectable={false}
-            />
-            <img src={xorGate} alt="xor gate" />
-            <Handle
-                type="source"
-                position="bottom"
-                id="a"
-                style={{ background: "#555", borderRadius: "50%" }}
-                isConnectable={isConnectable}
-                onConnect={(params) => console.log("handle onConnect", params)}
-            />
-            </div>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "fit-content",
+                    height: "fit-content",
+                    background: "transparent",
+                }}
+            >
+                <Handle
+                    type="target"
+                    position="top"
+                    style={{
+                        background: "#555",
+                        borderRadius: "50%",
+                        top: "50px",
+                        left: "55%",
+                    }}
+                    onConnect={(params) =>
+                        console.log("handle onConnect", params)
+                    }
+                    isConnectable={false}
+                />
+                {data.gate === "xor" ? (
+                    <XorGate
+                        color={data.renderStrategy.color}
+                        strokeColor="black"
+                    />
+                ) : data.gate === "and" ? (
+                    <AndGate
+                        color={data.renderStrategy.color}
+                        strokeColor="black"
+                    />
+                ) : (
+                    <OrGate
+                        color={data.renderStrategy.color}
+                        strokeColor="black"
+                    />
+                )}
 
-          <strong>{data.type}</strong>
-            
+                <Handle
+                    type="source"
+                    position="bottom"
+                    id="a"
+                    style={{
+                        background: "#555",
+                        borderRadius: "50%",
+                        bottom: "30px",
+                        left: "55%",
+                    }}
+                    isConnectable={isConnectable}
+                    onConnect={(params) =>
+                        console.log("handle onConnect", params)
+                    }
+                />
+            </div>
         </div>
     );
 }

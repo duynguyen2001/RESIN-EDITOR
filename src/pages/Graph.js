@@ -126,8 +126,8 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                 height: graph.height,
                 position: { x: 0, y: 0 },
                 data: {
-                    nodes: [...graph.nodes, { id: `gate-${node}`, data: {type: mapNodes.get(node).childrenGate, isGate: true, renderStrategy: {color: "green"}
-                        }, position: { x: graph.width / 2, y: -100 } }],
+                    nodes: [...graph.nodes, { id: `gate-${node}`, data: {gate: mapNodes.get(node).childrenGate, isGate: true, renderStrategy: {color: "green"}
+                        }, position: { x: graph.width / 2, y: -150 } }],
                     edges: graph.edges,
                 },
             };
@@ -223,7 +223,6 @@ export const Graph = ({ eventNodes }) => {
         xor: {
             animated: false,
             type: ConnectionLineType.SmoothStep,
-            label: "xor",
             labelStyle: { fill: "red", fontWeight: 700, fontSize: 32 },
             width: 5,
             style: {
@@ -349,6 +348,17 @@ export const Graph = ({ eventNodes }) => {
         const layoutedNodes = newNodes.map((node) => ({
             ...node,
             type: node.data.isGate? "gate": "custom",
+            data: node.data.isGate? {
+                ...node.data,
+                gate: node.data.gate,
+                name: node.data.gate === "and"? "AND gate": node.data.gate === "or"? "OR gate": "XOR gate",
+                description: node.data.gate === "and"? "AND gate": node.data.gate === "or"? "OR gate": "XOR gate",
+                renderStrategy:
+                {
+                    color: edgeStyle[node.data.gate].style.stroke,
+                }
+            }: node.data,
+
         }));
 
         const newEdges = [];
