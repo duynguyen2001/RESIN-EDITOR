@@ -54,7 +54,6 @@ function Gate({ data, isConnectable = true }) {
                 <Handle
                     type="source"
                     position="bottom"
-                    id="a"
                     style={{
                         background: "#555",
                         borderRadius: "50%",

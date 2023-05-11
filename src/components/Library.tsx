@@ -662,11 +662,6 @@ interface ProvenanceData {
     mediaType: string;
     [key: string]: any;
 }
-
-class ProvenanceList {
-    provenanceList: ProvenanceEntity[] = [];
-}
-
 export function createProvenanceEntity(
     jsonData: ProvenanceData
 ): ProvenanceEntity {

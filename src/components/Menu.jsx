@@ -11,9 +11,19 @@ import { Modal } from "../pages/Panel";
 import { DataContext, ExtractedTextsContext } from "../pages/DataReader";
 import ZipReader from "./ZipReader";
 import "../assets/css/Menu.css";
-import { DetectedNodeStrategy, PredictedNodeStrategy, SourceOnlyNodeStrategy, NodeRenderingStrategy, EventNode } from "./Library";
-import { ReactFlowProvider } from "reactflow";
-import { NodeRerenderContext, EdgeStyleContext, EdgeRerenderContext } from "../pages/Graph";
+import {
+    DetectedNodeStrategy,
+    PredictedNodeStrategy,
+    SourceOnlyNodeStrategy,
+    NodeRenderingStrategy,
+    EventNode,
+} from "./Library";
+import { ConnectionLineType, ReactFlowProvider } from "reactflow";
+import {
+    NodeRerenderContext,
+    EdgeStyleContext,
+    EdgeRerenderContext,
+} from "../pages/Graph";
 import CustomNode from "./CustomNode";
 import ProvenancePopup from "./ProvenancePopup";
 
@@ -124,7 +134,7 @@ function AddJSONPanel() {
                 for (const [key, value] of Object.entries(
                     parsedJson.rsd_data.en
                 )) {
-                        extractedTexts.set(key, value);
+                    extractedTexts.set(key, value);
                 }
                 setExtractedTexts(extractedTexts);
             }
@@ -178,41 +188,51 @@ function SeeLegendPanel() {
     const [nodeRerender, setNodeRerender] = useContext(NodeRerenderContext);
     const [edgeRerender, setEdgeRerender] = useContext(EdgeRerenderContext);
     const [edgeStyle, setEdgeStyle] = useContext(EdgeStyleContext);
-    
+
     const [colors, setColors] = useState({
-        detected: DetectedNodeStrategy.options.color? DetectedNodeStrategy.options.color: "#ff0000",
-        sourceOnly: SourceOnlyNodeStrategy.options.color? SourceOnlyNodeStrategy.options.color: "#0000ff",
-        predicted: PredictedNodeStrategy.options.color? PredictedNodeStrategy.options.color :"#ffff00",
+        detected: DetectedNodeStrategy.options.color
+            ? DetectedNodeStrategy.options.color
+            : "#ff0000",
+        sourceOnly: SourceOnlyNodeStrategy.options.color
+            ? SourceOnlyNodeStrategy.options.color
+            : "#0000ff",
+        predicted: PredictedNodeStrategy.options.color
+            ? PredictedNodeStrategy.options.color
+            : "#ffff00",
     });
 
     const [shapes, setShapes] = useState({
-        parentNode: NodeRenderingStrategy.nodeOptions.parentNode? NodeRenderingStrategy.nodeOptions.parentNode : "diamond",
-        leafNode: NodeRenderingStrategy.nodeOptions.leafNode? NodeRenderingStrategy.nodeOptions.leafNode : "circle",
+        parentNode: NodeRenderingStrategy.nodeOptions.parentNode
+            ? NodeRenderingStrategy.nodeOptions.parentNode
+            : "diamond",
+        leafNode: NodeRenderingStrategy.nodeOptions.leafNode
+            ? NodeRenderingStrategy.nodeOptions.leafNode
+            : "circle",
     });
 
     const handleColorChange = (color, key) => {
-        setColors({ ...colors, [key]: color });   
-        console.log("colorchanged", colors)
+        setColors({ ...colors, [key]: color });
+        console.log("colorchanged", colors);
         if (key === "detected") {
             DetectedNodeStrategy.options = {
                 ...DetectedNodeStrategy.options,
-                color: color
-            }
-            console.log(new DetectedNodeStrategy())
+                color: color,
+            };
+            console.log(new DetectedNodeStrategy());
         } else if (key === "sourceOnly") {
             SourceOnlyNodeStrategy.options = {
                 ...SourceOnlyNodeStrategy.options,
-                color: color
-            }
-            console.log(new SourceOnlyNodeStrategy())
+                color: color,
+            };
+            console.log(new SourceOnlyNodeStrategy());
         } else if (key === "predicted") {
             PredictedNodeStrategy.options = {
                 ...PredictedNodeStrategy.options,
-                color: color
-            }
-            console.log(new PredictedNodeStrategy())
+                color: color,
+            };
+            console.log(new PredictedNodeStrategy());
         }
-        setNodeRerender((nodeRerender + 1)%2); 
+        setNodeRerender((nodeRerender + 1) % 2);
     };
 
     const handleShapeChange = (e, key) => {
@@ -220,128 +240,276 @@ function SeeLegendPanel() {
         NodeRenderingStrategy.nodeOptions = {
             ...NodeRenderingStrategy.nodeOptions,
             [key]: e.target.value,
-        }
-        setNodeRerender((nodeRerender + 1)% 2); 
+        };
+        setNodeRerender((nodeRerender + 1) % 2);
     };
 
-    const handleEdgeStyleChange = (e, childrenGate, key) => {
-        const newEdgeStyle = {...edgeStyle,
+    const handleEdgeStyleChange = (value, childrenGate, key) => {
+        const newEdgeStyle = {
+            ...edgeStyle,
             [childrenGate]: {
                 ...edgeStyle[childrenGate],
                 style: {
-            ...edgeStyle[childrenGate].style,
-            [key]: e.target.value
-            }
-        }
-            };
-            console.log("newEdgeStyle", newEdgeStyle)
+                    ...edgeStyle[childrenGate].style,
+                    [key]: value,
+                },
+            },
+        };
+        console.log("newEdgeStyle", newEdgeStyle);
         setEdgeStyle(newEdgeStyle);
-        setEdgeRerender((edgeRerender + 1)% 2);
-
+        setEdgeRerender((edgeRerender + 1) % 2);
     };
-    const handleEdgeLabelChange = (e, childrenGate, index) => {
-        const newEdgeStyle = {...edgeStyle, [childrenGate]:{...edgeStyle[childrenGate],label: e.target.value}};
-        console.log("newEdgeType", edgeStyle[childrenGate].style.stroke)
+    const handleEdgeLabelChange = (value, childrenGate, key) => {
+        console.log("change Value", value);
+        const newEdgeStyle = {
+            ...edgeStyle,
+            [childrenGate]: { ...edgeStyle[childrenGate], [key]: value },
+        };
+        console.log("newEdgeType", edgeStyle[childrenGate].style.stroke);
         setEdgeStyle(newEdgeStyle);
-        setEdgeRerender((edgeRerender + 1)% 2);
-
+        setEdgeRerender((edgeRerender + 1) % 2);
     };
-    const parentNode = new EventNode(0)
-    parentNode.subgroupEvents = ["AAA"]
+    const parentNode = new EventNode("newId", null, "Chapter Event");
+    parentNode.subgroupEvents = ["AAA"];
     console.log("parentNode", parentNode);
 
     return (
         <div className="legend">
             <h2>Legend</h2>
             <ReactFlowProvider>
-
-            <h3>Colors</h3>
-            {Object.entries(colors).map(([key, value]) => (
-                <div
-                    key={key}
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                    }}
-                >
-                    <input
-                        type="color"
-                        value={value}
-                        onChange={(e) => handleColorChange(e.target.value, key)}
-                        key={key} 
-                        style={{ marginRight: "10px" }}
-                    />
-                    <h4>
-                        {key
-                            .replace(/([A-Z])/g, " $1")
-                            .replace(/^./, (str) => str.toUpperCase())}
-                    </h4>
-                </div>
-            ))}
-
-            <h3>Shapes</h3>
-            {Object.entries(shapes).map(([key, value]) => (
-                <div key={key}>
-                    
-                    <h4>{key === "parentNode"? "Chapter Event": "Primitive Event"}</h4>
-                    {key === "parentNode"? <CustomNode data={parentNode}/> : <CustomNode data={new EventNode(1)}/>}
-                    <select
-                        value={value}
-                        onChange={(e) => handleShapeChange(e, key)}
+                <h3>Colors</h3>
+                {Object.entries(colors).map(([key, value]) => (
+                    <div
+                        key={key}
+                        style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                        }}
                     >
-                        <option value="circle">Circle</option>
-                        <option value="diamond">Diamond</option>
-                        <option value="square">Square</option>
-                    </select>
-                </div>
-            ))}
+                        <input
+                            type="color"
+                            value={value}
+                            onChange={(e) =>
+                                handleColorChange(e.target.value, key)
+                            }
+                            key={key}
+                            style={{ marginRight: "10px" }}
+                        />
+                        <h4>
+                            {key
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^./, (str) => str.toUpperCase())}
+                        </h4>
+                    </div>
+                ))}
 
-            <h3>Children Gate</h3>
-            {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
-                <div key={index}>
-                    <h4>{childrenGate}:</h4>
-                    
-                    <div>
-    <table>
-        <tbody>
-            <tr>
-                <td>Color</td>
-                <td>
-                    <input
-                        type="color"
-                        value={edgeStyle[childrenGate].style.stroke}
-                        onChange={(e) => handleEdgeStyleChange(e, childrenGate, "stroke")}
-                        label="color"
-                    />
-                </td>
-            </tr>
-            <tr>
-                <td>Stroke Width</td>
-                <td>
-                    <input
-                        type="number"
-                        value={edgeStyle[childrenGate].style.strokeWidth}
-                        onChange={(e) => handleEdgeStyleChange(e, childrenGate, "strokeWidth")}
-                    />
-                </td>
-            </tr>
-            <tr>
-                <td>Label</td>
-                <td>
-                    <input
-                        type="text"
-                        value={edgeStyle[childrenGate].label}
-                        onChange={(e) => handleEdgeLabelChange(e, childrenGate, "label")}
-                    />
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+                <h3>Shapes</h3>
+                {Object.entries(shapes).map(([key, value]) => (
+                    <div key={key}>
+                        <h4>
+                            {key === "parentNode"
+                                ? "Chapter Event"
+                                : "Primitive Event"}
+                        </h4>
+                        {key === "parentNode" ? (
+                            <CustomNode data={parentNode} />
+                        ) : (
+                            <CustomNode data={new EventNode("aa", null, "Primitive Event")} />
+                        )}
+                        <select
+                            value={value}
+                            onChange={(e) => handleShapeChange(e, key)}
+                        >
+                            <option value="circle">Circle</option>
+                            <option value="diamond">Diamond</option>
+                            <option value="square">Square</option>
+                        </select>
+                    </div>
+                ))}
 
-                </div>
-            ))}
+                <h3>Children Gate</h3>
+                {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
+                    <div key={index}>
+                        <h4>{childrenGate}</h4>
+
+                        <div>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>Color</td>
+                                        <td>
+                                            <input
+                                                type="color"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .style.stroke
+                                                }
+                                                onChange={(e) =>
+                                                    handleEdgeStyleChange(
+                                                        e.target.value,
+                                                        childrenGate,
+                                                        "stroke"
+                                                    )
+                                                }
+                                                label="color"
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Stroke Width</td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .style.strokeWidth
+                                                }
+                                                onChange={(e) =>
+                                                    handleEdgeStyleChange(
+                                                        e.target.value,
+                                                        childrenGate,
+                                                        "strokeWidth"
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Label</td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .label
+                                                }
+                                                onChange={(e) =>
+                                                    handleEdgeLabelChange(
+                                                        e.target.value,
+                                                        childrenGate,
+                                                        "label"
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Edge Type</td>
+                                        <td>
+                                            <select
+                                                value={
+                                                    edgeStyle[childrenGate].type
+                                                }
+                                                onChange={(e) =>
+                                                    handleEdgeLabelChange(
+                                                        e.target.value,
+                                                        childrenGate,
+                                                        "type"
+                                                    )
+                                                }
+                                            >
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.Straight
+                                                    }
+                                                >
+                                                    Straight
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.Bezier
+                                                    }
+                                                >
+                                                    Bezier
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.SimpleBezier
+                                                    }
+                                                >
+                                                    Simple Bezier
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.SmoothStep
+                                                    }
+                                                >
+                                                    Smooth Step
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.Step
+                                                    }
+                                                >
+                                                    Step
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Edge Pattern</td>
+                                        <td>
+                                            <select
+                                                value={
+                                                    edgeStyle[childrenGate].style.strokeDasharray
+                                                }
+                                                onChange={(e) =>
+                                                    handleEdgeStyleChange(
+                                                        e.target.value,
+                                                        childrenGate,
+                                                        "strokeDasharray"
+                                                    )
+                                                }
+                                            >
+                                                <option
+                                                    value={
+                                                        undefined
+                                                    }
+                                                >
+                                                    Solid
+                                                </option>
+                                                <option
+                                                    value={
+                                                        "5,5"
+                                                    }
+                                                >
+                                                    Dashed
+                                                </option>
+                                                <option
+                                                    value={
+                                                        "4 1 2 3"
+                                                    }
+                                                >
+                                                    Uneven Dashed
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Animation</td>
+                                        <td>
+                                            <input
+                                                type="checkbox"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .animated
+                                                }
+                                                onChange={(e) =>
+                                                    handleEdgeLabelChange(
+                                                        e.target.checked,
+                                                        childrenGate,
+                                                        "animated"
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ))}
             </ReactFlowProvider>
         </div>
     );
@@ -355,8 +523,18 @@ function OptionChangePanel() {
         <div>
             <h2>Demo Image Change</h2>
             <ReactFlowProvider>
-            <button onClick={() => setOpen(true)}>Open Demo</button>
-            {opened && <ProvenancePopup ids={["resin:Provenance/10478/", "resin:Provenance/10469/","resin:Provenance/10477/", ]} onClose={() => setOpen(false)} parentId={parentId}/>}
+                <button onClick={() => setOpen(true)}>Open Demo</button>
+                {opened && (
+                    <ProvenancePopup
+                        ids={[
+                            "resin:Provenance/10478/",
+                            "resin:Provenance/10469/",
+                            "resin:Provenance/10477/",
+                        ]}
+                        onClose={() => setOpen(false)}
+                        parentId={parentId}
+                    />
+                )}
             </ReactFlowProvider>
         </div>
     );
