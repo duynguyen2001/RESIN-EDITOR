@@ -673,6 +673,7 @@ export function createProvenanceEntity(
     } else if (jsonData.mediaType === "image/jpg") {
         return jsonConvert.deserializeObject(jsonData, ImageProvenance);
     } else {
+        console.log("Unsupported: " + jsonData);
         throw new Error(`Unsupported mediaType: ${jsonData.mediaType}`);
     }
 }

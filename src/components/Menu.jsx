@@ -166,13 +166,14 @@ function DownloadJSONPanel() {
     const [Entities] = useContext(EntitiesContext);
     const jsonConverter = new JsonConvert();
     const newData = {...jsonData};
-    newData.instances[0].events = jsonConverter.serializeArray(EventNodes, null, "\t");
+    newData.instances[0].events = jsonConverter.serializeArray(EventNodes);
     newData.instances[0].entities = jsonConverter.serializeArray(Array.from(Entities.values()));
     newData.provenanceData = jsonConverter.serializeArray(Array.from(Provenances.values()));
+    console.log(newData);
     const downloadJSON = () => {
         const dataStr =
             "data:text/json;charset=utf-8," +
-            encodeURIComponent(JSON.stringify(newData));
+            encodeURIComponent(JSON.stringify(newData, null, "\t"));
         const downloadAnchorNode = document.createElement("a");
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", "data.json");

@@ -47,7 +47,7 @@ export class ForceNumberArray implements JsonCustomConvert<number | number[]> {
 @JsonConverter
 export class ForceStringArray implements JsonCustomConvert<string | string[]> {
   serialize(data: string[]): any {
-    return data.length > 1 ? data : data.length > 0? data[0]: undefined;
+    return data.length > 1 ? data : data.length > 0? data[0]: [];
   }
 
   deserialize(json: any): string[] {

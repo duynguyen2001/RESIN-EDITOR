@@ -17,7 +17,7 @@ const EditableTextNode = ({ data, fileContent }) => {
         provenances.set(newProvenance.id, newProvenance);
         setProvenances(provenances);
         setNodeData(newProvenance);
-        console.log("provenances: ", provenances.get(newProvenance.id));
+        console.log("newprovenances: ", provenances.get(newProvenance.id));
     };
 
     const handleMouseUp = () => {
@@ -32,11 +32,9 @@ const EditableTextNode = ({ data, fileContent }) => {
                 console.log("endOffset: ", endOffset);
                 const newOffset = startOffset + start;
                 const newLength = endOffset - startOffset;
-                onProvenanceUpdate({
-                    ...data,
-                    offset: newOffset,
-                    length: newLength,
-                });
+                data.offset = newOffset;
+                data.length = newLength;
+                onProvenanceUpdate(data);
             }
         }
     };

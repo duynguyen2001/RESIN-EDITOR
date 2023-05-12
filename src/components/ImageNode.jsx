@@ -57,15 +57,13 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
             left: `${x}px`,
             top: `${y}px`,
         });
-        onProvenanceUpdate({
-            ...data,
-            boundingBox: [
-                x / scale,
-                y / scale,
-                (x + boundingBoxWidth) / scale,
-                (y + boundingBoxHeight) / scale,
-            ],
-        });
+        data.boundingBox = [
+            x / scale,
+            y / scale,
+            (x + boundingBoxWidth) / scale,
+            (y + boundingBoxHeight) / scale,
+        ]
+        onProvenanceUpdate(data);
     };
     const handleResize = (event, direction, ref, delta, position) => {
         setBoundingBoxHeight(ref.offsetHeight);
@@ -75,15 +73,13 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
             width: `${ref.offsetWidth}px`,
             height: `${ref.offsetHeight}px`,
         });
-        onProvenanceUpdate({
-            ...data,
-            boundingBox: [
-                position.x / scale,
-                position.y / scale,
-                (position.x + ref.offsetWidth) / scale,
-                (position.y + ref.offsetHeight) / scale,
-            ],
-        });
+        data.boundingBox = [
+            position.x / scale,
+            position.y / scale,
+            (position.x + ref.offsetWidth) / scale,
+            (position.y + ref.offsetHeight) / scale,
+        ]
+        onProvenanceUpdate(data);
     };
     return (
         <div>
