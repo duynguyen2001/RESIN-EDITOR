@@ -1,9 +1,7 @@
 import React, { useContext, useState, useRef } from "react";
-import { EventNode, Participant } from "../components/Library.tsx";
 import {
     EntitiesContext,
     EventsContext,
-    ProvenanceContext,
 } from "./DataReader";
 import "./panel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,16 +13,15 @@ import {
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import EditableText from "./EditableText.jsx";
 import { NodeRerenderContext } from "./Graph.js";
+import { useEffect } from "react";
 
-function TableInfoPanel({ data, parentId }) {
+function TableInfoPanel({ data, parentId, eventNodeRef }) {
     const [entitiesMap] = useContext(EntitiesContext);
     const [showProvenance, setShowProvenance] = useState(false);
     const [keyProvenance, setKeyProvenance] = useState(null);
     const [currentProvenance, setCurrentProvenance] = useState(null);
+    const [tableChange, setTableChange] = useState(false);
 
-    if (data === undefined) {
-        return <></>;
-    }
     const closeProvenance = () => {
         setShowProvenance(false);
     };
@@ -50,12 +47,21 @@ function TableInfoPanel({ data, parentId }) {
             const values = [];
 
             if (entityObject.name) {
-                values.push(entityObject.name);
+                values.push(
+                    <EditableText
+                        values={entityObject.name}
+                        onSave={(value, field) => {
+                            entityObject.name = value;
+                            entitiesMap.set(entityObject.id, entityObject);
+                            setTableChange(!tableChange);
+                        }}
+                        variant="none"
+                        onTable={true}
+                    />
+                );
             }
 
-            if (participant.values && participant.values instanceof String) {
-                values.push(participant.values);
-            } else if (
+            if (
                 participant.values &&
                 participant.values instanceof Array
             ) {
@@ -65,7 +71,17 @@ function TableInfoPanel({ data, parentId }) {
                         // Add a clickable text to open the provenance map
                         console.log("valueEntity", value);
                         values.push(
-                            <span
+                            <EditableText
+                                values={valueEntity.name}
+                                onSave={(value, field) => {
+                                    valueEntity.name = value;
+                                    entitiesMap.set(
+                                        valueEntity.id,
+                                        valueEntity
+                                    );
+                                    setTableChange(!tableChange);
+                                }}
+                                variant="span"
                                 key={value.ta2entity}
                                 className="clickable-text"
                                 onClick={() =>
@@ -75,12 +91,25 @@ function TableInfoPanel({ data, parentId }) {
                                         value.id,
                                     ])
                                 }
-                            >
-                                {valueEntity.name}
-                            </span>
+                                onTable={true}
+                            />
                         );
                     } else {
-                        values.push(valueEntity.name);
+                        values.push(
+                            <EditableText
+                                values={valueEntity.name}
+                                onSave={(value, field) => {
+                                    valueEntity.name = value;
+                                    entitiesMap.set(
+                                        valueEntity.id,
+                                        valueEntity
+                                    );
+                                    setTableChange(!tableChange);
+                                }}
+                                variant="none"
+                                onTable={true}
+                            />
+                        );
                     }
                 });
             }
@@ -96,72 +125,71 @@ function TableInfoPanel({ data, parentId }) {
                               </React.Fragment>
                           ))
                         : "-",
-                roleName: participant.roleName,
+                roleName: <React.Fragment>
+                    <EditableText
+                        values={participant.roleName}
+                        onSave={(value, field) => {
+                            participant.roleName = value;
+                            eventNodeRef.current = eventNodeRef.current.map(
+                                (event) => {
+                                        event.participants = event.participants.map(
+                                            (part) => {
+                                                if (
+                                                    part.id ===
+                                                    participant.id
+                                                ) {
+                                                    return participant;
+                                                } else {
+                                                    return part;
+                                                }
+                                            }
+                                        );
+                                        return event;
+                                    
+                                }
+                            )
+                            setTableChange(!tableChange);
+                        }}
+                        variant="none"
+                        onTable={true}
+                    />
+                </React.Fragment>,
             };
         });
     };
 
-    if (
-        data instanceof Array &&
-        data.length > 0 &&
-        data[0] instanceof Participant
-    ) {
-        const displayParticipantArray = getDisplayParticipantArray(
-            data,
-            parentId
-        );
+    const [displayParticipantArray, setDisplayParticipantArray] = useState(
+        getDisplayParticipantArray(data, parentId)
+    );
 
-        return (
-            <div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Role</th>
-                            <th>Filler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayParticipantArray.map((participant) => (
-                            <tr key={participant.id}>
-                                <td>{participant.roleName}</td>
-                                <td>{participant.entities}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {showProvenance && (
-                    <ProvenancePopup
-                        ids={currentProvenance}
-                        onClose={closeProvenance}
-                        parentId={keyProvenance}
-                    />
-                )}
-            </div>
-        );
-    }
-
-    const columns = Object.keys(data[0]);
-
+    useEffect(() => {
+        setDisplayParticipantArray(getDisplayParticipantArray(data, parentId));
+    }, [tableChange, data, parentId]);
     return (
         <div>
             <table>
                 <thead>
                     <tr>
-                        {columns.map((column) => (
-                            <th key={column}>{column}</th>
-                        ))}
+                        <th>Role</th>
+                        <th>Filler</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item, index) => (
-                        <tr key={index}>
-                            {columns.map((column) => (
-                                <td key={column}>{item[column]}</td>
-                            ))}
+                    {displayParticipantArray.map((participant) => (
+                        <tr key={participant.id}>
+                            <td>{participant.roleName}</td>
+                            <td>{participant.entities}</td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+            {showProvenance && (
+                <ProvenancePopup
+                    ids={currentProvenance}
+                    onClose={closeProvenance}
+                    parentId={keyProvenance}
+                />
+            )}
         </div>
     );
 }
@@ -291,6 +319,7 @@ function EventNodeInfoPanel({ data, onClose }) {
                     <TableInfoPanel
                         data={data.participants}
                         parentId={data.id}
+                        eventNodeRef={eventNodeRef}
                     />
                 </details>
             )}

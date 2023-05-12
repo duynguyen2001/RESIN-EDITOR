@@ -19,12 +19,11 @@ export const EventsContext = createContext([]);
 
 const defaultExtractedText = () => {
     const mapText = new Map();
-    for (const [_, listValue] of Object.entries(defaultText.rsd_data)) {
-        for (const [key, value] of Object.entries(listValue)) {
-            mapText.set(key, value);
-        }
+    for (const [key, value] of Object.entries(
+        defaultText.rsd_data.en
+    )) {
+        mapText.set(key, value);
     }
-    console.log("mapText", mapText);
     return mapText;
 };
 

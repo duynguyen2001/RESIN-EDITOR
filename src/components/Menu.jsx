@@ -8,7 +8,7 @@ import {
     faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "../pages/Panel";
-import { DataContext, ExtractedTextsContext } from "../pages/DataReader";
+import { DataContext, ExtractedTextsContext, ProvenanceContext, EntitiesContext, EventsContext } from "../pages/DataReader";
 import ZipReader from "./ZipReader";
 import "../assets/css/Menu.css";
 import {
@@ -23,9 +23,11 @@ import {
     NodeRerenderContext,
     EdgeStyleContext,
     EdgeRerenderContext,
+    
 } from "../pages/Graph";
 import CustomNode from "./CustomNode";
 import ProvenancePopup from "./ProvenancePopup";
+import { JsonConvert } from "json2typescript";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,7 +50,7 @@ function Menu() {
                         <FontAwesomeIcon
                             icon={faPlusSquare}
                             className="menu-item"
-                            title="Add JSON"
+                            title="Add Schema Data"
                         />
                     </div>
 
@@ -130,7 +132,6 @@ function AddJSONPanel() {
         fileReader.onload = (e) => {
             const parsedJson = JSON.parse(e.target.result);
             if (parsedJson !== undefined && parsedJson.rsd_data !== undefined) {
-                console.log("parsedJson", parsedJson.rsd_data);
                 for (const [key, value] of Object.entries(
                     parsedJson.rsd_data.en
                 )) {
@@ -141,13 +142,10 @@ function AddJSONPanel() {
         };
     };
 
-    useEffect(() => {
-        console.log("extractedTexts", extractedTexts);
-    }, [extractedTexts]);
 
     return (
         <div>
-            <h2>Upload</h2>
+            <h2>Upload JSON Schema</h2>
             <h3>RESIN TA2 File</h3>
             {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
             <input type="file" accept=".json" onChange={handleJSONUpload} />
@@ -162,12 +160,19 @@ function AddJSONPanel() {
     );
 }
 function DownloadJSONPanel() {
-    const [jsonData, setJsonData] = useContext(DataContext);
-
+    const [jsonData] = useContext(DataContext);
+    const [EventNodes] = useContext(EventsContext);
+    const [Provenances] = useContext(ProvenanceContext);
+    const [Entities] = useContext(EntitiesContext);
+    const jsonConverter = new JsonConvert();
+    const newData = {...jsonData};
+    newData.instances[0].events = jsonConverter.serializeArray(EventNodes, null, "\t");
+    newData.instances[0].entities = jsonConverter.serializeArray(Array.from(Entities.values()));
+    newData.provenanceData = jsonConverter.serializeArray(Array.from(Provenances.values()));
     const downloadJSON = () => {
         const dataStr =
             "data:text/json;charset=utf-8," +
-            encodeURIComponent(JSON.stringify(jsonData));
+            encodeURIComponent(JSON.stringify(newData));
         const downloadAnchorNode = document.createElement("a");
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", "data.json");
@@ -212,7 +217,6 @@ function SeeLegendPanel() {
 
     const handleColorChange = (color, key) => {
         setColors({ ...colors, [key]: color });
-        console.log("colorchanged", colors);
         if (key === "detected") {
             DetectedNodeStrategy.options = {
                 ...DetectedNodeStrategy.options,
@@ -297,9 +301,7 @@ function SeeLegendPanel() {
                             style={{ marginRight: "10px" }}
                         />
                         <h4>
-                            {key
-                                .replace(/([A-Z])/g, " $1")
-                                .replace(/^./, (str) => str.toUpperCase())}
+                            {key === "detected" ? "Matched Event" : key === "sourceOnly" ? "Source-only Event" : "Predicted Event"}
                         </h4>
                     </div>
                 ))}
@@ -328,7 +330,7 @@ function SeeLegendPanel() {
                     </div>
                 ))}
 
-                <h3>Children Gate</h3>
+                <h3>Edges</h3>
                 {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
                     <div key={index}>
                         <h4>{childrenGate}</h4>
@@ -464,7 +466,7 @@ function SeeLegendPanel() {
                                             >
                                                 <option
                                                     value={
-                                                        undefined
+                                                        "none"
                                                     }
                                                 >
                                                     Solid

@@ -132,7 +132,6 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                             data: {
                                 gate: mapNodes.get(node).childrenGate,
                                 isGate: true,
-                                renderStrategy: { color: "green" },
                             },
                             position: { x: graph.width / 2, y: -150 },
                         },
@@ -207,10 +206,6 @@ export const Graph = ({ eventNodes }) => {
     const [edgeChanges, setEdgeChanges] = useState(0);
 
     useEffect(() => {
-        console.log("nodesnodes", nodes);
-    }, [nodes]);
-
-    useEffect(() => {
         console.log("Change node style");
         setNodes((nds) =>
             nds.map((node) => {
@@ -228,18 +223,18 @@ export const Graph = ({ eventNodes }) => {
             animated: false,
             type: ConnectionLineType.Straight,
             style: {
-                stroke: "#BECBD3",
-                strokeWidth: 1,
+                stroke: "#BFBC9D",
+                strokeWidth: 2,
                 strokeDasharray: "5,5",
             },
         },
         xor: {
             animated: false,
             type: ConnectionLineType.SmoothStep,
-            labelStyle: { fill: "#C5AB89", fontWeight: 700, fontSize: 32 },
+            labelStyle: { fill: "#798223", fontWeight: 700, fontSize: 32 },
             width: 5,
             style: {
-                stroke: "#C5AB89",
+                stroke: "#798223",
                 strokeDasharray: "4 1 2 3",
                 strokeWidth: 5,
             },
@@ -251,6 +246,7 @@ export const Graph = ({ eventNodes }) => {
             style: {
                 stroke: "#4E6E62",
                 strokeWidth: 5,
+                strokeDasharray: "none",
             },
         },
         outlink: {
@@ -259,12 +255,13 @@ export const Graph = ({ eventNodes }) => {
             markerEnd: {
                 type: MarkerType.ArrowClosed,
                 size: 20,
-                color: "#8C736F",
+                color: "#9DA8AF",
             },
             width: 10,
             style: {
-                stroke: "#8C736F",
+                stroke: "#9DA8AF",
                 strokeWidth: 5,
+                strokeDasharray: "none",
             },
         },
     });
@@ -276,6 +273,18 @@ export const Graph = ({ eventNodes }) => {
             eds.map((edge) => {
                 return { ...edge, ...edgeStyle[edge.edgeType] };
             })
+        );
+        setNodes((nds) =>
+            nds.map((node) => {
+                if (node.data.isGate) {
+                node.renderStrategy = {
+                    color: edgeStyle[node.data.gate].style.stroke,
+                }
+                return node;
+            }
+                return node;
+            }
+            )
         );
     }, [edgeChanges]);
 
@@ -351,10 +360,10 @@ export const Graph = ({ eventNodes }) => {
                               : "XOR gate",
                       description:
                           node.data.gate === "and"
-                              ? "AND gate"
+                              ? "All of the events must occur"
                               : node.data.gate === "or"
-                              ? "OR gate"
-                              : "XOR gate",
+                              ? "One of the events will occur"
+                              : "Exactly one of the events must occur",
                       renderStrategy: {
                           color: edgeStyle[node.data.gate].style.stroke,
                       },
@@ -370,6 +379,8 @@ export const Graph = ({ eventNodes }) => {
                     id: `e-${source}-subgroup-to-gate`,
                     source: source,
                     target: `gate-${source}`,
+                    edgeType: childrenGate,
+                    childrenGate: childrenGate,
                     ...edgeStyle[childrenGate],
                 });
                 mapNodes.get(source).subgroupEvents?.forEach((target) => {

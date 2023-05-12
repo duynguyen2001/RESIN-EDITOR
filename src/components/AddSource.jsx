@@ -52,7 +52,6 @@ const AddSource = ({ parentId }) => {
         setShowTextTable(true);
     };
     useEffect(() => {
-        console.log("parentId: ", parentId);
         if (parentId instanceof Array) {
             const index = getListIndex(Events, parentId[0]);
             setEventIndex(index);
@@ -63,12 +62,6 @@ const AddSource = ({ parentId }) => {
             setParentNode(Events[index]);
         }
     }, []);
-    useEffect(() => {
-        console.log(files);
-    }, [files]);
-    useEffect(() => {
-        console.log(images);
-    }, [images]);
 
     const { getRootProps, getInputProps } = useDropzone({
         accept: "text/plain",
@@ -80,9 +73,6 @@ const AddSource = ({ parentId }) => {
             );
         },
     });
-    useEffect(() => {
-        console.log("parentNode: ", parentNode);
-    }, [parentNode]);
     const addTextProvenance = (key, value) => {
         // Here you can add your provenance
         console.log(`Add provenance for ${key}: ${value}`);
@@ -91,12 +81,6 @@ const AddSource = ({ parentId }) => {
     const handleDropdownClick = (e) => {
         e.stopPropagation();
         setShowDropdown(!showDropdown);
-        // console.log("showDropdown: ", showDropdown);
-        // console.log("Provence: ", provenances);
-        // console.log("Extracted Texts: ", extractedTexts);
-        // console.log("Extracted Files: ", extractedFiles);
-        // console.log("Entities: ", entities);
-        // console.log("parentID: ", parentId);
     };
 
     const handleSubDropdownClick = (type) => {

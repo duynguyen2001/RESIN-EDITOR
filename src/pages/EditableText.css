@@ -29,6 +29,9 @@
     flex-direction: row;
     justify-content: space-between;
 }
+.editable-text-on-table {
+    display:inline-block;
+}
 .edit-button {
     background-color: transparent;
     border: none;
@@ -41,3 +44,9 @@
     outline: none;
     cursor: pointer;
 }
+.clickable-text {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: underline;
+}
+

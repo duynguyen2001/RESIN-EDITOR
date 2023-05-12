@@ -256,7 +256,7 @@ export class PredictedNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return PredictedNodeStrategy.options.color
             ? PredictedNodeStrategy.options.color
-            : "#FED59E";
+            : "#586D80";
     }
 }
 
@@ -278,7 +278,7 @@ export class DetectedNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return DetectedNodeStrategy.options.color
             ? DetectedNodeStrategy.options.color
-            : "#E4745E";
+            : "#82ABA3";
     }
     get border(): string {
         return this.eventNode.optional ? "dotted" : "solid";
@@ -303,7 +303,7 @@ export class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return SourceOnlyNodeStrategy.options.color
             ? SourceOnlyNodeStrategy.options.color
-            : "#2A4C65";
+            : "#D6DCDB";
     }
 }
 

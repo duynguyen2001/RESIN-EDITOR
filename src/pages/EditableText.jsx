@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import "./EditableText.css";
 
-const EditableText = ({values, field, onSave, variant,...props}) => {
+const EditableText = ({values, field, onSave, variant, onClick, key, onTable = false, ...props}) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [value, setValue] = useState(values);
 
@@ -24,12 +24,20 @@ const EditableText = ({values, field, onSave, variant,...props}) => {
   };
 
   return (
-    <div className="editable-text">
+    <div className={onTable? "editable-text-on-table" : "editable-text"}>
       {!isEditMode && (
         <>
         {variant === "h2" && <h2>{values}</h2>}
         {variant === "p" && <p>{values}</p>}
+        {variant === "none" && <>{values}</>}
         {variant === "h3" && <h3>{values}</h3>}
+        {variant === "span" && <span
+                            key={key}
+                            className="clickable-text"
+                            onClick={() => onClick(key)}
+                        >
+                            {values}
+                        </span>}
           <button
             className="edit-button"
             onClick={handleEditClick}
@@ -55,5 +63,7 @@ const EditableText = ({values, field, onSave, variant,...props}) => {
     </div>
   );
 };
+
+
 
 export default EditableText;

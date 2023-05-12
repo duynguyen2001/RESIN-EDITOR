@@ -3,7 +3,6 @@ import { Handle } from "reactflow";
 import { AndGate, OrGate, XorGate } from "./Gates.jsx";
 
 function Gate({ data, isConnectable = true }) {
-    console.log("Gate data: ", data);
     return (
         <div
             style={{

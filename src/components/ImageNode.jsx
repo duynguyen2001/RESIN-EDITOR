@@ -23,30 +23,19 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
         position: "absolute",
     });
     const [editing, setEditing] = useState(false);
-    console.log("boundingBox: ", data.boundingBox);
     const onProvenanceUpdate = (newProvenance) => {
-        console.log("data: ", newProvenance);
         provenances.set(newProvenance.id, newProvenance);
         setProvenances(provenances);
-        console.log("provenances: ", provenances.get(newProvenance.id));
     };
 
     const handleImageLoad = (event) => {
         const originalWidth = event.target.naturalWidth;
-        const originalHeight = event.target.naturalHeight;
-        console.log("originalWidth: ", originalWidth);
-        console.log("originalHeight: ", originalHeight);
         setScale(containerWidth / originalWidth);
     };
 
     useEffect(() => {
-        console.log("width: ", boundingBoxWidth);
-        console.log("height: ", boundingBoxHeight);
-        console.log("x: ", boundingBoxX);
-        console.log("y: ", boundingBoxY);
     }, [boundingBoxWidth, boundingBoxHeight, boundingBoxX, boundingBoxY]);
     useEffect(() => {
-        console.log("scale", scale);
         setBoundingBoxWidth((x_end - x) * scale);
         setBoundingBoxHeight((y_end - y) * scale);
         setBoundingBoxX(x * scale);
@@ -79,11 +68,8 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
         });
     };
     const handleResize = (event, direction, ref, delta, position) => {
-        console.log("handle resize");
         setBoundingBoxHeight(ref.offsetHeight);
         setBoundingBoxWidth(ref.offsetWidth);
-        console.log("Delta: ", delta);
-        console.log("Position: ", position);
         setStyle({
             ...style,
             width: `${ref.offsetWidth}px`,
