@@ -1,9 +1,4 @@
-import React, {
-    useCallback,
-    useEffect,
-    useState,
-    createContext
-} from "react";
+import React, { useCallback, useEffect, useState, createContext } from "react";
 import ReactFlow, {
     addEdge,
     ConnectionLineType,
@@ -44,11 +39,10 @@ export const getLayoutedElements = (
     const isHorizontal = direction === "LR";
     dagreGraph.setGraph({
         rankdir: direction,
-        edgesep: isHorizontal ? 80 : 400,
         ranker: "tight-tree",
+        ranksep: isHorizontal ? 100 : 100,
         align: isHorizontal ? "UL" : undefined,
-        nodesep: isHorizontal ? 40 : 800,
-        minlen: isHorizontal ? 80 : 400,
+        nodesep: isHorizontal ? 50 : 300,
     });
 
     nodes.forEach((node) => {
@@ -97,16 +91,15 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
     if (firstNode) {
         const subgraphs = chosenNodes.map((node) => {
             const currentNode = mapNodes.get(node);
-            const subGraphNodes = currentNode
-                .subgroupEvents?.map((subNode) => {
-                    return {
-                        id: subNode,
-                        data: mapNodes.get(subNode),
-                        position: { x: 0, y: 0 },
-                    };
-                });
+            const subGraphNodes = currentNode.subgroupEvents?.map((subNode) => {
+                return {
+                    id: subNode,
+                    data: mapNodes.get(subNode),
+                    position: { x: 0, y: 0 },
+                };
+            });
             const subGraphEdges =
-            currentNode.subgroupEvents?.flatMap((subNode) =>
+                currentNode.subgroupEvents?.flatMap((subNode) =>
                     mapNodes.get(subNode).outlinks.map((outlinkNode) => ({
                         id: `outlink-${subNode}-${outlinkNode}`,
                         source: subNode,
@@ -135,8 +128,11 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                                 parentNode: currentNode.name,
                                 ...currentNode,
                             },
-                            style: { width: graph.width+ 50, height: graph.height+ 50, zIndex: -10},
-                            
+                            style: {
+                                width: graph.width + 100,
+                                height: graph.height + 100,
+                                zIndex: -10,
+                            },
                         },
                         ...graph.nodes,
                     ],
@@ -188,8 +184,12 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                 parentNode.data.nodes.map((node) => ({
                     ...node,
                     position: {
-                        x: node.data.isGate? parentNode.position.x : node.position.x + 25,
-                        y: node.data.isGate? parentNode.position.y : node.position.y + 50,
+                        x: node.data.isGate
+                            ? parentNode.position.x
+                            : node.position.x + 25,
+                        y: node.data.isGate
+                            ? parentNode.position.y
+                            : node.position.y + 50,
                     },
                 }))
             )
@@ -230,7 +230,7 @@ export const Graph = ({ eventNodes }) => {
             style: {
                 stroke: "#BFBC9D",
                 strokeWidth: 2,
-                strokeDasharray: "5,5",
+                strokeDasharray: "none",
             },
         },
         xor: {
@@ -286,14 +286,13 @@ export const Graph = ({ eventNodes }) => {
         setNodes((nds) =>
             nds.map((node) => {
                 if (node.data.isGate) {
-                node.renderStrategy = {
-                    color: edgeStyle[node.data.gate].style.stroke,
+                    node.renderStrategy = {
+                        color: edgeStyle[node.data.gate].style.stroke,
+                    };
+                    return node;
                 }
                 return node;
-            }
-                return node;
-            }
-            )
+            })
         );
     }, [edgeChanges]);
 
@@ -356,16 +355,18 @@ export const Graph = ({ eventNodes }) => {
         const outLinksEdges = [];
         const layoutedNodes = newNodes.map((node) => ({
             ...node,
-            type: node.data.isGate ? "output" : "custom",
+            type: node.data.isGate ? "gate" : "custom",
             data: node.data.isGate
                 ? {
                       ...node.data,
                       gate: node.data.gate,
-                      label: `${node.data.parentNode} (${node.data.gate === "and"
-                      ? "AND"
-                      : node.data.gate === "or"
-                      ? "OR"
-                      : "XOR"})`,
+                      label: `${node.data.parentNode} (${
+                          node.data.gate === "and"
+                              ? "AND"
+                              : node.data.gate === "or"
+                              ? "OR"
+                              : "XOR"
+                      })`,
                       name:
                           node.data.gate === "and"
                               ? `"AND gate"`
@@ -383,13 +384,18 @@ export const Graph = ({ eventNodes }) => {
                       },
                   }
                 : node.data,
-                expandParent: node.data.isGate || node.data.isTopLevel?  undefined : true,
-                parentNode: node.data.isGate || node.data.isTopLevel? undefined : `gate-${node.data.parent}`,
-                style: {
-                    ...node.style,
-                     backgroundColor: node.data.isGate? `${edgeStyle[node.data.gate].style.stroke}`: "white",
-                }
-                
+            expandParent:
+                node.data.isGate || node.data.isTopLevel ? undefined : true,
+            parentNode:
+                node.data.isGate || node.data.isTopLevel
+                    ? undefined
+                    : `gate-${node.data.parent}`,
+            style: {
+                ...node.style,
+                backgroundColor: node.data.isGate
+                    ? `${edgeStyle[node.data.gate].style.stroke}70`
+                    : "white",
+            },
         }));
 
         const newEdges = [];
@@ -404,16 +410,6 @@ export const Graph = ({ eventNodes }) => {
                     edgeType: childrenGate,
                     childrenGate: childrenGate,
                     ...edgeStyle[childrenGate],
-                });
-                sourceNode.subgroupEvents?.forEach((target) => {
-                    newEdges.push({
-                        id: `e-gate-${source}-${target}`,
-                        source: `gate-${source}`,
-                        target: target,
-                        edgeType: childrenGate,
-                        childrenGate: childrenGate,
-                        ...edgeStyle[childrenGate],
-                    });
                 });
             }
         });

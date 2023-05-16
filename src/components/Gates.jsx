@@ -9,12 +9,24 @@ const XorGate = ({
     ...otherProps
 }) => {
     return (
-        <>
+        <><Handle
+        type="target"
+        position="top"
+        style={{
+            background: "#555",
+            borderRadius: "50%",
+            top : "55px",
+        }}
+        onConnect={(params) =>
+            console.log("handle onConnect", params)
+        }
+        isConnectable={false}
+    />
             <strong
                 style={{
-                    position: "relative",
-                    top: "70%",
-                    left: "50%",
+                    position: "absolute",
+                    top : "70px",
+                    left: "63px",
                     color: wordColor,
                 }}
             >
@@ -53,12 +65,28 @@ const OrGate = ({
     ...otherProps
 }) => {
     return (
-        <>
+        <
+
+        >
+        <Handle
+            type="target"
+            position="top"
+            style={{
+                background: "#555",
+                borderRadius: "50%",
+                top : "60px",
+                left: "75px"
+            }}
+            onConnect={(params) =>
+                console.log("handle onConnect", params)
+            }
+            isConnectable={false}
+        />
             <strong
                 style={{
-                    position: "relative",
-                    top: "70%",
-                    left: "50%",
+                    position: "absolute",
+                    top: "70px",
+                    left: "45%",
                     color: wordColor,
                 }}
             >
@@ -93,11 +121,25 @@ const AndGate = ({
 }) => {
     return (
         <>
+        <Handle
+            type="target"
+            position="top"
+            style={{
+                background: "#555",
+                borderRadius: "50%",
+                top : "55px",
+                left: "75px"
+            }}
+            onConnect={(params) =>
+                console.log("handle onConnect", params)
+            }
+            isConnectable={false}
+        />
             <strong
                 style={{
-                    position: "relative",
-                    top: "70%",
-                    left: "50%",
+                    position: "absolute",
+                    top: "70px",
+                    left: "60px",
                     color: wordColor,
                 }}
             >
