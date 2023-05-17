@@ -2,217 +2,51 @@ import React, { useCallback, useEffect, useState, createContext } from "react";
 import ReactFlow, {
     addEdge,
     ConnectionLineType,
-    useNodesState,
-    useEdgesState,
     MiniMap,
     ReactFlowProvider,
     Controls,
-    MarkerType,
-    Position,
 } from "reactflow";
-import dagre from "dagre";
-import { CustomNode } from "../components/CustomNode";
+import { EventGraphNode } from "../components/EventGraphNode";
 import "reactflow/dist/style.css";
 import "./graph.css";
 import { InfoPanel } from "./Panel";
 import Menu from "../components/Menu";
 import Gate from "../components/Gate";
+import useStore from "./store";
+
 const nodeTypes = {
-    custom: CustomNode,
+    eventNode: EventGraphNode,
     gate: Gate,
 };
 export const EdgeStyleContext = createContext();
 export const NodeRerenderContext = createContext();
 export const EdgeRerenderContext = createContext();
 
-const nodeWidth = 200;
-const nodeHeight = 200;
-
-export const getLayoutedElements = (
-    nodes,
-    edges,
-    direction = "TB",
-    getGraph = false
-) => {
-    const dagreGraph = new dagre.graphlib.Graph();
-    dagreGraph.setDefaultEdgeLabel(() => ({}));
-    const isHorizontal = direction === "LR";
-    dagreGraph.setGraph({
-        rankdir: direction,
-        ranker: "tight-tree",
-        ranksep: isHorizontal ? 100 : 100,
-        align: isHorizontal ? "UL" : undefined,
-        nodesep: isHorizontal ? 50 : 300,
-    });
-
-    nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, {
-            width: node.width ? node.width : nodeWidth,
-            height: node.height ? node.height : nodeHeight,
-        });
-    });
-
-    edges.forEach((edge) => {
-        dagreGraph.setEdge(edge.source, edge.target);
-    });
-
-    dagre.layout(dagreGraph);
-
-    nodes.forEach((node) => {
-        const nodeWithPosition = dagreGraph.node(node.id);
-        node.targetPosition = isHorizontal ? "left" : "top";
-        node.sourcePosition = isHorizontal ? "right" : "bottom";
-
-        // We are shifting the dagre node position (anchor=center center) to the top left
-        // so it matches the React Flow node anchor point (top left).
-        node.position = {
-            x: nodeWithPosition.x - (node.width ? node.width : nodeWidth) / 2,
-            y:
-                nodeWithPosition.y -
-                (node.height ? node.height : nodeHeight) / 2,
-        };
-
-        return node;
-    });
-    if (getGraph) {
-        return {
-            nodes: nodes,
-            edges: edges,
-            width: dagreGraph.graph().width,
-            height: dagreGraph.graph().height,
-            position: dagreGraph.graph().position,
-        };
-    }
-
-    return { nodes, edges };
-};
-const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
-    const nodes = [];
-    if (firstNode) {
-        const subgraphs = chosenNodes.map((node) => {
-            const currentNode = mapNodes.get(node);
-            const subGraphNodes = currentNode.subgroupEvents?.map((subNode) => {
-                return {
-                    id: subNode,
-                    data: mapNodes.get(subNode),
-                    position: { x: 0, y: 0 },
-                };
-            });
-            const subGraphEdges =
-                currentNode.subgroupEvents?.flatMap((subNode) =>
-                    mapNodes.get(subNode).outlinks.map((outlinkNode) => ({
-                        id: `outlink-${subNode}-${outlinkNode}`,
-                        source: subNode,
-                        target: outlinkNode,
-                    }))
-                ) || [];
-
-            const graph = getLayoutedElements(
-                subGraphNodes,
-                subGraphEdges,
-                "LR",
-                true
-            );
-            return {
-                id: `subgraph-${node}`,
-                width: graph.width,
-                height: graph.height,
-                position: { x: 0, y: 0 },
-                data: {
-                    nodes: [
-                        {
-                            id: `gate-${node}`,
-                            data: {
-                                gate: currentNode.childrenGate,
-                                isGate: true,
-                                parentNode: currentNode.name,
-                                ...currentNode,
-                            },
-                            style: {
-                                width: graph.width + 100,
-                                height: graph.height + 100,
-                                zIndex: -10,
-                            },
-                        },
-                        ...graph.nodes,
-                    ],
-                    edges: graph.edges,
-                },
-            };
-        });
-        const subgraphEdges = chosenNodes.flatMap((node) => {
-            const parentNode = mapNodes.get(node).parent
-                ? mapNodes.get(node).parent
-                : "root";
-            return [
-                {
-                    id: `subgraph-edge-${parentNode}-gate-${parentNode}`,
-                    source: `subgraph-${parentNode}`,
-                    target: `gate-${parentNode}`,
-                },
-                {
-                    id: `subgraph-edge-gate-${parentNode}-${node}`,
-                    source: `gate-${parentNode}`,
-                    target: `subgraph-${node}`,
-                },
-            ];
-        });
-
-        subgraphs.push({
-            id: `subgraph-${firstNode.parent}`,
-            width: 200,
-            height: 200,
-            data: {
-                nodes: [
-                    {
-                        id: firstNode.id,
-                        data: firstNode,
-                        position: { x: 0, y: 0 },
-                    },
-                ],
-                edges: [],
-            },
-        });
-        const outerGraph = getLayoutedElements(
-            subgraphs,
-            subgraphEdges,
-            "TB",
-            true
-        );
-        nodes.push(
-            ...outerGraph.nodes.flatMap((parentNode) =>
-                parentNode.data.nodes.map((node) => ({
-                    ...node,
-                    position: {
-                        x: node.data.isGate
-                            ? parentNode.position.x
-                            : node.position.x + 25,
-                        y: node.data.isGate
-                            ? parentNode.position.y
-                            : node.position.y + 50,
-                    },
-                }))
-            )
-        );
-    }
-    return nodes;
-};
-
 export const Graph = ({ eventNodes }) => {
-    const [chosenNodes, setChosenNodes] = useState([]);
-    const [nodes, setNodes, onNodesChange] = useNodesState([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-    const [mapNodes, setMapNodes] = useState({});
-    const [clickedNode, setClickedNode] = useState(null);
-    const [firstNode, setFirstNode] = useState(null);
+
+    const {
+        nodes,
+        edges,
+        mapNodes,
+        clickedNode,
+        key,
+        setNodes,
+        setEdges,
+        setClickedNode,
+        onNodesChange,
+        onEdgesChange,
+        updateGraphByEventNodes,
+        onNodeClick
+    } = useStore();
+
     // style related nodes
     const [nodeChanges, setNodeChanges] = useState(0);
     const [edgeChanges, setEdgeChanges] = useState(0);
 
     useEffect(() => {
         console.log("Change node style");
-        setNodes((nds) =>
-            nds.map((node) => {
+        setNodes(
+            nodes.map((node) => {
                 node.renderStrategy = null;
                 node.style = {
                     ...node.style,
@@ -222,69 +56,18 @@ export const Graph = ({ eventNodes }) => {
         );
     }, [nodeChanges]);
 
-    const [edgeStyle, setEdgeStyle] = useState({
-        or: {
-            animated: false,
-            type: ConnectionLineType.Straight,
-            zIndex: 10,
-            style: {
-                stroke: "#BFBC9D",
-                strokeWidth: 2,
-                strokeDasharray: "none",
-            },
-        },
-        xor: {
-            animated: false,
-            type: ConnectionLineType.SmoothStep,
-            labelStyle: { fill: "#798223", fontWeight: 700, fontSize: 32 },
-            width: 5,
-            zIndex: 10,
-            style: {
-                stroke: "#798223",
-                strokeDasharray: "4 1 2 3",
-                strokeWidth: 5,
-            },
-        },
-        and: {
-            animated: false,
-            type: ConnectionLineType.Straight,
-            width: 5,
-            zIndex: 10,
-            style: {
-                stroke: "#4E6E62",
-                strokeWidth: 5,
-                strokeDasharray: "none",
-            },
-        },
-        outlink: {
-            animated: false,
-            type: ConnectionLineType.Straight,
-            zIndex: 10,
-            markerEnd: {
-                type: MarkerType.ArrowClosed,
-                size: 20,
-                color: "#9DA8AF",
-            },
-            width: 10,
-            style: {
-                stroke: "#9DA8AF",
-                strokeWidth: 5,
-                strokeDasharray: "none",
-                zIndex: 10,
-            },
-        },
-    });
+    const [edgeStyle, setEdgeStyle] = useState();
 
     // edge style related effects
     useEffect(() => {
         console.log("Change edge style", edges);
-        setEdges((eds) =>
-            eds.map((edge) => {
+        setEdges(
+            edges.map((edge) => {
                 return { ...edge, ...edgeStyle[edge.edgeType] };
             })
         );
-        setNodes((nds) =>
-            nds.map((node) => {
+        setNodes(
+            nodes.map((node) => {
                 if (node.data.isGate) {
                     node.renderStrategy = {
                         color: edgeStyle[node.data.gate].style.stroke,
@@ -296,14 +79,7 @@ export const Graph = ({ eventNodes }) => {
         );
     }, [edgeChanges]);
 
-    const options = {
-        minZoom: 0.00001,
-        maxZoom: 1000,
-        zoomOnScroll: true,
-        panOnScroll: true,
-        snapToGrid: true,
-        snapGrid: [16, 16],
-    };
+   
 
     const handleClosePanel = () => {
         setClickedNode(null);
@@ -311,179 +87,30 @@ export const Graph = ({ eventNodes }) => {
 
     // layout related functions
     useEffect(() => {
-        if (eventNodes.length > 0) {
-            const firstNode = eventNodes.find((node) => node.isTopLevel);
-            const newMap = new Map();
-            eventNodes.forEach((node) => {
-                newMap.set(node.id, node);
-            });
-            setMapNodes(newMap);
-            setFirstNode(firstNode);
-            setChosenNodes([firstNode.id]);
-        }
+        updateGraphByEventNodes(eventNodes);
     }, [eventNodes]);
-
-    const getAllSubgroupEvents = useCallback(
-        (node) => {
-            const tractNodes = [node];
-            const objectNode = mapNodes.get(node);
-            if (mapNodes.get(node).subgroupEvents === undefined) {
-                return tractNodes;
-            }
-            if (node && chosenNodes.includes(node)) {
-                for (const child of objectNode.subgroupEvents) {
-                    const childNode = mapNodes.get(child).id;
-                    tractNodes.push(...getAllSubgroupEvents(childNode));
-                }
-            }
-
-            return tractNodes;
-        },
-        [mapNodes, chosenNodes]
-    );
-
     useEffect(() => {
-        if (firstNode === null || mapNodes.size === 0) {
-            return;
-        }
-
-        const newNodes = getLayoutedElementsNested(
-            chosenNodes,
-            mapNodes,
-            firstNode
-        );
-        const outLinksEdges = [];
-        const layoutedNodes = newNodes.map((node) => ({
-            ...node,
-            type: node.data.isGate ? "gate" : "custom",
-            data: node.data.isGate
-                ? {
-                      ...node.data,
-                      gate: node.data.gate,
-                      label: `${node.data.parentNode} (${
-                          node.data.gate === "and"
-                              ? "AND"
-                              : node.data.gate === "or"
-                              ? "OR"
-                              : "XOR"
-                      })`,
-                      name:
-                          node.data.gate === "and"
-                              ? `"AND gate"`
-                              : node.data.gate === "or"
-                              ? "OR gate"
-                              : "XOR gate",
-                      description:
-                          node.data.gate === "and"
-                              ? "All of the events must occur"
-                              : node.data.gate === "or"
-                              ? "One of the events will occur"
-                              : "Exactly one of the events must occur",
-                      renderStrategy: {
-                          color: edgeStyle[node.data.gate].style.stroke,
-                      },
-                  }
-                : node.data,
-            expandParent:
-                node.data.isGate || node.data.isTopLevel ? undefined : true,
-            parentNode:
-                node.data.isGate || node.data.isTopLevel
-                    ? undefined
-                    : `gate-${node.data.parent}`,
-            style: {
-                ...node.style,
-                backgroundColor: node.data.isGate
-                    ? `${edgeStyle[node.data.gate].style.stroke}70`
-                    : "white",
-            },
-        }));
-
-        const newEdges = [];
-        chosenNodes.forEach((source) => {
-            const sourceNode = mapNodes.get(source);
-            if (sourceNode.subgroupEvents) {
-                const childrenGate = sourceNode.childrenGate;
-                newEdges.push({
-                    id: `e-${source}-subgroup-to-gate`,
-                    source: source,
-                    target: `gate-${source}`,
-                    edgeType: childrenGate,
-                    childrenGate: childrenGate,
-                    ...edgeStyle[childrenGate],
-                });
-            }
-        });
-        newNodes.forEach((node) => {
-            node.data.outlinks?.forEach((outlink) => {
-                outLinksEdges.push({
-                    id: `e-${node.id}-${outlink}-outlink`,
-                    source: node.id,
-                    target: outlink,
-                    sourceHandle: node.id + "_right",
-                    targetHandle: outlink + "_left",
-                    sourcePosition: Position.Right,
-                    targetPosition: Position.Left,
-                    edgeType: "outlink",
-                    ...edgeStyle.outlink,
-                });
-            });
-        });
-
-        setNodes([...layoutedNodes]);
-        setEdges(
-            [...newEdges, ...outLinksEdges].filter(
-                (edge, index, self) =>
-                    index ===
-                    self.findIndex(
-                        (e) =>
-                            e.source === edge.source && e.target === edge.target
-                    )
-            )
-        );
-    }, [chosenNodes]);
+        console.log("nodes", nodes);
+    }, [nodes]);
 
     const onConnect = useCallback(
         (params) =>
-            setEdges((eds) =>
+            setEdges(
                 addEdge(
                     {
                         ...params,
                         type: ConnectionLineType.Straight,
                         animated: true,
                     },
-                    eds
+                    edges
                 )
             ),
         []
     );
-    const onNodeClick = useCallback(
-        (event, node) => {
-            setClickedNode(node);
-            if (
-                !node.data.subgroupEvents ||
-                node.data.subgroupEvents.length === 0
-            ) {
-                return;
-            }
-            if (node.data.isExpanded) {
-                node.data.isExpanded = false;
-                const allSubEvents = getAllSubgroupEvents(node.id);
-
-                const newChosenNodes = chosenNodes.filter(
-                    (n) => !allSubEvents.includes(n)
-                );
-                setChosenNodes(newChosenNodes);
-
-                return;
-            }
-            setChosenNodes([...chosenNodes, node.id]);
-            node.data.isExpanded = true;
-        },
-        [chosenNodes]
-    );
+    
 
     // denote the color of the node in the minimap
-    const nodeColor = (node) => node.data.renderStrategy.color;
+    // const nodeColor = (node) => node.data.renderStrategy.color;
 
     return (
         <NodeRerenderContext.Provider value={[nodeChanges, setNodeChanges]}>
@@ -492,6 +119,8 @@ export const Graph = ({ eventNodes }) => {
                     <div className="layoutflow">
                         <ReactFlowProvider>
                             <ReactFlow
+
+                                key={key}
                                 nodes={nodes}
                                 edges={edges}
                                 onNodesChange={onNodesChange}
@@ -499,13 +128,15 @@ export const Graph = ({ eventNodes }) => {
                                 onNodeClick={onNodeClick}
                                 onConnect={onConnect}
                                 nodeTypes={nodeTypes}
-                                options={options}
+                                maxZoom={2}
+                                minZoom={0.1}
+                                
                                 fitView
                             />
                             <MiniMap
                                 nodes={nodes}
                                 edges={edges}
-                                nodeColor={nodeColor}
+                                // nodeColor={nodeColor}
                                 nodeStrokeWidth={3}
                                 zoomable
                                 pannable
@@ -514,7 +145,7 @@ export const Graph = ({ eventNodes }) => {
                         </ReactFlowProvider>
                         {clickedNode && (
                             <InfoPanel
-                                data={clickedNode.data}
+                                data={clickedNode.data.isGate? mapNodes.get(clickedNode.data.referredNode): mapNodes.get(clickedNode.id)}
                                 onClose={handleClosePanel}
                             />
                         )}

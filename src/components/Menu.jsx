@@ -16,7 +16,9 @@ import {
     PredictedNodeStrategy,
     SourceOnlyNodeStrategy,
     NodeRenderingStrategy,
+    TreeRenderOptions,
     EventNode,
+    EventNodeType,
 } from "./Library";
 import { ConnectionLineType, ReactFlowProvider } from "reactflow";
 import {
@@ -25,9 +27,10 @@ import {
     EdgeRerenderContext,
     
 } from "../pages/Graph";
-import CustomNode from "./CustomNode";
+import EventGraphNode from "./EventGraphNode";
 import ProvenancePopup from "./ProvenancePopup";
 import { JsonConvert } from "json2typescript";
+import useStore from "../pages/store";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -191,63 +194,9 @@ function DownloadJSONPanel() {
 }
 
 function SeeLegendPanel() {
-    const [nodeRerender, setNodeRerender] = useContext(NodeRerenderContext);
     const [edgeRerender, setEdgeRerender] = useContext(EdgeRerenderContext);
     const [edgeStyle, setEdgeStyle] = useContext(EdgeStyleContext);
-
-    const [colors, setColors] = useState({
-        detected: DetectedNodeStrategy.options.color
-            ? DetectedNodeStrategy.options.color
-            : new DetectedNodeStrategy().color,
-        sourceOnly: SourceOnlyNodeStrategy.options.color
-            ? SourceOnlyNodeStrategy.options.color
-            : new SourceOnlyNodeStrategy().color,
-        predicted: PredictedNodeStrategy.options.color
-            ? PredictedNodeStrategy.options.color
-            : new PredictedNodeStrategy().color,
-    });
-
-    const [shapes, setShapes] = useState({
-        parentNode: NodeRenderingStrategy.nodeOptions.parentNode
-            ? NodeRenderingStrategy.nodeOptions.parentNode
-            : "diamond",
-        leafNode: NodeRenderingStrategy.nodeOptions.leafNode
-            ? NodeRenderingStrategy.nodeOptions.leafNode
-            : "circle",
-    });
-
-    const handleColorChange = (color, key) => {
-        setColors({ ...colors, [key]: color });
-        if (key === "detected") {
-            DetectedNodeStrategy.options = {
-                ...DetectedNodeStrategy.options,
-                color: color,
-            };
-            console.log(new DetectedNodeStrategy());
-        } else if (key === "sourceOnly") {
-            SourceOnlyNodeStrategy.options = {
-                ...SourceOnlyNodeStrategy.options,
-                color: color,
-            };
-            console.log(new SourceOnlyNodeStrategy());
-        } else if (key === "predicted") {
-            PredictedNodeStrategy.options = {
-                ...PredictedNodeStrategy.options,
-                color: color,
-            };
-            console.log(new PredictedNodeStrategy());
-        }
-        setNodeRerender((nodeRerender + 1) % 2);
-    };
-
-    const handleShapeChange = (e, key) => {
-        setShapes({ ...shapes, [key]: e.target.value });
-        NodeRenderingStrategy.nodeOptions = {
-            ...NodeRenderingStrategy.nodeOptions,
-            [key]: e.target.value,
-        };
-        setNodeRerender((nodeRerender + 1) % 2);
-    };
+    const [updateNodeAttribute, updateTreeNodeAttribute] = useStore((state) => [state.updateNodeAttribute, state.updateTreeNodeAttribute]);
 
     const handleEdgeStyleChange = (value, childrenGate, key) => {
         const newEdgeStyle = {
@@ -283,7 +232,7 @@ function SeeLegendPanel() {
             <h2>Legend</h2>
             <ReactFlowProvider>
                 <h3>Colors</h3>
-                {Object.entries(colors).map(([key, value]) => (
+                {[[EventNodeType.Detected, DetectedNodeStrategy.options.color], [EventNodeType.Predicted, PredictedNodeStrategy.options.color], [EventNodeType.SourceOnly, SourceOnlyNodeStrategy.options.color]].map(([key, value]) => (
                     <div
                         key={key}
                         style={{
@@ -296,7 +245,7 @@ function SeeLegendPanel() {
                             type="color"
                             value={value}
                             onChange={(e) =>
-                                handleColorChange(e.target.value, key)
+                                updateNodeAttribute(key, "color", e.target.value)
                             }
                             key={key}
                             style={{ marginRight: "10px" }}
@@ -308,21 +257,22 @@ function SeeLegendPanel() {
                 ))}
 
                 <h3>Shapes</h3>
-                {Object.entries(shapes).map(([key, value]) => (
+                {[["parentNode", NodeRenderingStrategy.nodeOptions.parentNode], ["leafNode", NodeRenderingStrategy.nodeOptions.leafNode]].map(([key, value]) => (
                     <div key={key}>
                         <h4>
                             {key === "parentNode"
                                 ? "Chapter Event"
                                 : "Primitive Event"}
                         </h4>
-                        {key === "parentNode" ? (
-                            <CustomNode data={parentNode} />
+                        {/* {key === "parentNode" ? (
+                            <EventGraphNode data={parentNode} />
                         ) : (
-                            <CustomNode data={new EventNode("aa", null, "Primitive Event")} />
-                        )}
+                            <EventGraphNode data={new EventNode("aa", null, "Primitive Event")} />
+                        )} */}
                         <select
                             value={value}
-                            onChange={(e) => handleShapeChange(e, key)}
+                            // onChange={(e) => handleShapeChange(e, key)}
+                            onChange={(e) => updateTreeNodeAttribute(key, e.target.value)}
                         >
                             <option value="circle">Circle</option>
                             <option value="diamond">Diamond</option>
@@ -332,7 +282,7 @@ function SeeLegendPanel() {
                 ))}
 
                 <h3>Edges</h3>
-                {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
+                {/* {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
                     <div key={index}>
                         <h4>{childrenGate}</h4>
 
@@ -512,7 +462,7 @@ function SeeLegendPanel() {
                             </table>
                         </div>
                     </div>
-                ))}
+                ))} */}
             </ReactFlowProvider>
         </div>
     );

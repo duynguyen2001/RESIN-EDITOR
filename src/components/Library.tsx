@@ -1,8 +1,5 @@
 import React, {
-    CSSProperties,
-    ReactComponentElement,
     ReactElement,
-    useContext,
 } from "react";
 import { JsonObject, JsonProperty, JsonConvert } from "json2typescript";
 import {
@@ -23,8 +20,16 @@ export type TreeRenderOptions = {
     parentNode?: string;
 };
 export abstract class NodeRenderingStrategy {
-    protected eventNode: EventNode;
-    static nodeOptions: TreeRenderOptions = {};
+    protected eventNode: {
+        id: string;
+        description: String;
+        optional: boolean | undefined;
+        subgroupEvents: String[];
+    };
+    static nodeOptions: TreeRenderOptions = {
+        leafNode: "circle",
+        parentNode: "diamond",
+    };
 
     abstract get color(): string;
 
@@ -48,9 +53,10 @@ export abstract class NodeRenderingStrategy {
         return 50;
     }
     constructor(eventNode: EventNode) {
-        this.eventNode = eventNode;
-    }
 
+        this.eventNode = {id: eventNode.id? eventNode.id: "", description: eventNode.description? eventNode.description : "", optional: eventNode.optional? true: false, subgroupEvents: eventNode.subgroupEvents? eventNode.subgroupEvents : []};
+    }
+    
     render(isConnectable: boolean | undefined): ReactElement {
         return (
             <div className="hover-container">
@@ -241,7 +247,9 @@ export abstract class NodeRenderingStrategy {
 export class PredictedNodeStrategy extends NodeRenderingStrategy {
     predictionProvenance: string[];
     confidence: number[];
-    static options: RenderOptions = {};
+    static options: RenderOptions = {
+        color: "#586D80",
+    };
 
     constructor(
         eventNode: EventNode,
@@ -263,7 +271,9 @@ export class PredictedNodeStrategy extends NodeRenderingStrategy {
 export class DetectedNodeStrategy extends NodeRenderingStrategy {
     provenance: string[];
     confidence: number[];
-    static options: RenderOptions = {};
+    static options: RenderOptions = {
+        color: "#82ABA3",
+    };
 
     constructor(
         eventNode: EventNode,
@@ -288,7 +298,9 @@ export class DetectedNodeStrategy extends NodeRenderingStrategy {
 export class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
     provenance: string | string[];
     confidence: number | number[];
-    static options: RenderOptions = {};
+    static options: RenderOptions = {
+        color: "#D6DCDB",
+    };
 
     constructor(
         eventNode: EventNode,
@@ -423,9 +435,9 @@ export class Participant {
     }
 }
 export enum EventNodeType {
-    Predicted,
-    SourceOnly,
-    Detected,
+    Predicted = "predicted",
+    SourceOnly = "sourceOnly",
+    Detected = "detected",
 }
 
 @JsonObject("EventNode")

@@ -1,17 +1,21 @@
 import React from "react";
-import { Handle } from "reactflow";
 import { AndGate, OrGate, XorGate } from "./Gates.jsx";
 
 function Gate({ data, isConnectable = true, label }) {
-    console.log("gate data: ", data);
     return (
         <div
             style={{
-                background: "blue",
+                background: "",
             }}
         >
             
-                {label}
+                <h2 style={{
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
+                }}>{data.name}</h2>
             <div
                 style={{
                     justifyContent: "center",
