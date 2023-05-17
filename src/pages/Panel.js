@@ -12,8 +12,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import EditableText from "./EditableText.jsx";
-import { NodeRerenderContext } from "./Graph.js";
 import { useEffect } from "react";
+import useStore from "./store";
 
 function TableInfoPanel({ data, parentId, eventNodeRef }) {
     const [entitiesMap] = useContext(EntitiesContext);
@@ -216,7 +216,7 @@ function EventNodeInfoPanel({ data, onClose }) {
     const [showProvenance, setShowProvenance] = useState(false);
     const [EventNodes, _] = useContext(EventsContext);
     const eventNodeRef = useRef(EventNodes);
-    const [nodeRerender, setNodeRerender] = useContext(NodeRerenderContext);
+    const [nodeRerender] = useStore((state) => [state.nodeRerender]);
 
     if (data === undefined) {
         return <></>;
@@ -238,7 +238,8 @@ function EventNodeInfoPanel({ data, onClose }) {
             return nd;
         });
 
-        setNodeRerender((nodeRerender + 1) % 2);
+        nodeRerender();
+
     };
 
     return (

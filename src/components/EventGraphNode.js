@@ -1,10 +1,16 @@
 import React, { memo } from "react";
 import useStore from "../pages/store";
+import { EventNode } from "../components/Library";
 
 export const EventGraphNode = ({ id, data, isConnectable, onHover}) => {
-    const getNodeById = useStore((state) => state.getNodeById);
-    if (data === undefined) {
-        return <div>undefined</div>;
+    const node = useStore((state) => state.getNodeById)(id);
+    if (!node) {
+      if (data instanceof EventNode){
+        return <div>
+            {data.render({}, isConnectable, onHover)}
+        </div>;
+
+      }
     }
 
     return (
@@ -16,7 +22,7 @@ export const EventGraphNode = ({ id, data, isConnectable, onHover}) => {
                 minHeight: "fit-content",
             }}
         >
-            {getNodeById(id).render({}, isConnectable, onHover)}
+            {node.render({}, isConnectable, onHover)}
         </div>
     );
 };

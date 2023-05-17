@@ -14,8 +14,6 @@ import {
     applyNodeChanges,
     Position,
     applyEdgeChanges,
-    NodeResetChange,
-    NodeAddChange,
 } from "reactflow";
 import {
     EventNode,
@@ -23,7 +21,7 @@ import {
     PredictedNodeStrategy,
     SourceOnlyNodeStrategy,
     EventNodeType,
-    NodeRenderingStrategy
+    NodeRenderingStrategy,
 } from "../components/Library";
 import getLayoutedElementsNested from "./layout";
 
@@ -82,10 +80,14 @@ type RFState = {
         key: string,
         value: string
     ) => void;
-    updateTreeNodeAttribute: (
-      key: string,
-      value: string
-  ) => void;
+    updateEdgeAttribute: (
+        edgeType: GraphEdgeType,
+        key: string,
+        body: any
+    ) => void;
+    updateTreeNodeAttribute: (key: string, value: string) => void;
+    updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => void;
+    refreshGate: (gateType: GraphEdgeType) => void;
     updateGraphByEventNodes: (eventNodes: EventNode[]) => void;
     getAllCurrentSubgroupEvents: (node: string) => string[];
     getNodeById: (id: string) => Node | undefined;
@@ -103,7 +105,9 @@ const useStore = create<RFState>((set, get) => ({
     key: 0,
     edgeStyle: {
         or: {
-            edgeType: "or",
+            data: {
+                edgeType: "or",
+            },
             childrenGate: "or",
             animated: false,
             type: ConnectionLineType.Straight,
@@ -115,7 +119,9 @@ const useStore = create<RFState>((set, get) => ({
             },
         },
         xor: {
-            edgeType: "xor",
+            data: {
+                edgeType: "xor",
+            },
             childrenGate: "xor",
             animated: false,
             type: ConnectionLineType.SmoothStep,
@@ -129,7 +135,9 @@ const useStore = create<RFState>((set, get) => ({
             },
         },
         and: {
-            edgeType: "and",
+            data: {
+                edgeType: "and",
+            },
             childrenGate: "and",
             animated: false,
             type: ConnectionLineType.Straight,
@@ -143,7 +151,9 @@ const useStore = create<RFState>((set, get) => ({
             },
         },
         outlink: {
-            edgeType: "outlink",
+            data: {
+                edgeType: "outlink",
+            },
             animated: false,
             type: ConnectionLineType.Straight,
             zIndex: 10,
@@ -220,15 +230,12 @@ const useStore = create<RFState>((set, get) => ({
         }
         get().nodeRerender("eventNode");
     },
-    updateTreeNodeAttribute: (
-        key: string,
-        value: string
-    ) => {
-      NodeRenderingStrategy.nodeOptions = {
-        ...NodeRenderingStrategy.nodeOptions,
-        [key]: value,
-      }
-      get().nodeRerender("eventNode");
+    updateTreeNodeAttribute: (key: string, value: string) => {
+        NodeRenderingStrategy.nodeOptions = {
+            ...NodeRenderingStrategy.nodeOptions,
+            [key]: value,
+        };
+        get().nodeRerender("eventNode");
     },
 
     updateGraphByEventNodes: (eventNodes: EventNode[]) => {
@@ -245,6 +252,92 @@ const useStore = create<RFState>((set, get) => ({
             get().setChosenNodes(firstNode ? [firstNode.id] : []);
         }
     },
+
+    updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => {
+        const { edgeStyle } = get();
+        console.log("edgeType", edgeType);
+        const newEdgeStyle = {
+            ...edgeStyle,
+            [edgeType]: {
+                ...edgeStyle[edgeType],
+                style: {
+                    ...edgeStyle[edgeType].style,
+                    ...style,
+                },
+            },
+        };
+
+        set({
+            edgeStyle: newEdgeStyle,
+            edges: get().edges.map((edge) => {
+                if (edge.data.edgeType === edgeType) {
+                    console.log("edgegohere", edge, newEdgeStyle[edgeType]);
+                    return {
+                        ...edge,
+                        data: {
+                            ...edge.data,
+                            key: Date.now(),
+                        },
+                        ...newEdgeStyle[edgeType],
+                    };
+                }
+                return edge;
+            }),
+        });
+    },
+
+    updateEdgeAttribute: (edgeType: GraphEdgeType, key: string, body: any) => {
+        const { edgeStyle } = get();
+        const newEdgeStyle = {
+            ...edgeStyle,
+            [edgeType]: {
+                ...edgeStyle[edgeType],
+                [key]: body,
+            },
+        };
+        set({
+            edgeStyle: newEdgeStyle,
+            edges: get().edges.map((edge) => {
+                if (edge.data.edgeType === edgeType) {
+                    return {
+                        ...edge,
+                        data: {
+                            ...edge.data,
+                            key: Date.now(),
+                        },
+                        ...newEdgeStyle[edgeType],
+                    };
+                }
+                return edge;
+            }),
+        });
+    },
+    refreshGate: (gateType: GraphEdgeType) => {
+        const { edgeStyle } = get();
+        set({
+            nodes: get().nodes.map((node) => {
+                if (node.data.isGate && node.data.gate  === gateType) {
+                    const gateColor = `${edgeStyle[node.data.gate as GraphEdgeType].style.stroke}70`;
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            renderStrategy: {
+                                color: edgeStyle[node.data.gate as GraphEdgeType].style.stroke,
+                            },
+                            
+                        },
+                        style: {
+                            ...node.style,
+                            backgroundColor: gateColor,
+                        },
+                    };
+                }
+                return node;
+            }),
+        });
+    },
+
     onNodeClick: (event, node) => {
         const mapNodes = get().mapNodes;
         const currentNode = node.data.isGate
@@ -298,15 +391,20 @@ const useStore = create<RFState>((set, get) => ({
         return tractNodes;
     },
     nodeRerender: (nodeType: string = "eventNode") => {
-        set({nodes: get().nodes.map((node) => {
-          if (node.type === nodeType ) {
-              return {...node, data: {
-                  ...node.data,
-                  key: Date.now()
-              }};
-          }
-          return node;
-      })});
+        set({
+            nodes: get().nodes.map((node) => {
+                if (node.type === nodeType) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            key: Date.now(),
+                        },
+                    };
+                }
+                return node;
+            }),
+        });
     },
     updateLayout: () => {
         const { chosenNodes, mapNodes, firstNode, edgeStyle } = get();

@@ -8,7 +8,13 @@ import {
     faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "../pages/Panel";
-import { DataContext, ExtractedTextsContext, ProvenanceContext, EntitiesContext, EventsContext } from "../pages/DataReader";
+import {
+    DataContext,
+    ExtractedTextsContext,
+    ProvenanceContext,
+    EntitiesContext,
+    EventsContext,
+} from "../pages/DataReader";
 import ZipReader from "./ZipReader";
 import "../assets/css/Menu.css";
 import {
@@ -21,12 +27,6 @@ import {
     EventNodeType,
 } from "./Library";
 import { ConnectionLineType, ReactFlowProvider } from "reactflow";
-import {
-    NodeRerenderContext,
-    EdgeStyleContext,
-    EdgeRerenderContext,
-    
-} from "../pages/Graph";
 import EventGraphNode from "./EventGraphNode";
 import ProvenancePopup from "./ProvenancePopup";
 import { JsonConvert } from "json2typescript";
@@ -145,7 +145,6 @@ function AddJSONPanel() {
         };
     };
 
-
     return (
         <div>
             <h2>Upload JSON Schema</h2>
@@ -168,10 +167,14 @@ function DownloadJSONPanel() {
     const [Provenances] = useContext(ProvenanceContext);
     const [Entities] = useContext(EntitiesContext);
     const jsonConverter = new JsonConvert();
-    const newData = {...jsonData};
+    const newData = { ...jsonData };
     newData.instances[0].events = jsonConverter.serializeArray(EventNodes);
-    newData.instances[0].entities = jsonConverter.serializeArray(Array.from(Entities.values()));
-    newData.provenanceData = jsonConverter.serializeArray(Array.from(Provenances.values()));
+    newData.instances[0].entities = jsonConverter.serializeArray(
+        Array.from(Entities.values())
+    );
+    newData.provenanceData = jsonConverter.serializeArray(
+        Array.from(Provenances.values())
+    );
     console.log(newData);
     const downloadJSON = () => {
         const dataStr =
@@ -194,45 +197,46 @@ function DownloadJSONPanel() {
 }
 
 function SeeLegendPanel() {
-    const [edgeRerender, setEdgeRerender] = useContext(EdgeRerenderContext);
-    const [edgeStyle, setEdgeStyle] = useContext(EdgeStyleContext);
-    const [updateNodeAttribute, updateTreeNodeAttribute] = useStore((state) => [state.updateNodeAttribute, state.updateTreeNodeAttribute]);
+    const [
+        updateNodeAttribute,
+        updateTreeNodeAttribute,
+        edgeStyle,
+        updateEdgeStyle,
+        updateEdgeAttribute,
+        nodeRerender,
+        refreshGate
+    ] = useStore((state) => [
+        state.updateNodeAttribute,
+        state.updateTreeNodeAttribute,
+        state.edgeStyle,
+        state.updateEdgeStyle,
+        state.updateEdgeAttribute,
+        state.nodeRerender,
+        state.refreshGate
+    ]);
 
-    const handleEdgeStyleChange = (value, childrenGate, key) => {
-        const newEdgeStyle = {
-            ...edgeStyle,
-            [childrenGate]: {
-                ...edgeStyle[childrenGate],
-                style: {
-                    ...edgeStyle[childrenGate].style,
-                    [key]: value,
-                },
-            },
-        };
-        console.log("newEdgeStyle", newEdgeStyle);
-        setEdgeStyle(newEdgeStyle);
-        setEdgeRerender((edgeRerender + 1) % 2);
-    };
-    const handleEdgeLabelChange = (value, childrenGate, key) => {
-        console.log("change Value", value);
-        const newEdgeStyle = {
-            ...edgeStyle,
-            [childrenGate]: { ...edgeStyle[childrenGate], [key]: value },
-        };
-        console.log("newEdgeType", edgeStyle[childrenGate].style.stroke);
-        setEdgeStyle(newEdgeStyle);
-        setEdgeRerender((edgeRerender + 1) % 2);
-    };
     const parentNode = new EventNode("newId", null, "Chapter Event");
     parentNode.subgroupEvents = ["AAA"];
-    console.log("parentNode", parentNode);
 
     return (
         <div className="legend">
             <h2>Legend</h2>
             <ReactFlowProvider>
                 <h3>Colors</h3>
-                {[[EventNodeType.Detected, DetectedNodeStrategy.options.color], [EventNodeType.Predicted, PredictedNodeStrategy.options.color], [EventNodeType.SourceOnly, SourceOnlyNodeStrategy.options.color]].map(([key, value]) => (
+                {[
+                    [
+                        EventNodeType.Detected,
+                        DetectedNodeStrategy.options.color,
+                    ],
+                    [
+                        EventNodeType.Predicted,
+                        PredictedNodeStrategy.options.color,
+                    ],
+                    [
+                        EventNodeType.SourceOnly,
+                        SourceOnlyNodeStrategy.options.color,
+                    ],
+                ].map(([key, value]) => (
                     <div
                         key={key}
                         style={{
@@ -245,34 +249,55 @@ function SeeLegendPanel() {
                             type="color"
                             value={value}
                             onChange={(e) =>
-                                updateNodeAttribute(key, "color", e.target.value)
+                                updateNodeAttribute(
+                                    key,
+                                    "color",
+                                    e.target.value
+                                )
                             }
                             key={key}
                             style={{ marginRight: "10px" }}
                         />
                         <h4>
-                            {key === "detected" ? "Matched Event" : key === "sourceOnly" ? "Source-only Event" : "Predicted Event"}
+                            {key === "detected"
+                                ? "Matched Event"
+                                : key === "sourceOnly"
+                                ? "Source-only Event"
+                                : "Predicted Event"}
                         </h4>
                     </div>
                 ))}
 
                 <h3>Shapes</h3>
-                {[["parentNode", NodeRenderingStrategy.nodeOptions.parentNode], ["leafNode", NodeRenderingStrategy.nodeOptions.leafNode]].map(([key, value]) => (
+                {[
+                    [
+                        "parentNode",
+                        NodeRenderingStrategy.nodeOptions.parentNode,
+                    ],
+                    ["leafNode", NodeRenderingStrategy.nodeOptions.leafNode],
+                ].map(([key, value]) => (
                     <div key={key}>
                         <h4>
                             {key === "parentNode"
                                 ? "Chapter Event"
                                 : "Primitive Event"}
                         </h4>
-                        {/* {key === "parentNode" ? (
-                            <EventGraphNode data={parentNode} />
+                        {key === "parentNode" ? (
+                            <EventGraphNode data={parentNode} id="AA" />
                         ) : (
-                            <EventGraphNode data={new EventNode("aa", null, "Primitive Event")} />
-                        )} */}
+                            <EventGraphNode
+                                data={
+                                    new EventNode("aa", null, "Primitive Event")
+                                }
+                                id="BB"
+                            />
+                        )}
                         <select
                             value={value}
                             // onChange={(e) => handleShapeChange(e, key)}
-                            onChange={(e) => updateTreeNodeAttribute(key, e.target.value)}
+                            onChange={(e) =>
+                                updateTreeNodeAttribute(key, e.target.value)
+                            }
                         >
                             <option value="circle">Circle</option>
                             <option value="diamond">Diamond</option>
@@ -282,7 +307,7 @@ function SeeLegendPanel() {
                 ))}
 
                 <h3>Edges</h3>
-                {/* {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
+                {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
                     <div key={index}>
                         <h4>{childrenGate}</h4>
 
@@ -298,13 +323,37 @@ function SeeLegendPanel() {
                                                     edgeStyle[childrenGate]
                                                         .style.stroke
                                                 }
-                                                onChange={(e) =>
-                                                    handleEdgeStyleChange(
-                                                        e.target.value,
+                                                onChange={(e) => {
+                                                    updateEdgeStyle(
                                                         childrenGate,
-                                                        "stroke"
-                                                    )
-                                                }
+                                                        {
+                                                            stroke: e.target
+                                                                .value,
+                                                        }
+                                                    );
+                                                    if (
+                                                        edgeStyle[childrenGate]
+                                                            .markerEnd
+                                                    ) {
+                                                        updateEdgeAttribute(
+                                                            childrenGate,
+                                                            "markerEnd",
+                                                            {
+                                                                ...edgeStyle[
+                                                                    childrenGate
+                                                                ].markerEnd,
+                                                                color: e.target
+                                                                    .value,
+                                                            }
+                                                        );
+                                                    }
+                                                    if (childrenGate !== "outlink") {
+                                                        refreshGate(childrenGate);
+
+                                                    }
+
+                                                }}
+
                                                 label="color"
                                             />
                                         </td>
@@ -319,10 +368,12 @@ function SeeLegendPanel() {
                                                         .style.strokeWidth
                                                 }
                                                 onChange={(e) =>
-                                                    handleEdgeStyleChange(
-                                                        e.target.value,
+                                                    updateEdgeStyle(
                                                         childrenGate,
-                                                        "strokeWidth"
+                                                        {
+                                                            strokeWidth:
+                                                                e.target.value,
+                                                        }
                                                     )
                                                 }
                                             />
@@ -338,10 +389,10 @@ function SeeLegendPanel() {
                                                         .label
                                                 }
                                                 onChange={(e) =>
-                                                    handleEdgeLabelChange(
-                                                        e.target.value,
+                                                    updateEdgeAttribute(
                                                         childrenGate,
-                                                        "label"
+                                                        "label",
+                                                        e.target.value
                                                     )
                                                 }
                                             />
@@ -355,10 +406,10 @@ function SeeLegendPanel() {
                                                     edgeStyle[childrenGate].type
                                                 }
                                                 onChange={(e) =>
-                                                    handleEdgeLabelChange(
-                                                        e.target.value,
+                                                    updateEdgeAttribute(
                                                         childrenGate,
-                                                        "type"
+                                                        "type",
+                                                        e.target.value
                                                     )
                                                 }
                                             >
@@ -405,35 +456,26 @@ function SeeLegendPanel() {
                                         <td>
                                             <select
                                                 value={
-                                                    edgeStyle[childrenGate].style.strokeDasharray
+                                                    edgeStyle[childrenGate]
+                                                        .style.strokeDasharray
                                                 }
                                                 onChange={(e) =>
-                                                    handleEdgeStyleChange(
-                                                        e.target.value,
+                                                    updateEdgeStyle(
                                                         childrenGate,
-                                                        "strokeDasharray"
+                                                        {
+                                                            strokeDasharray:
+                                                                e.target.value,
+                                                        }
                                                     )
                                                 }
                                             >
-                                                <option
-                                                    value={
-                                                        "none"
-                                                    }
-                                                >
+                                                <option value={"none"}>
                                                     Solid
                                                 </option>
-                                                <option
-                                                    value={
-                                                        "5,5"
-                                                    }
-                                                >
+                                                <option value={"5,5"}>
                                                     Dashed
                                                 </option>
-                                                <option
-                                                    value={
-                                                        "4 1 2 3"
-                                                    }
-                                                >
+                                                <option value={"4 1 2 3"}>
                                                     Uneven Dashed
                                                 </option>
                                             </select>
@@ -449,10 +491,10 @@ function SeeLegendPanel() {
                                                         .animated
                                                 }
                                                 onChange={(e) =>
-                                                    handleEdgeLabelChange(
-                                                        e.target.checked,
+                                                    updateEdgeAttribute(
                                                         childrenGate,
-                                                        "animated"
+                                                        "animated",
+                                                        e.target.checked
                                                     )
                                                 }
                                             />
@@ -462,7 +504,7 @@ function SeeLegendPanel() {
                             </table>
                         </div>
                     </div>
-                ))} */}
+                ))}
             </ReactFlowProvider>
         </div>
     );
