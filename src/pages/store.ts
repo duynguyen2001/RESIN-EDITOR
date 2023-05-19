@@ -7,13 +7,15 @@ import {
     EdgeChange,
     Node,
     NodeChange,
-    addEdge,
+    getIncomers,
+    getOutgoers,
     OnNodesChange,
     OnEdgesChange,
     OnConnect,
     applyNodeChanges,
     Position,
     applyEdgeChanges,
+    getConnectedEdges,
 } from "reactflow";
 import {
     EventNode,
@@ -66,14 +68,19 @@ type RFState = {
     key: number;
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
+    editMapNode: (nodeId: string, field: string, value: any) => void;
     nodeRerender: (typeNode: string) => void;
     setChosenNodes: (chosenNodes: string[]) => void;
     setMapNodes: (mapNodes: Map<string, any>) => void;
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
+    addEventNode: (node: EventNode) => void;
+    getNewIdInEventMap: () => string;
     onNodesChange: OnNodesChange;
     onEdgesChange: OnEdgesChange;
+    onNodesDelete: (nodes: Node[]) => void;
     onConnect: OnConnect;
+    onEdgeUpdate: (oldEdge: Edge, newConnection: Connection) => void;
     onNodeClick: (event: any, node: Node) => void;
     updateNodeAttribute: (
         nodeType: EventNodeType,
@@ -185,6 +192,30 @@ const useStore = create<RFState>((set, get) => ({
         set({ chosenNodes });
         get().updateLayout();
     },
+    editMapNode: (nodeId: string, field: string, value: any) => {
+        const { mapNodes, nodeRerender } = get();
+        mapNodes.get(nodeId)[field] = value;
+        nodeRerender("eventNode");
+    },
+
+    addEventNode: (node: EventNode) => {
+        const { mapNodes, updateLayout } = get();
+        mapNodes.set(node.id, node);
+        const parentId = node.parent;
+        if (parentId === undefined) {
+            return;
+        }
+        const parentNode = mapNodes.get(parentId);
+        if (parentNode) {
+            parentNode.subgroupEvents = parentNode.subgroupEvents
+                ? [...parentNode.subgroupEvents, node.id]
+                : [node.id];
+            if (parentNode.childrenGate === undefined) {
+                parentNode.childrenGate = "or";
+            }
+        }
+        updateLayout();
+    },
     setMapNodes: (mapNodes) => set({ mapNodes }),
     setClickedNode: (clickedNode) => set({ clickedNode }),
     setFirstNode: (firstNode) => set({ firstNode }),
@@ -198,13 +229,24 @@ const useStore = create<RFState>((set, get) => ({
         });
     },
     onEdgesChange: (changes: EdgeChange[]) => {
+        changes.forEach((change) => {
+            if (change.type === "remove") {
+                const { mapNodes } = get();
+                const edgeId = change.id;
+                const edge = get().edges.find((edge) => edge.id === edgeId);
+                if (edge === undefined) {
+                    return;
+                }
+                const sourceNode = mapNodes.get(edge.source);
+                if (sourceNode) {
+                    sourceNode.outlinks = sourceNode.outlinks.filter(
+                        (outlink: string) => outlink !== edge.target
+                    );
+                }
+            }
+        });
         set({
             edges: applyEdgeChanges(changes, get().edges),
-        });
-    },
-    onConnect: (connection: Connection) => {
-        set({
-            edges: addEdge(connection, get().edges),
         });
     },
     updateNodeAttribute: (
@@ -271,7 +313,6 @@ const useStore = create<RFState>((set, get) => ({
             edgeStyle: newEdgeStyle,
             edges: get().edges.map((edge) => {
                 if (edge.data.edgeType === edgeType) {
-                    console.log("edgegohere", edge, newEdgeStyle[edgeType]);
                     return {
                         ...edge,
                         data: {
@@ -316,16 +357,14 @@ const useStore = create<RFState>((set, get) => ({
         const { edgeStyle } = get();
         set({
             nodes: get().nodes.map((node) => {
-                if (node.data.isGate && node.data.gate  === gateType) {
-                    const gateColor = `${edgeStyle[node.data.gate as GraphEdgeType].style.stroke}70`;
+                if (node.data.isGate && node.data.gate === gateType) {
+                    const gateColor = `${
+                        edgeStyle[node.data.gate as GraphEdgeType].style.stroke
+                    }70`;
                     return {
                         ...node,
                         data: {
                             ...node.data,
-                            renderStrategy: {
-                                color: edgeStyle[node.data.gate as GraphEdgeType].style.stroke,
-                            },
-                            
                         },
                         style: {
                             ...node.style,
@@ -337,7 +376,13 @@ const useStore = create<RFState>((set, get) => ({
             }),
         });
     },
-
+    getNewIdInEventMap: () => {
+        let id = `resin:Events/${randomFiveDigit()}/`;
+        while (get().mapNodes.has(id)) {
+            id = `resin:Events/${randomFiveDigit()}/`;
+        }
+        return id;
+    },
     onNodeClick: (event, node) => {
         const mapNodes = get().mapNodes;
         const currentNode = node.data.isGate
@@ -406,6 +451,138 @@ const useStore = create<RFState>((set, get) => ({
             }),
         });
     },
+    onConnect: (connection: Connection) => {
+        if (connection.source === null || connection.target === null) {
+            return;
+        }
+        if (connection.source === connection.target) {
+            return;
+        }
+        const sourceID = connection.source.startsWith("gate-")
+            ? connection.source.slice(5)
+            : connection.source;
+        const targetID = connection.target.startsWith("gate-")
+            ? connection.target.slice(5)
+            : connection.target;
+        const sourceNode = get().mapNodes.get(sourceID);
+        const targetNode = get().mapNodes.get(targetID);
+        if (sourceNode === undefined || targetNode === undefined) {
+            console.log("sourceNode cannot be found", sourceNode);
+            console.log("targetNode cannot be found", targetNode);
+            return;
+        }
+        if (sourceNode.parent !== targetNode.parent) {
+            alert("Cannot connect nodes from different parents");
+            return;
+        }
+        if (sourceNode.outlinks === undefined) {
+            sourceNode.outlinks = [];
+        }
+        if (sourceNode.outlinks.includes(targetID)) {
+            return;
+        }
+        sourceNode.outlinks.push(targetID);
+        get().updateLayout();
+    },
+    onEdgeUpdate: (oldEdge: Edge, newConnection: Connection) => {
+        console.log("oldEdge", oldEdge);
+        console.log("newConnection", newConnection);
+
+        const { mapNodes } = get();
+        const oldSourceID = oldEdge.source.startsWith("gate-")
+            ? oldEdge.source.slice(5)
+            : oldEdge.source;
+        const oldTargetID = oldEdge.target.startsWith("gate-")
+            ? oldEdge.target.slice(5)
+            : oldEdge.target;
+        const oldSourceNode = mapNodes.get(oldSourceID);
+        if (oldSourceNode === undefined) {
+            console.log("oldSourceNode cannot be found", oldSourceNode);
+            return;
+        }
+        oldSourceNode.outlinks = oldSourceNode.outlinks.filter(
+            (outlink: string) => outlink !== oldTargetID
+        );
+        if (newConnection.source === null || newConnection.target === null) {
+            return;
+        }
+        const sourceID = newConnection.source.startsWith("gate-")
+            ? newConnection.source.slice(5)
+            : newConnection.source;
+        const targetID = newConnection.target.startsWith("gate-")
+            ? newConnection.target.slice(5)
+            : newConnection.target;
+        const sourceNode = mapNodes.get(sourceID);
+        const targetNode = mapNodes.get(targetID);
+        if (sourceNode === undefined || targetNode === undefined) {
+            console.log("sourceNode cannot be found", sourceNode);
+            console.log("targetNode cannot be found", targetNode);
+            return;
+        }
+        if (sourceNode.parent !== targetNode.parent) {
+            alert("Cannot connect nodes from different parents");
+            return;
+        }
+        if (sourceNode.outlinks === undefined) {
+            sourceNode.outlinks = [];
+        }
+        if (sourceNode.outlinks.includes(targetID)) {
+            return;
+        }
+        sourceNode.outlinks.push(targetID);
+        get().updateLayout();
+    },
+    onNodesDelete: (deleteNodes: Node[]) => {
+        const { mapNodes, getAllCurrentSubgroupEvents } = get();
+        deleteNodes.forEach((node) => {
+            const nodeId = node.id.startsWith("gate-")
+                ? node.id.slice(5)
+                : node.id;
+            console.log("nodeId", nodeId);
+            const nodeToDelete = mapNodes.get(nodeId);
+            if (nodeToDelete === undefined) {
+                return;
+            }
+            const parentNode = mapNodes.get(nodeToDelete.parent);
+            if (parentNode) {
+                parentNode.subgroupEvents = parentNode.subgroupEvents.filter(
+                    (subgroupEvent: string) => subgroupEvent !== nodeId
+                );
+                parentNode.subgroupEvents.forEach((subgroupEvent: string) => {
+                    const subgroupEventNode = mapNodes.get(subgroupEvent);
+                    if (subgroupEventNode.outlinks === undefined) {
+                        return;
+                    }
+                    if (subgroupEventNode.outlinks.includes(nodeId)) {
+                        subgroupEventNode.outlinks =
+                            subgroupEventNode.outlinks.filter(
+                                (outlink: string) => outlink !== nodeId
+                            );
+                        subgroupEventNode.outlinks.push(
+                            ...nodeToDelete.outlinks
+                        );
+                    }
+                });
+            }
+
+            console.log();
+            getAllCurrentSubgroupEvents(nodeId).forEach(
+                (subgroupEvent: string) => {
+                    mapNodes.delete(subgroupEvent);
+                }
+            );
+            set({
+                mapNodes,
+                clickedNode: null,
+                chosenNodes: get().chosenNodes.filter(
+                    (n) => !getAllCurrentSubgroupEvents(nodeId).includes(n)
+                ),
+            });
+            get().updateLayout();
+        });
+        get().updateLayout();
+    },
+
     updateLayout: () => {
         const { chosenNodes, mapNodes, firstNode, edgeStyle } = get();
         if (firstNode === null || mapNodes.size === 0) {
@@ -423,7 +600,7 @@ const useStore = create<RFState>((set, get) => ({
             const gateColor = isGate
                 ? `${edgeStyle[node.data.gate as GraphEdgeType].style.stroke}70`
                 : "white";
-            console.log(node);
+            console.log("noderender", node);
             return {
                 ...node,
                 type: isGate ? "gate" : "eventNode",
@@ -489,5 +666,8 @@ const useStore = create<RFState>((set, get) => ({
         });
     },
 }));
+function randomFiveDigit() {
+    return Math.floor(10000 + Math.random() * 90000).toString();
+}
 
 export default useStore;

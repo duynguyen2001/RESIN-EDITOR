@@ -163,12 +163,13 @@ function AddJSONPanel() {
 }
 function DownloadJSONPanel() {
     const [jsonData] = useContext(DataContext);
-    const [EventNodes] = useContext(EventsContext);
+    // const [EventNodes] = useContext(EventsContext);
+    const [mapNodes] = useStore((state) => [state.mapNodes]);
     const [Provenances] = useContext(ProvenanceContext);
     const [Entities] = useContext(EntitiesContext);
     const jsonConverter = new JsonConvert();
     const newData = { ...jsonData };
-    newData.instances[0].events = jsonConverter.serializeArray(EventNodes);
+    newData.instances[0].events = jsonConverter.serializeArray(Array.from(mapNodes.values()));
     newData.instances[0].entities = jsonConverter.serializeArray(
         Array.from(Entities.values())
     );
@@ -203,7 +204,6 @@ function SeeLegendPanel() {
         edgeStyle,
         updateEdgeStyle,
         updateEdgeAttribute,
-        nodeRerender,
         refreshGate
     ] = useStore((state) => [
         state.updateNodeAttribute,

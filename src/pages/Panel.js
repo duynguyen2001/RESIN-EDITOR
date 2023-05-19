@@ -1,8 +1,5 @@
 import React, { useContext, useState, useRef } from "react";
-import {
-    EntitiesContext,
-    EventsContext,
-} from "./DataReader";
+import { EntitiesContext } from "./DataReader";
 import "./panel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,13 +11,19 @@ import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import EditableText from "./EditableText.jsx";
 import { useEffect } from "react";
 import useStore from "./store";
+import { JsonConvert } from "json2typescript";
+import { EventNode } from "../components/Library";
 
-function TableInfoPanel({ data, parentId, eventNodeRef }) {
+function TableInfoPanel({ data, parentId }) {
     const [entitiesMap] = useContext(EntitiesContext);
     const [showProvenance, setShowProvenance] = useState(false);
     const [keyProvenance, setKeyProvenance] = useState(null);
     const [currentProvenance, setCurrentProvenance] = useState(null);
     const [tableChange, setTableChange] = useState(false);
+    const [editMapNode, mapNodes] = useStore((state) => [
+        state.editMapNode,
+        state.mapNodes,
+    ]);
 
     const closeProvenance = () => {
         setShowProvenance(false);
@@ -61,10 +64,7 @@ function TableInfoPanel({ data, parentId, eventNodeRef }) {
                 );
             }
 
-            if (
-                participant.values &&
-                participant.values instanceof Array
-            ) {
+            if (participant.values && participant.values instanceof Array) {
                 participant.values?.forEach((value) => {
                     const valueEntity = entitiesMap.get(value.ta2entity);
                     if (value.provenance) {
@@ -125,35 +125,32 @@ function TableInfoPanel({ data, parentId, eventNodeRef }) {
                               </React.Fragment>
                           ))
                         : "-",
-                roleName: <React.Fragment>
-                    <EditableText
-                        values={participant.roleName}
-                        onSave={(value, field) => {
-                            participant.roleName = value;
-                            eventNodeRef.current = eventNodeRef.current.map(
-                                (event) => {
-                                        event.participants = event.participants.map(
-                                            (part) => {
-                                                if (
-                                                    part.id ===
-                                                    participant.id
-                                                ) {
-                                                    return participant;
-                                                } else {
-                                                    return part;
-                                                }
+                roleName: (
+                    <React.Fragment>
+                        <EditableText
+                            values={participant.roleName}
+                            onSave={(value, field) => {
+                                participant.roleName = value;
+                                editMapNode(
+                                    parentId,
+                                    "participants",
+                                    mapNodes
+                                        .get(parentId)
+                                        .participants.map((part) => {
+                                            if (part.id === participant.id) {
+                                                return participant;
+                                            } else {
+                                                return part;
                                             }
-                                        );
-                                        return event;
-                                    
-                                }
-                            )
-                            setTableChange(!tableChange);
-                        }}
-                        variant="none"
-                        onTable={true}
-                    />
-                </React.Fragment>,
+                                        })
+                                );
+                                setTableChange(!tableChange);
+                            }}
+                            variant="none"
+                            onTable={true}
+                        />
+                    </React.Fragment>
+                ),
             };
         });
     };
@@ -214,9 +211,7 @@ export function Modal({ isEnlarged, toggleEnlarged, handleClick }) {
 function EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
     const [showProvenance, setShowProvenance] = useState(false);
-    const [EventNodes, _] = useContext(EventsContext);
-    const eventNodeRef = useRef(EventNodes);
-    const [nodeRerender] = useStore((state) => [state.nodeRerender]);
+    const editMapNode = useStore((state) => state.editMapNode);
 
     if (data === undefined) {
         return <></>;
@@ -231,15 +226,7 @@ function EventNodeInfoPanel({ data, onClose }) {
 
     const provenanceExisted = data.provenance && data.provenance.length > 0;
     const handleOnSave = (value, field) => {
-        eventNodeRef.current = eventNodeRef.current.map((nd) => {
-            if (nd.id === data.id) {
-                nd[field] = value;
-            }
-            return nd;
-        });
-
-        nodeRerender();
-
+        editMapNode(data.id, field, value);
     };
 
     return (
@@ -320,7 +307,6 @@ function EventNodeInfoPanel({ data, onClose }) {
                     <TableInfoPanel
                         data={data.participants}
                         parentId={data.id}
-                        eventNodeRef={eventNodeRef}
                     />
                 </details>
             )}
@@ -333,3 +319,234 @@ export function InfoPanel({ data, onClose }) {
     }
     return <EventNodeInfoPanel data={data} onClose={onClose} />;
 }
+
+export const AddEventPanel = ({
+    onClose,
+    isEnlarged,
+    toggleEnlarged,
+    parentId,
+}) => {
+    const [getNewIdInEventMap, addEventNode] = useStore((state) => [state.getNewIdInEventMap, state.addEventNode]);
+    const [data, setData] = useState({
+        "@id": getNewIdInEventMap(),
+        ta1ref: "",
+        name: "",
+        description: "",
+        parent: parentId,
+        isTopLevel: false,
+        subgroupEvents: [],
+        outlinks: [],
+        predictionProvenance: [],
+        confidence: [],
+        wdNode: "",
+        wdLabel: "",
+        wdDescription: "",
+        provenance: [],
+        participants: [],
+        ta2wdNode: "",
+        ta2wdLabel: "",
+        ta2wdDescription: "",
+        optional: false,
+    });
+    const handleChange = (e) => {
+        setData({
+            ...data,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleArrayChange = (e) => {
+        setData({
+            ...data,
+            [e.target.name]: e.target.value
+                .split(",")
+                .map((item) => item.trim()),
+        });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log(data);
+        const jsonConvert = new JsonConvert();
+        addEventNode(jsonConvert.deserializeObject(data, EventNode));
+        onClose();
+    };
+    return (
+        <div className={isEnlarged ? "info-panel-enlarge" : "info-panel"}>
+            <Modal
+                isEnlarged={isEnlarged}
+                toggleEnlarged={toggleEnlarged}
+                handleClick={onClose}
+            />
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Id:
+                    <input
+                        type="text"
+                        name="@id"
+                        value={data["@id"]}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Name:
+                    <input
+                        type="text"
+                        name="name"
+                        value={data.name}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Ta1ref:
+                    <input
+                        type="text"
+                        name="ta1ref"
+                        value={data.ta1ref}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Description:
+                    <input
+                        type="textarea"
+                        name="description"
+                        value={data.description}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Subgroup Events (comma separated):
+                    <textarea
+                        name="subgroupEvents"
+                        value={data.subgroupEvents}
+                        onChange={handleArrayChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Parent:
+                    <input type="text" name="parent"
+                    value={data.parent}
+                     onChange={handleChange} />
+                </label>
+                <br/>
+                <label>
+                    Is Top Level:
+                    <input
+                        type="checkbox"
+                        name="isTopLevel"
+                        value={data.isTopLevel}
+                        onChange={(e) =>
+                            setData({ ...data, isTopLevel: e.target.checked })
+                        }
+                    />
+                </label>
+                <br/>
+                <label>
+                    Outlinks (comma separated):
+                    <textarea
+                        name="outlinks"
+                        onChange={handleArrayChange}
+                        value={data.outlinks}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Prediction Provenance (comma separated):
+                    <textarea
+                        name="predictionProvenance"
+                        onChange={handleArrayChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Confidence (comma separated):
+                    <textarea name="confidence" onChange={handleArrayChange} />
+                </label>
+                <br/>
+                <label>
+                    WikiData Node:
+                    <input type="text" name="wdNode" onChange={handleChange} />
+                </label>
+                <br/>
+                <label>
+                    WikiData Label:
+                    <input
+                        type="text"
+                        name="wdLabel"
+                        value={data.wdLabel}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    WikiData Description:
+                    <input
+                        type="text"
+                        name="wdDescription"
+                        value={data.wdDescription}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Provenance (comma separated):
+                    <textarea
+                        name="provenance"
+                        value={data.provenance}
+                        onChange={handleArrayChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    TA2 WD Node:
+                    <input
+                        type="text"
+                        name="ta2wdNode"
+                        value={data.ta2wdNode}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    TA2 WD Label:
+                    <input
+                        type="text"
+                        name="ta2wdLabel"
+                        value={data.ta2wdLabel}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    TA2 WD Description:
+                    <input
+                        type="text"
+                        name="ta2wdDescription"
+                        value={data.ta2wdDescription}
+                        onChange={handleChange}
+                    />
+                </label>
+                <br/>
+                <label>
+                    Optional:
+                    <input
+                        type="checkbox"
+                        name="optional"
+                        value={data.optional}
+                        onChange={(e) =>
+                            setData({ ...data, optional: e.target.checked })
+                        }
+                    />
+                </label>
+                <br/>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    );
+};

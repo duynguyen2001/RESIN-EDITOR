@@ -455,7 +455,7 @@ export class EventNode {
     description: String;
 
     @JsonProperty("parent", String, true)
-    parent?: String;
+    parent?: string;
 
     @JsonProperty("isTopLevel", Boolean, true)
     isTopLevel?: Boolean;
@@ -502,7 +502,6 @@ export class EventNode {
     @JsonProperty("optional", Boolean, true)
     optional?: boolean;
 
-    isParticipantOpen: boolean = true;
 
     get type(): EventNodeType {
         if (this.predictionProvenance !== undefined) {
@@ -694,6 +693,7 @@ export function createProvenanceEntity(
 export class Entity {
     @JsonProperty("@id", String)
     id: string = undefined!;
+    
     @JsonProperty("name", String)
     name: string = undefined!;
 

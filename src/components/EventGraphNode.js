@@ -1,27 +1,20 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import useStore from "../pages/store";
 import { EventNode } from "../components/Library";
+import { NodeToolbar, Position } from "reactflow";
+import "./EventGraphNode.css";
 
-export const EventGraphNode = ({ id, data, isConnectable, onHover}) => {
+export const EventGraphNode = ({ id, data, isConnectable, onHover }) => {
     const node = useStore((state) => state.getNodeById)(id);
+    // const [permanentVisible, setPermanentVisible] = useState(false);
     if (!node) {
-      if (data instanceof EventNode){
-        return <div>
-            {data.render({}, isConnectable, onHover)}
-        </div>;
-
-      }
+        if (data instanceof EventNode) {
+            return <div>{data.render({}, isConnectable, onHover)}</div>;
+        }
     }
 
     return (
-        <div
-            style={{
-                padding: 10,
-                border: "1px solid black",
-                minWidth: "fit-content",
-                minHeight: "fit-content",
-            }}
-        >
+        <div className="eventnode">
             {node.render({}, isConnectable, onHover)}
         </div>
     );
