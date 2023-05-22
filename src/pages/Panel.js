@@ -6,6 +6,7 @@ import {
     faExpand,
     faCompress,
     faClose,
+    faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import EditableText from "./EditableText.jsx";
@@ -191,9 +192,16 @@ function TableInfoPanel({ data, parentId }) {
     );
 }
 
-export function Modal({ isEnlarged, toggleEnlarged, handleClick }) {
+export function Modal({ isEnlarged, toggleEnlarged, handleClick, handleEdit }) {
     return (
         <div className="modal">
+            {handleEdit && (
+                <FontAwesomeIcon
+                    icon={faEdit}
+                    className="edit-button"
+                    onClick={handleEdit}
+                />
+            )}
             <FontAwesomeIcon
                 icon={isEnlarged ? faCompress : faExpand}
                 className="enlarge-button"
@@ -212,6 +220,7 @@ function EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
     const [showProvenance, setShowProvenance] = useState(false);
     const editMapNode = useStore((state) => state.editMapNode);
+    const [showEditPanel, setShowEditPanel] = useState(false);
 
     if (data === undefined) {
         return <></>;
@@ -235,6 +244,9 @@ function EventNodeInfoPanel({ data, onClose }) {
                 isEnlarged={isEnlarged}
                 toggleEnlarged={toggleEnlarged}
                 handleClick={onClose}
+                handleEdit={() => {
+                    setShowEditPanel(!showEditPanel);
+                }}
             />
 
             {data.name && (
@@ -310,6 +322,16 @@ function EventNodeInfoPanel({ data, onClose }) {
                     />
                 </details>
             )}
+            {showEditPanel && (
+                <EditEventPanel
+                    onClose={() => {
+                        setShowEditPanel(false);
+                    }}
+                    isEnlarged={isEnlarged}
+                    toggleEnlarged={toggleEnlarged}
+                    existingData={data}
+                />
+            )}
         </div>
     );
 }
@@ -320,34 +342,44 @@ export function InfoPanel({ data, onClose }) {
     return <EventNodeInfoPanel data={data} onClose={onClose} />;
 }
 
-export const AddEventPanel = ({
+export const EditEventPanel = ({
     onClose,
     isEnlarged,
     toggleEnlarged,
     parentId,
+    existingData,
 }) => {
-    const [getNewIdInEventMap, addEventNode] = useStore((state) => [state.getNewIdInEventMap, state.addEventNode]);
-    const [data, setData] = useState({
-        "@id": getNewIdInEventMap(),
-        ta1ref: "",
-        name: "",
-        description: "",
-        parent: parentId,
-        isTopLevel: false,
-        subgroupEvents: [],
-        outlinks: [],
-        predictionProvenance: [],
-        confidence: [],
-        wdNode: "",
-        wdLabel: "",
-        wdDescription: "",
-        provenance: [],
-        participants: [],
-        ta2wdNode: "",
-        ta2wdLabel: "",
-        ta2wdDescription: "",
-        optional: false,
-    });
+    const jsonConvert = new JsonConvert();
+    const [getNewIdInEventMap, addEventNode] = useStore((state) => [
+        state.getNewIdInEventMap,
+        state.addEventNode,
+    ]);
+    console.log("existingData", existingData);
+    const [data, setData] = useState(
+        existingData
+            ? jsonConvert.serializeObject(existingData)
+            : {
+                  "@id": getNewIdInEventMap(),
+                  ta1ref: "",
+                  name: "",
+                  description: "",
+                  parent: parentId,
+                  isTopLevel: false,
+                  subgroupEvents: [],
+                  outlinks: [],
+                  predictionProvenance: [],
+                  confidence: [],
+                  wdNode: "",
+                  wdLabel: "",
+                  wdDescription: "",
+                  provenance: [],
+                  participants: [],
+                  ta2wdNode: "",
+                  ta2wdLabel: "",
+                  ta2wdDescription: "",
+                  optional: false,
+              }
+    );
     const handleChange = (e) => {
         setData({
             ...data,
@@ -367,7 +399,6 @@ export const AddEventPanel = ({
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(data);
-        const jsonConvert = new JsonConvert();
         addEventNode(jsonConvert.deserializeObject(data, EventNode));
         onClose();
     };
@@ -378,65 +409,161 @@ export const AddEventPanel = ({
                 toggleEnlarged={toggleEnlarged}
                 handleClick={onClose}
             />
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Id:
+            <form onSubmit={handleSubmit} className="form-container">
+                <div className="form-group">
+                    <label>Id:</label>
                     <input
                         type="text"
                         name="@id"
                         value={data["@id"]}
                         onChange={handleChange}
                     />
-                </label>
-                <br/>
-                <label>
-                    Name:
+                </div>
+                <div className="form-group">
+                    <label>Name:</label>
                     <input
                         type="text"
                         name="name"
                         value={data.name}
                         onChange={handleChange}
                     />
-                </label>
-                <br/>
-                <label>
-                    Ta1ref:
+                </div>
+                <div className="form-group">
+                    <label>Ta1ref:</label>
                     <input
                         type="text"
                         name="ta1ref"
                         value={data.ta1ref}
                         onChange={handleChange}
                     />
-                </label>
-                <br/>
-                <label>
-                    Description:
-                    <input
-                        type="textarea"
+                </div>
+                <div className="form-group">
+                    <label>Description:</label>
+                    <textarea
                         name="description"
+                        cdkTextareaAutosize
                         value={data.description}
                         onChange={handleChange}
                     />
-                </label>
-                <br/>
-                <label>
-                    Subgroup Events (comma separated):
+                </div>
+                <div className="form-group">
+                    <label>Subgroup Events (comma separated):</label>
                     <textarea
                         name="subgroupEvents"
+                        cdkTextareaAutosize
                         value={data.subgroupEvents}
                         onChange={handleArrayChange}
                     />
-                </label>
-                <br/>
-                <label>
-                    Parent:
-                    <input type="text" name="parent"
-                    value={data.parent}
-                     onChange={handleChange} />
-                </label>
-                <br/>
-                <label>
-                    Is Top Level:
+                </div>
+                <div className="form-group">
+                    <label>Parent:</label>
+                    <input
+                        type="text"
+                        name="parent"
+                        value={data.parent}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Outlinks (comma separated):</label>
+                    <textarea
+                        name="outlinks"
+                        cdkTextareaAutosize
+                        onChange={handleArrayChange}
+                        value={data.outlinks}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Prediction Provenance (comma separated):</label>
+                    <textarea
+                        name="predictionProvenance"
+                        cdkTextareaAutosize
+                        onChange={handleArrayChange}
+                        value={data.predictionProvenance}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Confidence (comma separated):</label>
+                    <textarea
+                        name="confidence"
+                        cdkTextareaAutosize
+                        onChange={handleArrayChange}
+                        value={data.confidence}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>WikiData Node:</label>
+                    <input type="text" name="wdNode" onChange={handleChange} />
+                </div>
+                <div className="form-group">
+                    <label>WikiData Label:</label>
+                    <input
+                        type="text"
+                        name="wdLabel"
+                        value={data.wdLabel}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>WikiData Description:</label>
+                    <input
+                        type="text"
+                        name="wdDescription"
+                        value={data.wdDescription}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Provenance (comma separated):</label>
+                    <textarea
+                        name="provenance"
+                        cdkTextareaAutosize
+                        value={data.provenance}
+                        onChange={handleArrayChange}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>TA2 WD Node:</label>
+                    <input
+                        type="text"
+                        name="ta2wdNode"
+                        value={data.ta2wdNode}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>TA2 WD Label:</label>
+                    <input
+                        type="text"
+                        name="ta2wdLabel"
+                        value={data.ta2wdLabel}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>TA2 WD Description:</label>
+                    <input
+                        type="text"
+                        name="ta2wdDescription"
+                        value={data.ta2wdDescription}
+                        onChange={handleChange}
+                    />
+                </div>
+                {/* <div>
+                    <label>Optional:</label>
+                    <input
+                        type="checkbox"
+                        name="optional"
+                        value={data.optional}
+                        onChange={(e) => {
+                            setData({ ...data, optional: e.target.checked });
+                            console.log(data);
+                        }}
+                    />
+                </div>
+                <div>
+                    <label>Is Top Level:</label>
                     <input
                         type="checkbox"
                         name="isTopLevel"
@@ -445,106 +572,7 @@ export const AddEventPanel = ({
                             setData({ ...data, isTopLevel: e.target.checked })
                         }
                     />
-                </label>
-                <br/>
-                <label>
-                    Outlinks (comma separated):
-                    <textarea
-                        name="outlinks"
-                        onChange={handleArrayChange}
-                        value={data.outlinks}
-                    />
-                </label>
-                <br/>
-                <label>
-                    Prediction Provenance (comma separated):
-                    <textarea
-                        name="predictionProvenance"
-                        onChange={handleArrayChange}
-                    />
-                </label>
-                <br/>
-                <label>
-                    Confidence (comma separated):
-                    <textarea name="confidence" onChange={handleArrayChange} />
-                </label>
-                <br/>
-                <label>
-                    WikiData Node:
-                    <input type="text" name="wdNode" onChange={handleChange} />
-                </label>
-                <br/>
-                <label>
-                    WikiData Label:
-                    <input
-                        type="text"
-                        name="wdLabel"
-                        value={data.wdLabel}
-                        onChange={handleChange}
-                    />
-                </label>
-                <br/>
-                <label>
-                    WikiData Description:
-                    <input
-                        type="text"
-                        name="wdDescription"
-                        value={data.wdDescription}
-                        onChange={handleChange}
-                    />
-                </label>
-                <br/>
-                <label>
-                    Provenance (comma separated):
-                    <textarea
-                        name="provenance"
-                        value={data.provenance}
-                        onChange={handleArrayChange}
-                    />
-                </label>
-                <br/>
-                <label>
-                    TA2 WD Node:
-                    <input
-                        type="text"
-                        name="ta2wdNode"
-                        value={data.ta2wdNode}
-                        onChange={handleChange}
-                    />
-                </label>
-                <br/>
-                <label>
-                    TA2 WD Label:
-                    <input
-                        type="text"
-                        name="ta2wdLabel"
-                        value={data.ta2wdLabel}
-                        onChange={handleChange}
-                    />
-                </label>
-                <br/>
-                <label>
-                    TA2 WD Description:
-                    <input
-                        type="text"
-                        name="ta2wdDescription"
-                        value={data.ta2wdDescription}
-                        onChange={handleChange}
-                    />
-                </label>
-                <br/>
-                <label>
-                    Optional:
-                    <input
-                        type="checkbox"
-                        name="optional"
-                        value={data.optional}
-                        onChange={(e) =>
-                            setData({ ...data, optional: e.target.checked })
-                        }
-                    />
-                </label>
-                <br/>
+                </div> */}
                 <button type="submit">Submit</button>
             </form>
         </div>

@@ -74,6 +74,7 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                         isGate: false,
                         isTopLevel: currentNode.isTopLevel === "true"? true: undefined,
                         parent: node,
+                        confidence: mapNodes.get(subNode).confidence[0],
                     },
                     position: { x: 0, y: 0 },
                 };
@@ -107,6 +108,7 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                                 name: currentNode.name,
                                 isGate: true,
                                 referredNode: currentNode.id,
+                                confidence: currentNode.confidence[0],
                             },
                             style: {
                                 width: graph.width + 100,
@@ -148,6 +150,7 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                         id: firstNode,
                         data: {
                             isGate: false,
+                            confidence: mapNodes.get(firstNode).confidence[0],
                         },
                         position: { x: 0, y: 0 },
                     },

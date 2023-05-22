@@ -7,15 +7,12 @@ import {
     EdgeChange,
     Node,
     NodeChange,
-    getIncomers,
-    getOutgoers,
     OnNodesChange,
     OnEdgesChange,
     OnConnect,
     applyNodeChanges,
     Position,
     applyEdgeChanges,
-    getConnectedEdges,
 } from "reactflow";
 import {
     EventNode,
@@ -61,11 +58,13 @@ type RFState = {
     nodes: Node[];
     edges: Edge[];
     chosenNodes: string[];
+    confidenceInterval: [number, number];
     mapNodes: Map<string, any>;
     clickedNode: Node | null;
     firstNode: string | null;
     edgeStyle: EdgeStyle;
     key: number;
+    setConfidenceInterval: (confidenceInterval: [number, number]) => void;
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
     editMapNode: (nodeId: string, field: string, value: any) => void;
@@ -109,6 +108,7 @@ const useStore = create<RFState>((set, get) => ({
     mapNodes: new Map(),
     clickedNode: null,
     firstNode: null,
+    confidenceInterval: [0.0, 1.0],
     key: 0,
     edgeStyle: {
         or: {
@@ -197,6 +197,22 @@ const useStore = create<RFState>((set, get) => ({
         mapNodes.get(nodeId)[field] = value;
         nodeRerender("eventNode");
     },
+    setConfidenceInterval: (confidenceInterval) => {
+        const { nodes, nodeRerender } = get();
+        nodes.forEach((node) => {
+            const opacity =
+                node.data.confidence >= confidenceInterval[0] &&
+                node.data.confidence <= confidenceInterval[1]
+                    ? 1
+                    : 0.5;
+            node.style = {
+                ...node.style,
+                opacity: opacity,
+            };
+        });
+        set({ nodes, confidenceInterval });
+        nodeRerender("eventNode");
+    },
 
     addEventNode: (node: EventNode) => {
         const { mapNodes, updateLayout } = get();
@@ -210,10 +226,11 @@ const useStore = create<RFState>((set, get) => ({
             parentNode.subgroupEvents = parentNode.subgroupEvents
                 ? [...parentNode.subgroupEvents, node.id]
                 : [node.id];
-            if (parentNode.childrenGate === undefined) {
+            if (!parentNode.childrenGate) {
                 parentNode.childrenGate = "or";
             }
         }
+        console.log("parentNode", parentNode);
         updateLayout();
     },
     setMapNodes: (mapNodes) => set({ mapNodes }),
@@ -388,6 +405,7 @@ const useStore = create<RFState>((set, get) => ({
         const currentNode = node.data.isGate
             ? mapNodes.get(node.data.referredNode)
             : mapNodes.get(node.id);
+        console.log("currentNode", currentNode);
         if (
             !currentNode.subgroupEvents ||
             currentNode.subgroupEvents.length === 0 ||
@@ -584,7 +602,13 @@ const useStore = create<RFState>((set, get) => ({
     },
 
     updateLayout: () => {
-        const { chosenNodes, mapNodes, firstNode, edgeStyle } = get();
+        const {
+            chosenNodes,
+            mapNodes,
+            firstNode,
+            edgeStyle,
+            confidenceInterval,
+        } = get();
         if (firstNode === null || mapNodes.size === 0) {
             return;
         }
@@ -600,7 +624,12 @@ const useStore = create<RFState>((set, get) => ({
             const gateColor = isGate
                 ? `${edgeStyle[node.data.gate as GraphEdgeType].style.stroke}70`
                 : "white";
-            console.log("noderender", node);
+            const opacity =
+                node.data.confidence >= confidenceInterval[0] &&
+                node.data.confidence <= confidenceInterval[1]
+                    ? 1
+                    : 0.5;
+
             return {
                 ...node,
                 type: isGate ? "gate" : "eventNode",
@@ -622,6 +651,7 @@ const useStore = create<RFState>((set, get) => ({
                 style: {
                     ...node.style,
                     backgroundColor: gateColor,
+                    opacity: opacity,
                 },
             };
         });
@@ -664,6 +694,7 @@ const useStore = create<RFState>((set, get) => ({
             nodes: layoutedNodes,
             edges: [...newEdges, ...Array.from(uniqueEdges.values())],
         });
+        console.log("layoutedNodes", layoutedNodes);
     },
 }));
 function randomFiveDigit() {

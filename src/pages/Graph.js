@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, createContext } from "react";
+import React, { useEffect, useState } from "react";
 import ReactFlow, {
     MiniMap,
     ReactFlowProvider,
@@ -9,10 +9,11 @@ import ReactFlow, {
 import { EventGraphNode } from "../components/EventGraphNode";
 import "reactflow/dist/style.css";
 import "./graph.css";
-import { InfoPanel, AddEventPanel } from "./Panel";
+import { InfoPanel, EditEventPanel } from "./Panel";
 import Menu from "../components/Menu";
 import Gate from "../components/Gate";
 import useStore from "./store";
+import { RangeSlider } from "../components/RangeSlider";
 
 const nodeTypes = {
     eventNode: EventGraphNode,
@@ -25,6 +26,7 @@ export const Graph = ({ eventNodes }) => {
         edges,
         mapNodes,
         clickedNode,
+        confidenceInterval,
         setClickedNode,
         onNodesChange,
         onEdgesChange,
@@ -32,7 +34,8 @@ export const Graph = ({ eventNodes }) => {
         onNodeClick,
         onConnect,
         onEdgeUpdate,
-        onNodesDelete
+        onNodesDelete,
+        setConfidenceInterval,
     } = useStore();
 
     const handleClosePanel = () => {
@@ -81,6 +84,18 @@ export const Graph = ({ eventNodes }) => {
                     zoomable
                     pannable
                 />
+                <div
+                style={{
+                    position: "absolute",
+                    bottom: 10,
+                    left: 70,
+                    width: 300,
+                }}>
+                <RangeSlider
+                    initialValue={confidenceInterval}
+                    onValueChange={setConfidenceInterval} />
+
+                </div>
                 <Controls />
                 {clickedNode && (
                     <>
@@ -120,7 +135,7 @@ export const Graph = ({ eventNodes }) => {
                     </>
                 )}
                 {clickedNode && showAddPanel && (
-                    <AddEventPanel
+                    <EditEventPanel
                         parentId={
                             clickedNode.data.isGate
                                 ? clickedNode.data.referredNode

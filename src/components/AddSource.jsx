@@ -9,8 +9,6 @@ import {
     EntitiesContext,
 } from "../pages/DataReader";
 import { CountContext } from "../pages/newdataIndexes";
-
-import { v4 } from "uuid";
 const getListIndex = (list, id) => {
     for (let i = 0; i < list.length; i++) {
         let jsonObject = list[i];
