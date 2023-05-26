@@ -48,13 +48,6 @@ export const Graph = ({ eventNodes }) => {
         updateGraphByEventNodes(eventNodes);
     }, [eventNodes]);
 
-    useEffect(() => {
-        console.log("nodes", nodes);
-    }, [nodes]);
-    useEffect(() => {
-        console.log("edges", edges);
-    }, [edges]);
-
     // denote the color of the node in the minimap
     const nodeColor = (node) => node.data.color;
 

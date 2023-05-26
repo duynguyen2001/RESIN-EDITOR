@@ -502,6 +502,8 @@ export class EventNode {
     @JsonProperty("optional", Boolean, true)
     optional?: boolean;
 
+   
+
 
     get type(): EventNodeType {
         if (this.predictionProvenance !== undefined) {
@@ -590,6 +592,30 @@ export class EventNode {
             </div>
         );
     }
+    
+    relatedEntities(): string[] {
+        const entities: string[] = [];
+        if (this.participants !== undefined) {
+            this.participants.forEach((participant) => {
+                if (participant.entity !== undefined) {
+                    entities.push(participant.entity);
+                }
+                if (participant.values !== undefined) {
+                    if (Array.isArray(participant.values)) {
+                        participant.values.forEach((value) => {
+                            if (value.ta2entity !== undefined) {
+                                entities.push(value.ta2entity);
+                            }
+                        });
+                    }
+                }
+
+
+            });
+        }
+        return entities;
+    }
+
 }
 
 // Define interfaces for the rendering strategy pattern

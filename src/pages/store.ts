@@ -59,7 +59,9 @@ type RFState = {
     edges: Edge[];
     chosenNodes: string[];
     confidenceInterval: [number, number];
+    chosenEntities: string[];
     entityChosenEvents: Set<string>;
+    entitiesRelatedEventMap: Map<string, string[]>;
     mapNodes: Map<string, any>;
     clickedNode: Node | null;
     firstNode: string | null;
@@ -70,6 +72,7 @@ type RFState = {
     setNodes: (nodes: Node[]) => void;
     editMapNode: (nodeId: string, field: string, value: any) => void;
     nodeRerender: (typeNode: string) => void;
+    setChosenEntities: (chosenEntities: string[]) => void;
     setChosenNodes: (chosenNodes: string[]) => void;
     setMapNodes: (mapNodes: Map<string, any>) => void;
     setClickedNode: (clickedNode: Node | null) => void;
@@ -80,6 +83,7 @@ type RFState = {
     onNodesChange: OnNodesChange;
     onEdgesChange: OnEdgesChange;
     onNodesDelete: (nodes: Node[]) => void;
+    getEntitiesRelatedEventMap: () => Map<string, string[]>;
     onConnect: OnConnect;
     onEdgeUpdate: (oldEdge: Edge, newConnection: Connection) => void;
     onNodeClick: (event: any, node: Node) => void;
@@ -107,8 +111,10 @@ const useStore = create<RFState>((set, get) => ({
     nodes: [],
     edges: [],
     chosenNodes: [],
+    chosenEntities: [],
     mapNodes: new Map(),
     entityChosenEvents: new Set(),
+    entitiesRelatedEventMap: new Map(),
     clickedNode: null,
     firstNode: null,
     confidenceInterval: [0.0, 1.0],
@@ -200,14 +206,16 @@ const useStore = create<RFState>((set, get) => ({
         set({ entityChosenEvents: entityChosenEventsSet });
     },
     editMapNode: (nodeId: string, field: string, value: any) => {
-        const { mapNodes, nodeRerender } = get();
+        const { mapNodes, nodeRerender, entityChosenEvents } = get();
         mapNodes.get(nodeId)[field] = value;
         nodeRerender("eventNode");
     },
     setConfidenceInterval: (confidenceInterval) => {
-        const { nodes, nodeRerender } = get();
+        const { nodes, nodeRerender, entityChosenEvents } = get();
         nodes.forEach((node) => {
             const opacity =
+                (entityChosenEvents.size === 0 ||
+                    entityChosenEvents.has(node.id)) &&
                 node.data.confidence >= confidenceInterval[0] &&
                 node.data.confidence <= confidenceInterval[1]
                     ? 1
@@ -240,9 +248,41 @@ const useStore = create<RFState>((set, get) => ({
         console.log("parentNode", parentNode);
         updateLayout();
     },
-    setMapNodes: (mapNodes) => set({ mapNodes }),
+    setMapNodes: (mapNodes) => {
+        set({ mapNodes });
+        get().getEntitiesRelatedEventMap();
+    },
     setClickedNode: (clickedNode) => set({ clickedNode }),
     setFirstNode: (firstNode) => set({ firstNode }),
+    setChosenEntities(chosenEntities) {
+        const { nodes, confidenceInterval, nodeRerender } = get();
+        const chosenEvents = new Set<string>();
+        for (const entityName of chosenEntities) {
+            const events = get().entitiesRelatedEventMap.get(entityName);
+            if (events === undefined) {
+                continue;
+            }
+            for (const event of events) {
+                chosenEvents.add(event);
+            }
+        }
+        console.log("chosenEvents", chosenEvents);
+        nodes.forEach((node) => {
+            const opacity =
+                (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
+                node.data.confidence >= confidenceInterval[0] &&
+                node.data.confidence <= confidenceInterval[1]
+                    ? 1
+                    : 0.5;
+            node.style = {
+                ...node.style,
+                opacity: opacity,
+            };
+        });
+
+        set({ entityChosenEvents: chosenEvents, chosenEntities, nodes });
+        nodeRerender("eventNode");
+    },
     getNodeById: (id: string) => {
         return get().mapNodes.get(id);
     },
@@ -311,10 +351,13 @@ const useStore = create<RFState>((set, get) => ({
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
             });
+
             set({
                 mapNodes: newMap,
                 firstNode: firstNode ? firstNode.id : null,
             });
+
+            get().getEntitiesRelatedEventMap();
             get().setChosenNodes(firstNode ? [firstNode.id] : []);
         }
     },
@@ -349,6 +392,37 @@ const useStore = create<RFState>((set, get) => ({
                 return edge;
             }),
         });
+    },
+    getEntitiesRelatedEventMap: () => {
+        const { mapNodes } = get();
+        const entitiesRelatedEventMap = new Map();
+        mapNodes.forEach((event, key) => {
+            event.relatedEntities().forEach((entity: string) => {
+                if (entitiesRelatedEventMap.has(entity)) {
+                    entitiesRelatedEventMap.set(entity, [
+                        ...entitiesRelatedEventMap.get(entity),
+                        key,
+                    ]);
+                } else {
+                    entitiesRelatedEventMap.set(entity, [key]);
+                }
+            });
+        });
+        // get rid of entity with only 1 event
+        entitiesRelatedEventMap.forEach((value, key) => {
+            if (value.length <= 1) {
+                entitiesRelatedEventMap.delete(key);
+            }
+        });
+
+        // sort the array by the number of events
+        const sortedEntitiesRelatedEventMap = new Map(
+            [...entitiesRelatedEventMap.entries()].sort((a, b) => {
+                return b[1].length - a[1].length;
+            })
+        );
+        set({ entitiesRelatedEventMap: sortedEntitiesRelatedEventMap });
+        return sortedEntitiesRelatedEventMap;
     },
 
     updateEdgeAttribute: (edgeType: GraphEdgeType, key: string, body: any) => {
@@ -603,7 +677,6 @@ const useStore = create<RFState>((set, get) => ({
                     (n) => !getAllCurrentSubgroupEvents(nodeId).includes(n)
                 ),
             });
-            get().updateLayout();
         });
         get().updateLayout();
     },
@@ -615,6 +688,7 @@ const useStore = create<RFState>((set, get) => ({
             firstNode,
             edgeStyle,
             confidenceInterval,
+            entityChosenEvents,
         } = get();
         if (firstNode === null || mapNodes.size === 0) {
             return;
@@ -632,6 +706,8 @@ const useStore = create<RFState>((set, get) => ({
                 ? `${edgeStyle[node.data.gate as GraphEdgeType].style.stroke}70`
                 : "white";
             const opacity =
+                (entityChosenEvents.size === 0 ||
+                    entityChosenEvents.has(node.id)) &&
                 node.data.confidence >= confidenceInterval[0] &&
                 node.data.confidence <= confidenceInterval[1]
                     ? 1
@@ -644,8 +720,8 @@ const useStore = create<RFState>((set, get) => ({
                 data: isGate
                     ? {
                           ...node.data,
-                        color: edgeStyle[node.data.gate as GraphEdgeType]
-                            .style.stroke,
+                          color: edgeStyle[node.data.gate as GraphEdgeType]
+                              .style.stroke,
                       }
                     : node.data,
                 expandParent: isGate || node.data.isTopLevel ? undefined : true,

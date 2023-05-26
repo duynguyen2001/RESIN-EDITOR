@@ -1,11 +1,11 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faPlusSquare,
     faDownload,
-    faList,
-    faCog,
+    faListSquares,
     faBars,
+    faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { Modal } from "../pages/Panel";
 import {
@@ -13,7 +13,6 @@ import {
     ExtractedTextsContext,
     ProvenanceContext,
     EntitiesContext,
-    EventsContext,
 } from "../pages/DataReader";
 import ZipReader from "./ZipReader";
 import "../assets/css/Menu.css";
@@ -22,15 +21,14 @@ import {
     PredictedNodeStrategy,
     SourceOnlyNodeStrategy,
     NodeRenderingStrategy,
-    TreeRenderOptions,
     EventNode,
     EventNodeType,
 } from "./Library";
 import { ConnectionLineType, ReactFlowProvider } from "reactflow";
 import EventGraphNode from "./EventGraphNode";
-import ProvenancePopup from "./ProvenancePopup";
 import { JsonConvert } from "json2typescript";
 import useStore from "../pages/store";
+import ToggleButton from "./ToggleButton";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -66,16 +64,16 @@ function Menu() {
                     </div>
                     <div onClick={() => setOption("See Legend")}>
                         <FontAwesomeIcon
-                            icon={faList}
+                            icon={faInfoCircle}
                             className="menu-item"
                             title="See Legend"
                         />
                     </div>
-                    <div onClick={() => setOption("Demo Image Change")}>
+                    <div onClick={() => setOption("Global Entity List")}>
                         <FontAwesomeIcon
-                            icon={faCog}
+                            icon={faListSquares}
                             className="menu-item"
-                            title="Demo Image Change"
+                            title="Global Entity List"
                         />
                     </div>
                 </div>
@@ -109,7 +107,7 @@ const MenuOptionPanel = ({ option, setOption }) => {
             {option === "Add JSON" && <AddJSONPanel />}
             {option === "Download JSON" && <DownloadJSONPanel />}
             {option === "See Legend" && <SeeLegendPanel />}
-            {option === "Demo Image Change" && <OptionChangePanel />}
+            {option === "Global Entity List" && <GlobalEntityList />}
         </div>
     );
 };
@@ -169,7 +167,9 @@ function DownloadJSONPanel() {
     const [Entities] = useContext(EntitiesContext);
     const jsonConverter = new JsonConvert();
     const newData = { ...jsonData };
-    newData.instances[0].events = jsonConverter.serializeArray(Array.from(mapNodes.values()));
+    newData.instances[0].events = jsonConverter.serializeArray(
+        Array.from(mapNodes.values())
+    );
     newData.instances[0].entities = jsonConverter.serializeArray(
         Array.from(Entities.values())
     );
@@ -204,7 +204,7 @@ function SeeLegendPanel() {
         edgeStyle,
         updateEdgeStyle,
         updateEdgeAttribute,
-        refreshGate
+        refreshGate,
     ] = useStore((state) => [
         state.updateNodeAttribute,
         state.updateTreeNodeAttribute,
@@ -212,7 +212,7 @@ function SeeLegendPanel() {
         state.updateEdgeStyle,
         state.updateEdgeAttribute,
         state.nodeRerender,
-        state.refreshGate
+        state.refreshGate,
     ]);
 
     const parentNode = new EventNode("newId", null, "Chapter Event");
@@ -310,7 +310,6 @@ function SeeLegendPanel() {
                 {["or", "and", "xor", "outlink"].map((childrenGate, index) => (
                     <div key={index}>
                         <h4>{childrenGate}</h4>
-
                         <div>
                             <table>
                                 <tbody>
@@ -347,13 +346,15 @@ function SeeLegendPanel() {
                                                             }
                                                         );
                                                     }
-                                                    if (childrenGate !== "outlink") {
-                                                        refreshGate(childrenGate);
-
+                                                    if (
+                                                        childrenGate !==
+                                                        "outlink"
+                                                    ) {
+                                                        refreshGate(
+                                                            childrenGate
+                                                        );
                                                     }
-
                                                 }}
-
                                                 label="color"
                                             />
                                         </td>
@@ -510,27 +511,40 @@ function SeeLegendPanel() {
     );
 }
 
-function OptionChangePanel() {
-    const [opened, setOpen] = useState(false);
-    const parentId = "resin:Events/10478/";
+function GlobalEntityList() {
+    const [Entities] = useContext(EntitiesContext);
+    const [relatedEntities, chosenEntities] = useStore((state) => [state.entitiesRelatedEventMap, state.chosenEntities, state.setChosenEntities]);
+    const [EntitiesList, setEntitiesList] = useState([]);
+   
+
+    useEffect(() => {
+        const newEntitiesList = [];
+        for (const [entityName, events] of relatedEntities) {
+            const key = `${entityName}`;
+            const entity = Entities.get(entityName);
+            newEntitiesList.push(
+                <ToggleButton
+                    key={key}
+                    id={key}
+                    name={entity.name}
+                    relatedEventsLength={events.length}
+                    chosen={chosenEntities.includes(key)}
+                />
+            );
+        }
+        setEntitiesList(
+            newEntitiesList.length > 0 ? (
+                newEntitiesList
+            ) : (
+                <div>No Entities</div>
+            )
+        );
+    }, [Entities]);
 
     return (
         <div>
-            <h2>Demo Image Change</h2>
-            <ReactFlowProvider>
-                <button onClick={() => setOpen(true)}>Open Demo</button>
-                {opened && (
-                    <ProvenancePopup
-                        ids={[
-                            "resin:Provenance/10478/",
-                            "resin:Provenance/10469/",
-                            "resin:Provenance/10477/",
-                        ]}
-                        onClose={() => setOpen(false)}
-                        parentId={parentId}
-                    />
-                )}
-            </ReactFlowProvider>
+            <h2>Global Entity List</h2>
+            <div>{EntitiesList}</div>
         </div>
     );
 }
