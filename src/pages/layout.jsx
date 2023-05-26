@@ -140,9 +140,9 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                 },
             ];
         });
-
+        const firstNodeData = mapNodes.get(firstNode);
         subgraphs.push({
-            id: `subgraph-${mapNodes.get(firstNode).parent}`,
+            id: `subgraph-${firstNodeData.parent}`,
             width: 200,
             height: 200,
             data: {
@@ -151,7 +151,8 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                         id: firstNode,
                         data: {
                             isGate: false,
-                            confidence: mapNodes.get(firstNode).confidence[0],
+                            confidence: firstNodeData.confidence[0],
+                            color: firstNodeData.renderStrategy.color,
                         },
                         position: { x: 0, y: 0 },
                     },
