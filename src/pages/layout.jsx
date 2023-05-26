@@ -75,6 +75,7 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                         isTopLevel: currentNode.isTopLevel === "true"? true: undefined,
                         parent: node,
                         confidence: mapNodes.get(subNode).confidence[0],
+                        color: currentNode.renderStrategy.color,
                     },
                     position: { x: 0, y: 0 },
                 };

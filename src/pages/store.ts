@@ -59,6 +59,7 @@ type RFState = {
     edges: Edge[];
     chosenNodes: string[];
     confidenceInterval: [number, number];
+    entityChosenEvents: Set<string>;
     mapNodes: Map<string, any>;
     clickedNode: Node | null;
     firstNode: string | null;
@@ -73,6 +74,7 @@ type RFState = {
     setMapNodes: (mapNodes: Map<string, any>) => void;
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
+    setEntityChosenEvents: (entityChosenEvents: []) => void;
     addEventNode: (node: EventNode) => void;
     getNewIdInEventMap: () => string;
     onNodesChange: OnNodesChange;
@@ -106,6 +108,7 @@ const useStore = create<RFState>((set, get) => ({
     edges: [],
     chosenNodes: [],
     mapNodes: new Map(),
+    entityChosenEvents: new Set(),
     clickedNode: null,
     firstNode: null,
     confidenceInterval: [0.0, 1.0],
@@ -191,6 +194,10 @@ const useStore = create<RFState>((set, get) => ({
     setChosenNodes: (chosenNodes) => {
         set({ chosenNodes });
         get().updateLayout();
+    },
+    setEntityChosenEvents: (entityChosenEvents) => {
+        const entityChosenEventsSet = new Set(entityChosenEvents);
+        set({ entityChosenEvents: entityChosenEventsSet });
     },
     editMapNode: (nodeId: string, field: string, value: any) => {
         const { mapNodes, nodeRerender } = get();
@@ -637,10 +644,8 @@ const useStore = create<RFState>((set, get) => ({
                 data: isGate
                     ? {
                           ...node.data,
-                          renderStrategy: {
-                              color: edgeStyle[node.data.gate as GraphEdgeType]
-                                  .style.stroke,
-                          },
+                        color: edgeStyle[node.data.gate as GraphEdgeType]
+                            .style.stroke,
                       }
                     : node.data,
                 expandParent: isGate || node.data.isTopLevel ? undefined : true,

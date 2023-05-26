@@ -29,17 +29,17 @@ function Gate({ data, isConnectable = true, label }) {
                 
                 {data.gate === "xor" ? (
                     <XorGate
-                        color={data.renderStrategy.color}
+                        color={data.color}
                         strokeColor="black"
                     />
                 ) : data.gate === "and" ? (
                     <AndGate
-                        color={data.renderStrategy.color}
+                        color={data.color}
                         strokeColor="black"
                     />
                 ) : (
                     <OrGate
-                        color={data.renderStrategy.color}
+                        color={data.color}
                         strokeColor="black"
                     />
                 )}
