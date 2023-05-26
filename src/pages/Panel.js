@@ -409,6 +409,7 @@ export const EditEventPanel = ({
                 toggleEnlarged={toggleEnlarged}
                 handleClick={onClose}
             />
+            {existingData ? <h2>Edit Event</h2> : <h2>Add A New Event</h2>}
             <form onSubmit={handleSubmit} className="form-container">
                 <div className="form-group">
                     <label>Id:</label>
@@ -550,30 +551,21 @@ export const EditEventPanel = ({
                         onChange={handleChange}
                     />
                 </div>
-                {/* <div>
-                    <label>Optional:</label>
-                    <input
-                        type="checkbox"
-                        name="optional"
-                        value={data.optional}
-                        onChange={(e) => {
-                            setData({ ...data, optional: e.target.checked });
-                            console.log(data);
-                        }}
-                    />
+                <div
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        border: "3px solid red",
+                        borderRadius: "5px",
+                        padding: "5px",
+                    }}
+                >
+                    <button type="submit">
+                        {existingData ? "Save Changes" : "Submit"}
+                    </button>
                 </div>
-                <div>
-                    <label>Is Top Level:</label>
-                    <input
-                        type="checkbox"
-                        name="isTopLevel"
-                        value={data.isTopLevel}
-                        onChange={(e) =>
-                            setData({ ...data, isTopLevel: e.target.checked })
-                        }
-                    />
-                </div> */}
-                <button type="submit">Submit</button>
             </form>
         </div>
     );

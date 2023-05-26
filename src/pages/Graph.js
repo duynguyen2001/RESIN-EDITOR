@@ -67,7 +67,11 @@ export const Graph = ({ eventNodes }) => {
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onNodeClick={onNodeClick}
-                    onPaneClick={() => setClickedNode(null)}
+                    onPaneClick={() => {
+                        setClickedNode(null);
+
+                        setShowAddPanel(false);
+                    }}
                     nodeTypes={nodeTypes}
                     onConnect={onConnect}
                     onEdgeUpdate={onEdgeUpdate}
@@ -85,16 +89,17 @@ export const Graph = ({ eventNodes }) => {
                     pannable
                 />
                 <div
-                style={{
-                    position: "absolute",
-                    bottom: 10,
-                    left: 70,
-                    width: 300,
-                }}>
-                <RangeSlider
-                    initialValue={confidenceInterval}
-                    onValueChange={setConfidenceInterval} />
-
+                    style={{
+                        position: "absolute",
+                        bottom: 10,
+                        left: 70,
+                        width: 300,
+                    }}
+                >
+                    <RangeSlider
+                        initialValue={confidenceInterval}
+                        onValueChange={setConfidenceInterval}
+                    />
                 </div>
                 <Controls />
                 {clickedNode && (
@@ -117,8 +122,11 @@ export const Graph = ({ eventNodes }) => {
                             <button
                                 className="selection-button"
                                 onClick={() => {
-                                    onNodesDelete([mapNodes.get(clickedNode.id)]);
+                                    onNodesDelete([
+                                        mapNodes.get(clickedNode.id),
+                                    ]);
                                     setClickedNode(null);
+                                    setShowAddPanel(false);
                                 }}
                             >
                                 <span className="fa fa-trash-o" />
@@ -126,7 +134,7 @@ export const Graph = ({ eventNodes }) => {
                             <button
                                 className="selection-button"
                                 onClick={() => {
-                                    setShowAddPanel(true)
+                                    setShowAddPanel(true);
                                 }}
                             >
                                 <span className="fa fa-plus" />
@@ -144,6 +152,7 @@ export const Graph = ({ eventNodes }) => {
                         onClose={() => {
                             setShowAddPanel(false);
                             setClickedNode(null);
+                            setShowAddPanel(false);
                         }}
                     />
                 )}
