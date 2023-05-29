@@ -29,6 +29,8 @@ import EventGraphNode from "./EventGraphNode";
 import { JsonConvert } from "json2typescript";
 import useStore from "../pages/store";
 import ToggleButton from "./ToggleButton";
+import { set } from "idb-keyval";
+import { UniqueString } from "./TypeScriptUtils";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -117,14 +119,26 @@ function AddJSONPanel() {
     const [extractedTexts, setExtractedTexts] = useContext(
         ExtractedTextsContext
     );
+    const [setChosenNodes, setChosenEntities, setClickedNode] = useStore((state) => [
+        state.setChosenNodes,
+        state.setChosenEntities,
+        state.setClickedNode
+    ]);
 
     const handleJSONUpload = (event) => {
         const fileReader = new FileReader();
         fileReader.readAsText(event.target.files[0], "UTF-8");
+
+    setChosenNodes([]);
+    setChosenEntities([]);
+    setClickedNode(null);
+    UniqueString.reset();
         fileReader.onload = (e) => {
             const parsedJson = JSON.parse(e.target.result);
             setJsonData(parsedJson);
         };
+        
+
     };
     const handleParsedTextFile = (event) => {
         const fileReader = new FileReader();
