@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import ReactFlow, {
-    MiniMap,
-    ReactFlowProvider,
     Controls,
+    MiniMap,
     NodeToolbar,
     Position,
+    ReactFlowProvider,
 } from "reactflow";
-import { EventGraphNode } from "../components/EventGraphNode";
 import "reactflow/dist/style.css";
-import "./graph.css";
-import { InfoPanel, EditEventPanel } from "./Panel";
-import Menu from "../components/Menu";
+import { EventGraphNode } from "../components/EventGraphNode";
 import Gate from "../components/Gate";
-import useStore from "./store";
+import Menu from "../components/Menu";
 import { RangeSlider } from "../components/RangeSlider";
+import { EditEventPanel, InfoPanel } from "./Panel";
+import "./graph.css";
+import useStore from "./store";
 
 const nodeTypes = {
     eventNode: EventGraphNode,
