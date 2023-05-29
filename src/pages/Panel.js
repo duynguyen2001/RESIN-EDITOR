@@ -50,20 +50,20 @@ function TableInfoPanel({ data, parentId }) {
             );
             const values = [];
 
-            if (entityObject.name) {
-                values.push(
-                    <EditableText
-                        values={entityObject.name}
-                        onSave={(value, field) => {
-                            entityObject.name = value;
-                            entitiesMap.set(entityObject.id, entityObject);
-                            setTableChange(!tableChange);
-                        }}
-                        variant="none"
-                        onTable={true}
-                    />
-                );
-            }
+            // if (entityObject.name) {
+            //     values.push(
+            //         <EditableText
+            //             values={entityObject.name}
+            //             onSave={(value, field) => {
+            //                 entityObject.name = value;
+            //                 entitiesMap.set(entityObject.id, entityObject);
+            //                 setTableChange(!tableChange);
+            //             }}
+            //             variant="none"
+            //             onTable={true}
+            //         />
+            //     );
+            // }
 
             if (participant.values && participant.values instanceof Array) {
                 participant.values?.forEach((value) => {
@@ -322,6 +322,26 @@ function EventNodeInfoPanel({ data, onClose }) {
                     />
                 </details>
             )}
+            {
+                <div
+                    onClick={() => {
+                        data.participants.push({
+                            id: data.participants.length,
+                            roleName: "",
+                            entity: "",
+                            values: [],
+                        });
+                        editMapNode(data.id, "participants", data.participants);
+                    }}
+                >
+                    <u>
+                        <h4>
+                            <span className="fa fa-plus" />
+                            Add Participant
+                        </h4>
+                    </u>
+                </div>
+            }
             {showEditPanel && (
                 <EditEventPanel
                     onClose={() => {

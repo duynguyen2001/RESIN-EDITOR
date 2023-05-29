@@ -6,7 +6,6 @@ import "./EventGraphNode.css";
 
 export const EventGraphNode = ({ id, data, isConnectable, onHover }) => {
     const node = useStore((state) => state.getNodeById)(id);
-    // const [permanentVisible, setPermanentVisible] = useState(false);
     if (!node) {
         if (data instanceof EventNode) {
             return <div>{data.render({}, isConnectable, onHover)}</div>;

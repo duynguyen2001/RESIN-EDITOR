@@ -63,6 +63,8 @@ type RFState = {
     entityChosenEvents: Set<string>;
     entitiesRelatedEventMap: Map<string, string[]>;
     mapNodes: Map<string, any>;
+    showAddPanel: boolean;
+    contextMenu: Node | null;
     clickedNode: Node | null;
     firstNode: string | null;
     edgeStyle: EdgeStyle;
@@ -75,6 +77,8 @@ type RFState = {
     setChosenEntities: (chosenEntities: string[]) => void;
     setChosenNodes: (chosenNodes: string[]) => void;
     setMapNodes: (mapNodes: Map<string, any>) => void;
+    setShowAddPanel: (showAddPanel: boolean) => void;
+    setContextMenu: (contextMenu: Node | null) => void;
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
     setEntityChosenEvents: (entityChosenEvents: []) => void;
@@ -115,6 +119,8 @@ const useStore = create<RFState>((set, get) => ({
     mapNodes: new Map(),
     entityChosenEvents: new Set(),
     entitiesRelatedEventMap: new Map(),
+    showAddPanel: false,
+    contextMenu: null,
     clickedNode: null,
     firstNode: null,
     confidenceInterval: [0.0, 1.0],
@@ -201,6 +207,7 @@ const useStore = create<RFState>((set, get) => ({
         set({ chosenNodes });
         get().updateLayout();
     },
+
     setEntityChosenEvents: (entityChosenEvents) => {
         const entityChosenEventsSet = new Set(entityChosenEvents);
         set({ entityChosenEvents: entityChosenEventsSet });
@@ -252,7 +259,9 @@ const useStore = create<RFState>((set, get) => ({
         set({ mapNodes });
         get().getEntitiesRelatedEventMap();
     },
+    setShowAddPanel: (showAddPanel) => set({ showAddPanel }),
     setClickedNode: (clickedNode) => set({ clickedNode }),
+    setContextMenu: (contextMenu) => set({ contextMenu }),
     setFirstNode: (firstNode) => set({ firstNode }),
     setChosenEntities(chosenEntities) {
         const { nodes, confidenceInterval, nodeRerender } = get();
@@ -482,6 +491,7 @@ const useStore = create<RFState>((set, get) => ({
         return id;
     },
     onNodeClick: (event, node) => {
+        set({ contextMenu: null, showAddPanel: false });
         const mapNodes = get().mapNodes;
         const currentNode = node.data.isGate
             ? mapNodes.get(node.data.referredNode)

@@ -26,8 +26,12 @@ export const Graph = ({ eventNodes }) => {
         edges,
         mapNodes,
         clickedNode,
+        contextMenu,
         confidenceInterval,
+        showAddPanel,
+        setShowAddPanel,
         setClickedNode,
+        setContextMenu,
         onNodesChange,
         onEdgesChange,
         updateGraphByEventNodes,
@@ -41,11 +45,11 @@ export const Graph = ({ eventNodes }) => {
     const handleClosePanel = () => {
         setClickedNode(null);
     };
-    const [showAddPanel, setShowAddPanel] = useState(false);
 
     // layout related functions
     useEffect(() => {
         updateGraphByEventNodes(eventNodes);
+        
     }, [eventNodes]);
 
     // denote the color of the node in the minimap
@@ -60,9 +64,14 @@ export const Graph = ({ eventNodes }) => {
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onNodeClick={onNodeClick}
+                    onNodeContextMenu={(event, node) => {
+                        event.preventDefault();
+                        setContextMenu(node);
+                    }}
+
                     onPaneClick={() => {
                         setClickedNode(null);
-
+                        setContextMenu(null);
                         setShowAddPanel(false);
                     }}
                     nodeTypes={nodeTypes}
@@ -107,34 +116,37 @@ export const Graph = ({ eventNodes }) => {
                             }
                             onClose={handleClosePanel}
                         />
-                        <NodeToolbar
-                            nodeId={clickedNode.id}
-                            position={Position.Bottom}
-                            isVisible={true}
-                        >
-                            <button
-                                className="selection-button"
-                                onClick={() => {
-                                    onNodesDelete([
-                                        mapNodes.get(clickedNode.id),
-                                    ]);
-                                    setClickedNode(null);
-                                    setShowAddPanel(false);
-                                }}
-                            >
-                                <span className="fa fa-trash-o" />
-                            </button>
-                            <button
-                                className="selection-button"
-                                onClick={() => {
-                                    setShowAddPanel(true);
-                                }}
-                            >
-                                <span className="fa fa-plus" />
-                            </button>
-                        </NodeToolbar>
+                        
                     </>
                 )}
+                {contextMenu && (
+                    <NodeToolbar
+                    nodeId={contextMenu.id}
+                    position={Position.Bottom}
+                    isVisible={true}
+                >
+                    <button
+                        className="selection-button"
+                        onClick={() => {
+                            onNodesDelete([
+                                mapNodes.get(contextMenu.id),
+                            ]);
+                            setContextMenu(null);
+                            setClickedNode(null);
+                            setShowAddPanel(false);
+                        }}
+                    >
+                        <span className="fa fa-trash-o" />
+                    </button>
+                    <button
+                        className="selection-button"
+                        onClick={() => {
+                            setShowAddPanel(true);
+                        }}
+                    >
+                        <span className="fa fa-plus" />
+                    </button>
+                </NodeToolbar>)}
                 {clickedNode && showAddPanel && (
                     <EditEventPanel
                         parentId={
