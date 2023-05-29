@@ -43,13 +43,6 @@ const ZipImageProvider = ({ children }) => {
     const getImageByName = (name) => {
         return imageDict[name] || null;
     };
-    useEffect(() => {
-        const imageUrl = unzipImages({
-            filePath: "../assets/zip/images.zip",
-        }).then((imageUrl) => {
-            console.log("imageUrl:", imageUrl);
-        });
-    }, []);
 
     return (
         <ZipImageContext.Provider value={{ unzipImages, getImageByName }}>
