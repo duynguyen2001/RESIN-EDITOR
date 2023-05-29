@@ -1,26 +1,26 @@
-import { create } from "zustand";
 import {
-    ConnectionLineType,
     Connection,
-    MarkerType,
+    ConnectionLineType,
     Edge,
     EdgeChange,
+    MarkerType,
     Node,
     NodeChange,
-    OnNodesChange,
-    OnEdgesChange,
     OnConnect,
-    applyNodeChanges,
+    OnEdgesChange,
+    OnNodesChange,
     Position,
     applyEdgeChanges,
+    applyNodeChanges,
 } from "reactflow";
+import { create } from "zustand";
 import {
-    EventNode,
     DetectedNodeStrategy,
-    PredictedNodeStrategy,
-    SourceOnlyNodeStrategy,
+    EventNode,
     EventNodeType,
     NodeRenderingStrategy,
+    PredictedNodeStrategy,
+    SourceOnlyNodeStrategy,
 } from "../components/Library";
 import getLayoutedElementsNested from "./layout";
 

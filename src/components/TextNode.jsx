@@ -1,6 +1,6 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
-import "./TextNode.css";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { ProvenanceContext } from "../pages/DataReader";
+import "./TextNode.css";
 
 const EditableTextNode = ({ data, fileContent }) => {
     const [nodeData, setNodeData] = useState(data);
@@ -41,36 +41,33 @@ const EditableTextNode = ({ data, fileContent }) => {
 
     const extractSentence = (text, offset, length, showWholePara = false) => {
         let start = offset;
-        if(showWholePara){
+        if (showWholePara) {
             while (start > 0 && !text[start - 1].match(/[\r\n]/)) {
                 start -= 1;
             }
             while (start < text.length && text[start].match(/\s/)) {
                 start += 1;
             }
-    
+
             let end = offset + length;
             while (end < text.length && !text[end].match(/[\r\n]/)) {
                 end += 1;
             }
             return [start, offset, offset + length, end];
-        }else{
+        } else {
             while (start > 0 && !text[start - 1].match(/[.!?]/)) {
                 start -= 1;
             }
             while (start < text.length && text[start].match(/\s/)) {
                 start += 1;
             }
-    
+
             let end = offset + length;
             while (end < text.length && !text[end].match(/[.!?]/)) {
                 end += 1;
             }
             return [start, offset, offset + length, end];
         }
-
-       
-
     };
 
     const sentence = fileContent.slice(start, end);
@@ -116,48 +113,60 @@ const EditableTextNode = ({ data, fileContent }) => {
     return (
         <div className="text-node">
             {editing ? wholeSentence : highlightedSentence}
-            <div ><button
-                onClick={() => setEditing(!editing)}
-                style={{ 
-                    marginRight: '5px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    fontSize: '16px',
-                    color: editing ? 'green' : 'blue' }}
-            >
-                {editing ? <i className="fa fa-check" /> : <i className="fa fa-pencil" />}
-            </button>
-            <button
-                onClick={() => setShowWholeParagraph(!showWholeParagraph)}
-                style={{ 
-                    marginRight: '5px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    fontSize: '16px',
-                    color: showWholeParagraph ? 'green' : 'blue' }}
-            >
-                { <i className="fa fa-paragraph" />}
-            </button>
-            {data.sourceURL &&  data.sourceURL[0] !== 'undefined' && <button
-                style={{
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    fontSize: '16px',
-                    color: 'blue'
-                }}
-
-            >
-                <a href={data.sourceURL[0]} rel="noreferrer" target="_blank"><i className="fa fa-link" /></a>
-            </button>
-            }
+            <div>
+                <button
+                    onClick={() => setEditing(!editing)}
+                    style={{
+                        marginRight: "5px",
+                        backgroundColor: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        outline: "none",
+                        fontSize: "16px",
+                        color: editing ? "green" : "blue",
+                    }}
+                >
+                    {editing ? (
+                        <i className="fa fa-check" />
+                    ) : (
+                        <i className="fa fa-pencil" />
+                    )}
+                </button>
+                <button
+                    onClick={() => setShowWholeParagraph(!showWholeParagraph)}
+                    style={{
+                        marginRight: "5px",
+                        backgroundColor: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        outline: "none",
+                        fontSize: "16px",
+                        color: showWholeParagraph ? "green" : "blue",
+                    }}
+                >
+                    {<i className="fa fa-paragraph" />}
+                </button>
+                {data.sourceURL && data.sourceURL[0] !== "undefined" && (
+                    <button
+                        style={{
+                            backgroundColor: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            outline: "none",
+                            fontSize: "16px",
+                            color: "blue",
+                        }}
+                    >
+                        <a
+                            href={data.sourceURL[0]}
+                            rel="noreferrer"
+                            target="_blank"
+                        >
+                            <i className="fa fa-link" />
+                        </a>
+                    </button>
+                )}
             </div>
-            
         </div>
     );
 };

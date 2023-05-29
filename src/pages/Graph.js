@@ -49,7 +49,6 @@ export const Graph = ({ eventNodes }) => {
     // layout related functions
     useEffect(() => {
         updateGraphByEventNodes(eventNodes);
-        
     }, [eventNodes]);
 
     // denote the color of the node in the minimap
@@ -68,7 +67,6 @@ export const Graph = ({ eventNodes }) => {
                         event.preventDefault();
                         setContextMenu(node);
                     }}
-
                     onPaneClick={() => {
                         setClickedNode(null);
                         setContextMenu(null);
@@ -116,37 +114,35 @@ export const Graph = ({ eventNodes }) => {
                             }
                             onClose={handleClosePanel}
                         />
-                        
                     </>
                 )}
                 {contextMenu && (
                     <NodeToolbar
-                    nodeId={contextMenu.id}
-                    position={Position.Bottom}
-                    isVisible={true}
-                >
-                    <button
-                        className="selection-button"
-                        onClick={() => {
-                            onNodesDelete([
-                                mapNodes.get(contextMenu.id),
-                            ]);
-                            setContextMenu(null);
-                            setClickedNode(null);
-                            setShowAddPanel(false);
-                        }}
+                        nodeId={contextMenu.id}
+                        position={Position.Bottom}
+                        isVisible={true}
                     >
-                        <span className="fa fa-trash-o" />
-                    </button>
-                    <button
-                        className="selection-button"
-                        onClick={() => {
-                            setShowAddPanel(true);
-                        }}
-                    >
-                        <span className="fa fa-plus" />
-                    </button>
-                </NodeToolbar>)}
+                        <button
+                            className="selection-button"
+                            onClick={() => {
+                                onNodesDelete([mapNodes.get(contextMenu.id)]);
+                                setContextMenu(null);
+                                setClickedNode(null);
+                                setShowAddPanel(false);
+                            }}
+                        >
+                            <span className="fa fa-trash-o" />
+                        </button>
+                        <button
+                            className="selection-button"
+                            onClick={() => {
+                                setShowAddPanel(true);
+                            }}
+                        >
+                            <span className="fa fa-plus" />
+                        </button>
+                    </NodeToolbar>
+                )}
                 {clickedNode && showAddPanel && (
                     <EditEventPanel
                         parentId={

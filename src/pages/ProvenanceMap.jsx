@@ -1,7 +1,7 @@
-import React, { useContext, memo } from "react";
+import React, { memo, useContext } from "react";
+import "reactflow/dist/style.css";
 import ProvenanceNode from "../components/ProvenanceNode";
 import { ProvenanceContext } from "../pages/DataReader";
-import "reactflow/dist/style.css";
 
 const ProvenanceMap = ({ ids = [] }) => {
     const [provenance, _] = useContext(ProvenanceContext);

@@ -8,14 +8,17 @@ function Gate({ data, isConnectable = true, label }) {
                 background: "",
             }}
         >
-            
-                <h2 style={{
+            <h2
+                style={{
                     position: "relative",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     width: "100%",
-                }}>{data.name}</h2>
+                }}
+            >
+                {data.name}
+            </h2>
             <div
                 style={{
                     justifyContent: "center",
@@ -25,29 +28,15 @@ function Gate({ data, isConnectable = true, label }) {
                     top: "-115px",
                     background: "transparent",
                 }}
-            > 
-                
+            >
                 {data.gate === "xor" ? (
-                    <XorGate
-                        color={data.color}
-                        strokeColor="black"
-                    />
+                    <XorGate color={data.color} strokeColor="black" />
                 ) : data.gate === "and" ? (
-                    <AndGate
-                        color={data.color}
-                        strokeColor="black"
-                    />
+                    <AndGate color={data.color} strokeColor="black" />
                 ) : (
-                    <OrGate
-                        color={data.color}
-                        strokeColor="black"
-                    />
+                    <OrGate color={data.color} strokeColor="black" />
                 )}
-
-                
-               
             </div>
-           
         </div>
     );
 }

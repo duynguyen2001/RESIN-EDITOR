@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, createContext, useContext } from "react";
+import { JsonConvert } from "json2typescript";
+import React, { createContext, useEffect } from "react";
+import {
+    Entity,
+    EventNode,
+    createProvenanceEntity,
+} from "../components/Library.tsx";
 import defaultData from "../data/disease_outbreak_sdf_example.json";
 import defaultText from "../data/results.json";
 import Graph from "./Graph";
-import { JsonConvert } from "json2typescript";
-import {
-    createProvenanceEntity,
-    EventNode,
-    Entity,
-} from "../components/Library.tsx";
 import CountProvider from "./newdataIndexes";
 
 export const EntitiesContext = createContext({});
@@ -19,9 +19,7 @@ export const EventsContext = createContext([]);
 
 const defaultExtractedText = () => {
     const mapText = new Map();
-    for (const [key, value] of Object.entries(
-        defaultText.rsd_data.en
-    )) {
+    for (const [key, value] of Object.entries(defaultText.rsd_data.en)) {
         mapText.set(key, value);
     }
     return mapText;
@@ -80,25 +78,30 @@ const DataReader = () => {
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <CountProvider>
-            <DataContext.Provider value={[data, setData]}>
-                <ProvenanceContext.Provider
-                    value={[Provenances, setProvenances]}
-                >
-                    <EventsContext.Provider value={[Events, setEvents]}>
-                    <EntitiesContext.Provider value={[Entities, setEntities]}>
-                        <ExtractedTextsContext.Provider
-                            value={[extractedTexts, setExtractedTexts]}
-                        >
-                            <ExtractedFilesContext.Provider
-                                value={[extractedFiles, setExtractedFiles]}
+                <DataContext.Provider value={[data, setData]}>
+                    <ProvenanceContext.Provider
+                        value={[Provenances, setProvenances]}
+                    >
+                        <EventsContext.Provider value={[Events, setEvents]}>
+                            <EntitiesContext.Provider
+                                value={[Entities, setEntities]}
                             >
-                                <Graph eventNodes={Events} />
-                            </ExtractedFilesContext.Provider>
-                        </ExtractedTextsContext.Provider>
-                    </EntitiesContext.Provider>
-                    </EventsContext.Provider>
-                </ProvenanceContext.Provider>
-            </DataContext.Provider>
+                                <ExtractedTextsContext.Provider
+                                    value={[extractedTexts, setExtractedTexts]}
+                                >
+                                    <ExtractedFilesContext.Provider
+                                        value={[
+                                            extractedFiles,
+                                            setExtractedFiles,
+                                        ]}
+                                    >
+                                        <Graph eventNodes={Events} />
+                                    </ExtractedFilesContext.Provider>
+                                </ExtractedTextsContext.Provider>
+                            </EntitiesContext.Provider>
+                        </EventsContext.Provider>
+                    </ProvenanceContext.Provider>
+                </DataContext.Provider>
             </CountProvider>
         </div>
     );

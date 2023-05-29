@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import { Slider } from "@mui/material";
+import React, { useState } from "react";
 import "./RangeSlider.css";
 
 interface RangeSliderProps {
@@ -41,21 +41,19 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
 
     return (
         <div className="slider-container">
-            <p className="slider-label">
-                Confidence
-            </p>
+            <p className="slider-label">Confidence</p>
             <Slider
-                    getAriaLabel={() => "Temperature range"}
-                    value={value}
-                    step={0.01}
-                    style={{ margin: "0 20 0 20" , color: "black"}}
-                    onChange={handleSliderChange}
-                    valueLabelDisplay="auto"
-                    disableSwap
-                    min={0}
-                    max={1}
-                    onChangeCommitted={handleChangeCommitted}
-                />
+                getAriaLabel={() => "Temperature range"}
+                value={value}
+                step={0.01}
+                style={{ margin: "0 20 0 20", color: "black" }}
+                onChange={handleSliderChange}
+                valueLabelDisplay="auto"
+                disableSwap
+                min={0}
+                max={1}
+                onChangeCommitted={handleChangeCommitted}
+            />
             <div className="input-container">
                 <input
                     className="number-input"
@@ -66,7 +64,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
                     value={value[0]}
                     onChange={(event) => handleInputChange(event, 0)}
                 />
-                
+
                 <input
                     className="number-input"
                     type="number"

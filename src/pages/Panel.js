@@ -1,20 +1,19 @@
-import React, { useContext, useState, useRef } from "react";
-import { EntitiesContext } from "./DataReader";
-import "./panel.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faExpand,
-    faCompress,
     faClose,
+    faCompress,
     faEdit,
+    faExpand,
 } from "@fortawesome/free-solid-svg-icons";
-import ProvenancePopup from "../components/ProvenancePopup.jsx";
-import EditableText from "./EditableText.jsx";
-import { useEffect } from "react";
-import useStore from "./store";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { JsonConvert } from "json2typescript";
-import { EventNode, Participant, Entity } from "../components/Library";
+import React, { useContext, useEffect, useState } from "react";
+import { Entity, EventNode, Participant } from "../components/Library";
+import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import { UniqueString } from "../components/TypeScriptUtils";
+import { EntitiesContext } from "./DataReader";
+import EditableText from "./EditableText.jsx";
+import "./panel.css";
+import useStore from "./store";
 
 function TableInfoPanel({ data, parentId }) {
     const [entitiesMap] = useContext(EntitiesContext);

@@ -1,13 +1,14 @@
 // ProvenanceNode.jsx
-import React, { useContext,memo } from "react";
-import { ExtractedFilesContext, ExtractedTextsContext } from "../pages/DataReader";
+import React, { memo, useContext } from "react";
+import {
+    ExtractedFilesContext,
+    ExtractedTextsContext,
+} from "../pages/DataReader";
 import ImageNode from "./ImageNode";
 import EditableTextNode from "./TextNode";
 
 const ProvenanceNode = ({ data }) => {
-    const [extractedFiles, _] = useContext(
-        ExtractedFilesContext
-    );
+    const [extractedFiles, _] = useContext(ExtractedFilesContext);
 
     const [extractedTexts, setExtractedTexts] = useContext(
         ExtractedTextsContext
@@ -21,11 +22,9 @@ const ProvenanceNode = ({ data }) => {
         console.log("fileContent: ", fileContent);
         if (fileContent) {
             if (data.mediaType.startsWith("image/")) {
-                return (
-                    <ImageNode data={data} fileContent={fileContent} />
-                );
-            } 
-        } 
+                return <ImageNode data={data} fileContent={fileContent} />;
+            }
+        }
     }
 
     if (extractedTexts.size > 0) {
@@ -35,15 +34,13 @@ const ProvenanceNode = ({ data }) => {
             if (data.mediaType.startsWith("text/")) {
                 return (
                     <EditableTextNode data={data} fileContent={textContent} />
-                    );
+                );
             }
         }
     }
 
     return (
-        <div
-            className="provenance-node"
-        >
+        <div className="provenance-node">
             <div className="provenance-node-content">
                 <h3>{data.childID}</h3>
                 <p>{data.parentID}</p>

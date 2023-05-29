@@ -1,16 +1,14 @@
-import React, {
-    ReactElement,
-} from "react";
+import React, { ReactElement } from "react";
 import { JsonObject, JsonProperty, JsonConvert } from "json2typescript";
 import {
     ForceNumberArray,
     ForceStringArray,
     StringOrStringArrayConverter,
-    UniqueString
+    UniqueString,
 } from "./TypeScriptUtils";
 import { Handle, Position } from "reactflow";
 import { JsonCustomConvert, JsonConverter } from "json2typescript";
-import './Library.css';
+import "./Library.css";
 
 export type RenderOptions = {
     color?: string;
@@ -54,16 +52,20 @@ export abstract class NodeRenderingStrategy {
         return 50;
     }
     constructor(eventNode: EventNode) {
-
-        this.eventNode = {id: eventNode.id? eventNode.id: "", description: eventNode.description? eventNode.description : "", optional: eventNode.optional? true: false, subgroupEvents: eventNode.subgroupEvents? eventNode.subgroupEvents : []};
+        this.eventNode = {
+            id: eventNode.id ? eventNode.id : "",
+            description: eventNode.description ? eventNode.description : "",
+            optional: eventNode.optional ? true : false,
+            subgroupEvents: eventNode.subgroupEvents
+                ? eventNode.subgroupEvents
+                : [],
+        };
     }
-    
+
     render(isConnectable: boolean | undefined): ReactElement {
         return (
             <div className="hover-container">
-                <span className="hover-text">
-                    {this.eventNode.description}
-                </span>
+                <span className="hover-text">{this.eventNode.description}</span>
                 {this.shape === "diamond" ? (
                     <div
                         className="diamond"
@@ -503,9 +505,6 @@ export class EventNode {
     @JsonProperty("optional", Boolean, true)
     optional?: boolean;
 
-   
-
-
     get type(): EventNodeType {
         if (this.predictionProvenance !== undefined) {
             return EventNodeType.Predicted;
@@ -593,7 +592,7 @@ export class EventNode {
             </div>
         );
     }
-    
+
     relatedEntities(): string[] {
         const entities: string[] = [];
         if (this.participants !== undefined) {
@@ -610,13 +609,10 @@ export class EventNode {
                         });
                     }
                 }
-
-
             });
         }
         return entities;
     }
-
 }
 
 // Define interfaces for the rendering strategy pattern
@@ -720,7 +716,7 @@ export function createProvenanceEntity(
 export class Entity {
     @JsonProperty("@id", String)
     id: string = undefined!;
-    
+
     @JsonProperty("name", String)
     name: string = undefined!;
 

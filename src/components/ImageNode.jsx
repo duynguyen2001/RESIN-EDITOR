@@ -1,8 +1,7 @@
 // ImageNode.jsx
-import React from "react";
-import { useState, useEffect, useContext, memo, useRef } from "react";
-import { ProvenanceContext } from "../pages/DataReader";
+import React, { memo, useContext, useEffect, useRef, useState } from "react";
 import { Rnd } from "react-rnd";
+import { ProvenanceContext } from "../pages/DataReader";
 import { getImage } from "./provenancedb";
 
 function ImageWithBox({ data, url, containerWidth = 500 }) {
@@ -33,8 +32,12 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
         setScale(containerWidth / originalWidth);
     };
 
-    useEffect(() => {
-    }, [boundingBoxWidth, boundingBoxHeight, boundingBoxX, boundingBoxY]);
+    useEffect(() => {}, [
+        boundingBoxWidth,
+        boundingBoxHeight,
+        boundingBoxX,
+        boundingBoxY,
+    ]);
     useEffect(() => {
         setBoundingBoxWidth((x_end - x) * scale);
         setBoundingBoxHeight((y_end - y) * scale);
@@ -62,7 +65,7 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
             y / scale,
             (x + boundingBoxWidth) / scale,
             (y + boundingBoxHeight) / scale,
-        ]
+        ];
         onProvenanceUpdate(data);
     };
     const handleResize = (event, direction, ref, delta, position) => {
@@ -78,7 +81,7 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
             position.y / scale,
             (position.x + ref.offsetWidth) / scale,
             (position.y + ref.offsetHeight) / scale,
-        ]
+        ];
         onProvenanceUpdate(data);
     };
     return (
@@ -144,7 +147,7 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
                         <i className="fa fa-pencil" />
                     )}
                 </button>
-                {data.sourceURL && data.sourceURL[0]!== 'undefined' && (
+                {data.sourceURL && data.sourceURL[0] !== "undefined" && (
                     <button
                         style={{
                             backgroundColor: "transparent",
@@ -155,7 +158,11 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
                             color: "blue",
                         }}
                     >
-                        <a href={data.sourceURL[0]} rel="noreferrer" target="_blank">
+                        <a
+                            href={data.sourceURL[0]}
+                            rel="noreferrer"
+                            target="_blank"
+                        >
                             <i className="fa fa-link" />
                         </a>
                     </button>

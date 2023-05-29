@@ -1,7 +1,5 @@
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import useStore from "../pages/store";
-import { EventNode } from "../components/Library";
-import { NodeToolbar, Position } from "reactflow";
 import "./EventGraphNode.css";
 
 export const EventGraphNode = ({ id, data, isConnectable, onHover }) => {

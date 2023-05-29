@@ -1,14 +1,14 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import "./AddSource.css";
 import {
-    EventsContext,
-    ProvenanceContext,
-    ExtractedTextsContext,
-    ExtractedFilesContext,
     EntitiesContext,
+    EventsContext,
+    ExtractedFilesContext,
+    ExtractedTextsContext,
+    ProvenanceContext,
 } from "../pages/DataReader";
 import { CountContext } from "../pages/newdataIndexes";
+import "./AddSource.css";
 const getListIndex = (list, id) => {
     for (let i = 0; i < list.length; i++) {
         let jsonObject = list[i];

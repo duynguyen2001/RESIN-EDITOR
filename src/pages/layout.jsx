@@ -1,5 +1,3 @@
-
-
 import dagre from "dagre";
 
 const nodeWidth = 200;
@@ -72,7 +70,10 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                     id: subNode,
                     data: {
                         isGate: false,
-                        isTopLevel: currentNode.isTopLevel === "true"? true: undefined,
+                        isTopLevel:
+                            currentNode.isTopLevel === "true"
+                                ? true
+                                : undefined,
                         parent: node,
                         confidence: mapNodes.get(subNode).confidence[0],
                         color: mapNodes.get(subNode).renderStrategy.color,
