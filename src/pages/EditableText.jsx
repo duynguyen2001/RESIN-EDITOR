@@ -48,12 +48,12 @@ const EditableText = ({values, field, onSave, variant, onClick, key, onTable = f
       )}
       {isEditMode && (
         <>
-          {<textarea
+          <textarea
             type="text"
             value={value}
             onChange={handleChange}
             className='text-style'
-          />}
+          />
 
           <button className="save-button" onClick={handleSaveClick}>
             <i className="fa fa-check" />

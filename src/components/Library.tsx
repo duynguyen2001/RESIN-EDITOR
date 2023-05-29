@@ -6,6 +6,7 @@ import {
     ForceNumberArray,
     ForceStringArray,
     StringOrStringArrayConverter,
+    UniqueString
 } from "./TypeScriptUtils";
 import { Handle, Position } from "reactflow";
 import { JsonCustomConvert, JsonConverter } from "json2typescript";
@@ -321,7 +322,7 @@ export class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
 
 @JsonObject("Value")
 export class Value {
-    @JsonProperty("@id", String)
+    @JsonProperty("@id", UniqueString, true)
     id: string;
 
     @JsonProperty("confidence", ForceNumberArray, true)
@@ -377,7 +378,7 @@ export class ValueOrValueArrayConverter
 }
 @JsonObject("Participant")
 export class Participant {
-    @JsonProperty("@id", String)
+    @JsonProperty("@id", UniqueString)
     id: string;
 
     @JsonProperty("entity", String, true)
@@ -442,7 +443,7 @@ export enum EventNodeType {
 
 @JsonObject("EventNode")
 export class EventNode {
-    @JsonProperty("@id", String, true)
+    @JsonProperty("@id", UniqueString, true)
     id: string;
 
     @JsonProperty("ta1ref", String, true)

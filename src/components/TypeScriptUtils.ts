@@ -58,3 +58,35 @@ export class ForceStringArray implements JsonCustomConvert<string | string[]> {
     }
   }
 }
+
+@JsonConverter
+export class UniqueString implements JsonCustomConvert<string> {
+  static uniqueStrings: Set<string> = new Set<string>();
+  static reset(){
+    UniqueString.uniqueStrings = new Set<string>();
+  }
+  static getUniqueStringWithForm(first:string, last:string): string{
+    let uniqueString = `${first}${randomFiveDigits()}${last}`;
+    while(UniqueString.uniqueStrings.has(uniqueString)){
+      console.log("Duplicate String", uniqueString);
+      uniqueString = `${first}${randomFiveDigits()}${last}`;
+    }
+    return uniqueString;
+  }
+  serialize(data: string): any {
+    return data;
+  }
+
+  deserialize(json: any): string {
+    const convertedString = String(json).toString()
+    if(UniqueString.uniqueStrings.has(convertedString)){
+      console.log("Duplicate String", convertedString);
+    }
+    UniqueString.uniqueStrings.add(convertedString);
+    return convertedString;
+  }
+}
+
+const randomFiveDigits = () => {
+  return Math.floor(10000 + Math.random() * 90000);
+}

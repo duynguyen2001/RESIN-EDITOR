@@ -39,7 +39,7 @@
     cursor: pointer;
 }
 .save-button {
-    background-color: transparent;
+    background-color: #000;
     border: none;
     outline: none;
     cursor: pointer;
