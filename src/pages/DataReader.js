@@ -5,8 +5,8 @@ import {
     EventNode,
     createProvenanceEntity,
 } from "../components/Library.tsx";
-import defaultData from "../data/disease_outbreak_sdf_example.json";
-import defaultText from "../data/results.json";
+import defaultData from "../data/resin-resin-task1-ce2013.json";
+import defaultText from "../data/triggers.json";
 import Graph from "./Graph";
 import CountProvider from "./newdataIndexes";
 
