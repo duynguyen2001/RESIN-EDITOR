@@ -493,8 +493,8 @@ export class EventNode {
     @JsonProperty("participants", [Participant], true)
     participants?: Participant[];
 
-    @JsonProperty("ta2wd_node", String, true)
-    ta2wdNode?: string;
+    @JsonProperty("ta2wd_node", ForceStringArray, true)
+    ta2wdNode?: string[];
 
     @JsonProperty("ta2wd_label", String, true)
     ta2wdLabel?: string;
@@ -531,7 +531,7 @@ export class EventNode {
         wdDescription?: string,
         provenance?: string[],
         participants?: Participant[],
-        ta2wdNode?: string,
+        ta2wdNode?: string[],
         ta2wdLabel?: string,
         ta2wdDescription?: string,
         optional?: boolean
@@ -552,7 +552,7 @@ export class EventNode {
         this.wdDescription = wdDescription || "";
         this.provenance = provenance || [];
         this.participants = participants || [];
-        this.ta2wdNode = ta2wdNode || "";
+        this.ta2wdNode = ta2wdNode || [];
         this.ta2wdLabel = ta2wdLabel || "";
         this.ta2wdDescription = ta2wdDescription || "";
         this.optional = optional || false;

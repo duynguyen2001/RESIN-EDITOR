@@ -569,7 +569,7 @@ function EventNodeInfoPanel({ data, onClose }) {
                                 name: "NewEntity",
                                 description: "",
                                 provenance: [],
-                                ta2wdNode: "",
+                                ta2wdNode: [],
                                 ta2wdLabel: "",
                                 ta2wdDescription: "",
                                 optional: false,
@@ -818,7 +818,7 @@ export const EditEventPanel = ({
                     <input
                         type="text"
                         name="ta2wdNode"
-                        value={data.ta2wdNode}
+                        value={data.ta2wdNode[0]}
                         onChange={handleChange}
                     />
                 </div>
