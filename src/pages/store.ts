@@ -146,7 +146,7 @@ const useStore = create<RFState>((set, get) => ({
             },
             childrenGate: "xor",
             animated: false,
-            type: ConnectionLineType.SmoothStep,
+            type: ConnectionLineType.Straight,
             labelStyle: { fill: "#798223", fontWeight: 700, fontSize: 32 },
             width: 5,
             zIndex: 10,
