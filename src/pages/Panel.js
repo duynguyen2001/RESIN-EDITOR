@@ -11,21 +11,26 @@ import { Entity, EventNode, Participant } from "../components/Library";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import { UniqueString } from "../components/TypeScriptUtils";
 import { EntitiesContext } from "./DataReader";
+import Select from "react-select";
 import EditableText from "./EditableText.jsx";
 import "./panel.css";
 import useStore from "./store";
 
-function TableInfoPanel({ data, parentId }) {
+function TableInfoPanel({ data, parentId, editMode = false }) {
     const [entitiesMap] = useContext(EntitiesContext);
     const [showProvenance, setShowProvenance] = useState(false);
     const [keyProvenance, setKeyProvenance] = useState(null);
     const [currentProvenance, setCurrentProvenance] = useState(null);
     const [tableChange, setTableChange] = useState(false);
     const [showAllEntities, setShowAllEntities] = useState(false);
-    const [editMapNode, mapNodes] = useStore((state) => [
-        state.editMapNode,
-        state.mapNodes,
-    ]);
+    const [editMapNode, mapNodes, entitiesRelatedEventMap] = useStore(
+        (state) => [
+            state.editMapNode,
+            state.mapNodes,
+            state.entitiesRelatedEventMap,
+        ]
+    );
+    const [editNode, setEditNode] = useState(null);
     const closeProvenance = () => {
         setShowProvenance(false);
     };
@@ -49,6 +54,106 @@ function TableInfoPanel({ data, parentId }) {
                 participant.entity ? participant.entity : participant.ta2entity
             );
             const values = [];
+            if (editNode !== null && participant.id === editNode.id) {
+                if (participant.values && participant.values instanceof Array) {
+                    values.push(
+                        ...participant.values.map((value) => {
+                            const valueEntity = entitiesMap.get(
+                                value.ta2entity
+                            );
+                            return {
+                                value: valueEntity.id,
+                                label: valueEntity.name,
+                            };
+                        })
+                    );
+                }
+                const options = [];
+                entitiesRelatedEventMap.forEach((value, key) => {
+                    options.push({
+                        value: key,
+                        label: entitiesMap.get(key).name,
+                    });
+                });
+                return {
+                    id: participant.id,
+                    entities: (
+                        <Select
+                            options={options}
+                            value={values}
+                            isMulti
+                            onChange={(valueList) => {
+                                const values = [];
+                                console.log("value", valueList);
+                                valueList.forEach((value) => {
+                                    let foundInOldArray = false;
+                                    participant.values?.forEach((partValue) => {
+                                        if (partValue.ta2entity === value.value) {
+                                            values.push(partValue);
+                                            foundInOldArray = true;
+                                        }
+                                    });
+                                    if (foundInOldArray === false) {
+                                        const newEntity = entitiesMap.get(value.value);
+                                        const newValue = {
+                                            "@id": UniqueString.getUniqueStringWithForm(
+                                                "resin:Value/",
+                                                "/"
+                                            ),
+                                            ta2entity: newEntity.id,
+                                        };
+                                        values.push(newValue);
+                                    }
+                                    console.log("newvalues", values);
+                                });
+                                participant.values = values;
+                                editMapNode(
+                                    parentId,
+                                    "participants",
+                                    mapNodes
+                                        .get(parentId)
+                                        .participants.map((part) => {
+                                            if (part.id === participant.id) {
+                                                return participant;
+                                            } else {
+                                                return part;
+                                            }
+                                        })
+                                );
+                                setTableChange(!tableChange);
+                            }}
+                        />
+                    ),
+                    roleName: (
+                        <React.Fragment>
+                            <EditableText
+                                values={participant.roleName}
+                                onSave={(value, field) => {
+                                    participant.roleName = value;
+                                    editMapNode(
+                                        parentId,
+                                        "participants",
+                                        mapNodes
+                                            .get(parentId)
+                                            .participants.map((part) => {
+                                                if (
+                                                    part.id === participant.id
+                                                ) {
+                                                    return participant;
+                                                } else {
+                                                    return part;
+                                                }
+                                            })
+                                    );
+                                    setTableChange(!tableChange);
+                                }}
+                                variant="none"
+                                onTable={true}
+                            />
+                        </React.Fragment>
+                    ),
+                };
+            }
 
             if (showAllEntities && entityObject.name) {
                 values.push(
@@ -164,7 +269,7 @@ function TableInfoPanel({ data, parentId }) {
         setDisplayParticipantArray(
             getDisplayParticipantArray(data, parentId, showAllEntities)
         );
-    }, [showAllEntities, tableChange, data, parentId]);
+    }, [showAllEntities, tableChange, data, parentId, editNode]);
     return (
         <div>
             <table>
@@ -189,7 +294,7 @@ function TableInfoPanel({ data, parentId }) {
                                 ></span>
                             )}
                         </th>
-                        <th
+                        {editMode && <th
                             style={{
                                 display: "flex",
                                 flexDirection: "row",
@@ -197,7 +302,7 @@ function TableInfoPanel({ data, parentId }) {
                             }}
                         >
                             Actions
-                        </th>
+                        </th>}
                     </tr>
                 </thead>
                 <tbody>
@@ -205,7 +310,7 @@ function TableInfoPanel({ data, parentId }) {
                         <tr key={participant.id}>
                             <td>{participant.roleName}</td>
                             <td>{participant.entities}</td>
-                            <td
+                            {editMode && <td
                                 style={{
                                     display: "flex",
                                     flexDirection: "row",
@@ -253,6 +358,21 @@ function TableInfoPanel({ data, parentId }) {
                                     }}
                                 ></span>
                                 <span
+                                    className="fa fa-edit new-style-button"
+                                    onClick={() => {
+                                        // edit the entity
+                                        console.log("participant", participant);
+                                        if (
+                                            editNode !== null &&
+                                            editNode.id === participant.id
+                                        ) {
+                                            setEditNode(null);
+                                        } else {
+                                            setEditNode(participant);
+                                        }
+                                    }}
+                                ></span>
+                                <span
                                     className="fa fa-trash trash-button"
                                     onClick={() => {
                                         // delete the entity
@@ -270,7 +390,7 @@ function TableInfoPanel({ data, parentId }) {
                                         }
                                     }}
                                 ></span>
-                            </td>
+                            </td>}
                         </tr>
                     ))}
                 </tbody>
@@ -317,6 +437,7 @@ function EventNodeInfoPanel({ data, onClose }) {
     const [showEditPanel, setShowEditPanel] = useState(false);
     const [timeFrame, setTimeFrame] = useState(Date.now());
     const [Entities] = useContext(EntitiesContext);
+    const [editMode, setEditMode] = useState(false);
 
     if (data === undefined) {
         return <></>;
@@ -418,12 +539,19 @@ function EventNodeInfoPanel({ data, onClose }) {
                     <TableInfoPanel
                         data={data.participants}
                         parentId={data.id}
+                        editMode={editMode}
                     />
                 </details>
             )}
+            <div
+             style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "left",
+                gap: "10px",
+             }}>
             {
-                <div
-                    onClick={() => {
+                    <button className="anchor-button" onClick={() => {
                         const jsonConvert = new JsonConvert();
                         const newParticipantId =
                             UniqueString.getUniqueStringWithForm(
@@ -463,16 +591,26 @@ function EventNodeInfoPanel({ data, onClose }) {
                         data.participants.push(newParticipant);
                         editMapNode(data.id, "participants", data.participants);
                         setTimeFrame(Date.now());
-                    }}
-                >
-                    <button className="anchor-button">
+                    }}>
                         <h4>
                             <span className="fa fa-plus" />
-                            Add Participant
+                            {" Add Participant"}
                         </h4>
                     </button>
-                </div>
+                
+
             }
+            {data.participants && data.participants.length > 0 && 
+                    <button className="anchor-button" onClick={() => {
+                        setEditMode(!editMode);
+                    }}>
+                    <h4>
+                        <span className="fa fa-edit" />
+                        {editMode ? " Close Edit Table" : " Edit Table"}
+                    </h4>
+                
+                </button>}
+                </div>
             {showEditPanel && (
                 <EditEventPanel
                     onClose={() => {
