@@ -14,6 +14,7 @@ import { RangeSlider } from "../components/RangeSlider";
 import { EditEventPanel, InfoPanel } from "./Panel";
 import "./graph.css";
 import useStore from "./store";
+import {useReactFlow} from "reactflow";
 
 const nodeTypes = {
     eventNode: EventGraphNode,
@@ -29,6 +30,8 @@ export const Graph = ({ eventNodes }) => {
         contextMenu,
         confidenceInterval,
         showAddPanel,
+        deltaX,
+        deltaY,
         setShowAddPanel,
         setClickedNode,
         setContextMenu,
@@ -51,12 +54,18 @@ export const Graph = ({ eventNodes }) => {
         updateGraphByEventNodes(eventNodes);
     }, [eventNodes]);
 
+    // useEffect(() => {
+    //     console.log("deltaX, deltaY", deltaX, deltaY);
+    //     setCenter(getViewPort().x + deltaX, getViewPort().y + deltaY);
+    // }, [deltaX, deltaY]);
+
     // denote the color of the node in the minimap
     const nodeColor = (node) => node.data.color;
 
     return (
         <div className="layoutflow">
             <ReactFlowProvider>
+                <NewPanel deltaX={deltaX} deltaY={deltaY}/>
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
@@ -143,7 +152,7 @@ export const Graph = ({ eventNodes }) => {
                         </button>
                     </NodeToolbar>
                 )}
-                {clickedNode && showAddPanel && (
+                {showAddPanel && (
                     <EditEventPanel
                         parentId={
                             clickedNode.data.isGate
@@ -162,5 +171,16 @@ export const Graph = ({ eventNodes }) => {
             <Menu />
         </div>
     );
+};
+const NewPanel = ({deltaX, deltaY}) => {
+    const {setViewport, getViewport} = useReactFlow((instance) => instance);
+    useEffect(() => {
+        console.log("deltaX, deltaY", deltaX, deltaY);
+        console.log("viewport", getViewport());
+        const {x, y, zoom} = getViewport();
+
+        setViewport({x: x + deltaX * zoom, y:y + deltaY * zoom, zoom: zoom}, {duration: 0});
+    }, [ deltaX]);
+    return null;
 };
 export default Graph;

@@ -69,6 +69,8 @@ type RFState = {
     firstNode: string | null;
     edgeStyle: EdgeStyle;
     key: number;
+    deltaX: number;
+    deltaY: number;
     setConfidenceInterval: (confidenceInterval: [number, number]) => void;
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
@@ -125,6 +127,8 @@ const useStore = create<RFState>((set, get) => ({
     firstNode: null,
     confidenceInterval: [0.0, 1.0],
     key: 0,
+    deltaX: 0,
+    deltaY: 0,
     edgeStyle: {
         or: {
             data: {
@@ -513,15 +517,48 @@ const useStore = create<RFState>((set, get) => ({
             const newChosenNodes = get().chosenNodes.filter(
                 (n) => !allSubEvents.includes(n)
             );
+
+            console.log("currentNode", currentNode.id);
+            const parentId = `gate-${currentNode.parent}`;
+            console.log("parentId", parentId);
+            const oldNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
+            // console.log("node", get().nodes.find((n) => n.id === node.id));
             set({ chosenNodes: newChosenNodes, clickedNode: node });
             get().updateLayout();
+            const newNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
+            console.log("oldNodePosition", oldNodePosition);
+            console.log("newNodePosition", newNodePosition);
+            if (oldNodePosition && newNodePosition) {
+                set({deltaX: oldNodePosition?.x - newNodePosition?.x, deltaY: oldNodePosition?.y - newNodePosition?.y});
+                // const {setCenter} = useReactFlow();
+
+            }
+            // const deltaX = oldNodePosition?.x - newNodePosition?.x;
+            // const deltaY = oldNodePosition?.y - newNodePosition?.y;
+            // console.log("deltaX", deltaX);
+            // console.log("deltaY", deltaY);
+
             return;
         }
 
         const newChosenNodes = [...get().chosenNodes, node.id];
 
+        console.log("currentNode", currentNode.id);
+        const parentId = `gate-${currentNode.parent}`;
+        console.log("parentId", parentId);
+        const oldNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
+
+
         set({ chosenNodes: newChosenNodes, clickedNode: node });
         get().updateLayout();
+        const newNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
+        console.log("oldNodePosition", oldNodePosition);
+        console.log("newNodePosition", newNodePosition);
+        if (oldNodePosition && newNodePosition) {
+            set({deltaX: oldNodePosition?.x - newNodePosition?.x, deltaY: oldNodePosition?.y - newNodePosition?.y});
+            // const {setCenter} = useReactFlow();
+
+        }
     },
 
     getAllCurrentSubgroupEvents: (node: string) => {
