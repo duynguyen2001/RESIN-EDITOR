@@ -139,7 +139,7 @@ const useStore = create<RFState>((set, get) => ({
             type: ConnectionLineType.Straight,
             zIndex: 10,
             style: {
-                stroke: "#BFBC9D",
+                stroke: "#C0C0C0",
                 strokeWidth: 2,
                 strokeDasharray: "none",
             },
