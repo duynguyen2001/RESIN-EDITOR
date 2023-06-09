@@ -14,6 +14,7 @@ function Gate({ data, isConnectable = true, label }) {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    fontSize: "2rem",
                     width: "100%",
                 }}
             >

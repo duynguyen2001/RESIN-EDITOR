@@ -177,7 +177,7 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                             : node.position.x + 25,
                         y: node.data.isGate
                             ? parentNode.position.y
-                            : node.position.y + 50,
+                            : node.position.y + 80,
                     },
                 }))
             )

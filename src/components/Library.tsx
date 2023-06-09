@@ -588,7 +588,8 @@ export class EventNode {
         return (
             <div>
                 {this.renderStrategy.render(isConnectable)}
-                <div className="text-lg font-bold">{this.name}</div>
+                <div className=" font-bold" style={{ fontSize: "1.5rem"
+                }}>{this.name}</div>
             </div>
         );
     }
