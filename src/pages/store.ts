@@ -12,6 +12,7 @@ import {
     Position,
     applyEdgeChanges,
     applyNodeChanges,
+    OnSelectionChangeParams
 } from "reactflow";
 import { create } from "zustand";
 import {
@@ -63,14 +64,19 @@ type RFState = {
     entityChosenEvents: Set<string>;
     entitiesRelatedEventMap: Map<string, string[]>;
     mapNodes: Map<string, any>;
-    showAddPanel: boolean;
+    showAddPanel: string | null;
     contextMenu: Node | null;
     clickedNode: Node | null;
     firstNode: string | null;
+    selectionContextMenu: boolean;
+    selectionNodes: Node[];
     edgeStyle: EdgeStyle;
     key: number;
     deltaX: number;
     deltaY: number;
+    onPaneContextMenu?:
+        | ((event: React.MouseEvent<Element, MouseEvent>) => void)
+        | undefined;
     setConfidenceInterval: (confidenceInterval: [number, number]) => void;
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
@@ -79,7 +85,8 @@ type RFState = {
     setChosenEntities: (chosenEntities: string[]) => void;
     setChosenNodes: (chosenNodes: string[]) => void;
     setMapNodes: (mapNodes: Map<string, any>) => void;
-    setShowAddPanel: (showAddPanel: boolean) => void;
+    setShowAddPanel: (showAddPanel: string) => void;
+    setSelectionContextMenu: (selectionContextMenu: boolean) => void;
     setContextMenu: (contextMenu: Node | null) => void;
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
@@ -91,7 +98,9 @@ type RFState = {
     onNodesDelete: (nodes: Node[]) => void;
     getEntitiesRelatedEventMap: () => Map<string, string[]>;
     onConnect: OnConnect;
+    onSelectionContextMenu: (event: React.MouseEvent, nodes: Node[]) => void;
     onEdgeUpdate: (oldEdge: Edge, newConnection: Connection) => void;
+    onSelectionChange: (params: OnSelectionChangeParams) => void;
     onNodeClick: (event: any, node: Node) => void;
     updateNodeAttribute: (
         nodeType: EventNodeType,
@@ -121,14 +130,16 @@ const useStore = create<RFState>((set, get) => ({
     mapNodes: new Map(),
     entityChosenEvents: new Set(),
     entitiesRelatedEventMap: new Map(),
-    showAddPanel: false,
+    showAddPanel: null,
     contextMenu: null,
     clickedNode: null,
+    selectionContextMenu: false,
     firstNode: null,
     confidenceInterval: [0.0, 1.0],
     key: 0,
     deltaX: 0,
     deltaY: 0,
+    selectionNodes:[],
     edgeStyle: {
         or: {
             data: {
@@ -217,7 +228,7 @@ const useStore = create<RFState>((set, get) => ({
         set({ entityChosenEvents: entityChosenEventsSet });
     },
     editMapNode: (nodeId: string, field: string, value: any) => {
-        const { mapNodes, nodeRerender, entityChosenEvents } = get();
+        const { mapNodes, nodeRerender } = get();
         mapNodes.get(nodeId)[field] = value;
         nodeRerender("eventNode");
     },
@@ -265,6 +276,7 @@ const useStore = create<RFState>((set, get) => ({
     },
     setShowAddPanel: (showAddPanel) => set({ showAddPanel }),
     setClickedNode: (clickedNode) => set({ clickedNode }),
+    setSelectionContextMenu: (selectionContextMenu) => set({ selectionContextMenu }),
     setContextMenu: (contextMenu) => set({ contextMenu }),
     setFirstNode: (firstNode) => set({ firstNode }),
     setChosenEntities(chosenEntities) {
@@ -304,6 +316,9 @@ const useStore = create<RFState>((set, get) => ({
         set({
             nodes: applyNodeChanges(changes, get().nodes),
         });
+    },
+    onPaneContextMenu: (event) => {
+        console.log("onPaneContextMenu", event);
     },
     onEdgesChange: (changes: EdgeChange[]) => {
         changes.forEach((change) => {
@@ -374,7 +389,14 @@ const useStore = create<RFState>((set, get) => ({
             get().setChosenNodes(firstNode ? [firstNode.id] : []);
         }
     },
-
+    onSelectionChange: (params: OnSelectionChangeParams) => {
+        console.log("params", params);
+        const { nodes } = params;
+        set({
+            selectionNodes: nodes,
+            selectionContextMenu: false
+        })
+    },
     updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => {
         const { edgeStyle } = get();
         console.log("edgeType", edgeType);
@@ -437,7 +459,15 @@ const useStore = create<RFState>((set, get) => ({
         set({ entitiesRelatedEventMap: sortedEntitiesRelatedEventMap });
         return sortedEntitiesRelatedEventMap;
     },
+    onSelectionContextMenu: (event, nodes) => {
 
+        console.log("nodes multiselect", nodes);
+        event.preventDefault();
+        set({
+            selectionNodes: nodes,
+            selectionContextMenu: true
+        })
+    },
     updateEdgeAttribute: (edgeType: GraphEdgeType, key: string, body: any) => {
         const { edgeStyle } = get();
         const newEdgeStyle = {
@@ -495,7 +525,7 @@ const useStore = create<RFState>((set, get) => ({
         return id;
     },
     onNodeClick: (event, node) => {
-        set({ contextMenu: null, showAddPanel: false });
+        set({ contextMenu: null, showAddPanel: null });
         const mapNodes = get().mapNodes;
         const currentNode = node.data.isGate
             ? mapNodes.get(node.data.referredNode)
@@ -521,22 +551,25 @@ const useStore = create<RFState>((set, get) => ({
             console.log("currentNode", currentNode.id);
             const parentId = `gate-${currentNode.parent}`;
             console.log("parentId", parentId);
-            const oldNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
-            // console.log("node", get().nodes.find((n) => n.id === node.id));
+            const oldNodePosition = get().nodes.find(
+                (n) => n.id === parentId
+            )?.position;
+            
             set({ chosenNodes: newChosenNodes, clickedNode: node });
             get().updateLayout();
-            const newNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
+
+            // reset the position of the node
+            const newNodePosition = get().nodes.find(
+                (n) => n.id === parentId
+            )?.position;
             console.log("oldNodePosition", oldNodePosition);
             console.log("newNodePosition", newNodePosition);
             if (oldNodePosition && newNodePosition) {
-                set({deltaX: oldNodePosition?.x - newNodePosition?.x, deltaY: oldNodePosition?.y - newNodePosition?.y});
-                // const {setCenter} = useReactFlow();
-
+                set({
+                    deltaX: oldNodePosition?.x - newNodePosition?.x,
+                    deltaY: oldNodePosition?.y - newNodePosition?.y,
+                });
             }
-            // const deltaX = oldNodePosition?.x - newNodePosition?.x;
-            // const deltaY = oldNodePosition?.y - newNodePosition?.y;
-            // console.log("deltaX", deltaX);
-            // console.log("deltaY", deltaY);
 
             return;
         }
@@ -546,18 +579,23 @@ const useStore = create<RFState>((set, get) => ({
         console.log("currentNode", currentNode.id);
         const parentId = `gate-${currentNode.parent}`;
         console.log("parentId", parentId);
-        const oldNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
-
+        const oldNodePosition = get().nodes.find(
+            (n) => n.id === parentId
+        )?.position;
 
         set({ chosenNodes: newChosenNodes, clickedNode: node });
         get().updateLayout();
-        const newNodePosition = get().nodes.find((n) => n.id === parentId)?.position;
+        const newNodePosition = get().nodes.find(
+            (n) => n.id === parentId
+        )?.position;
         console.log("oldNodePosition", oldNodePosition);
         console.log("newNodePosition", newNodePosition);
         if (oldNodePosition && newNodePosition) {
-            set({deltaX: oldNodePosition?.x - newNodePosition?.x, deltaY: oldNodePosition?.y - newNodePosition?.y});
+            set({
+                deltaX: oldNodePosition?.x - newNodePosition?.x,
+                deltaY: oldNodePosition?.y - newNodePosition?.y,
+            });
             // const {setCenter} = useReactFlow();
-
         }
     },
 
@@ -822,7 +860,6 @@ const useStore = create<RFState>((set, get) => ({
             nodes: layoutedNodes,
             edges: [...newEdges, ...Array.from(uniqueEdges.values())],
         });
-        console.log("layoutedNodes", layoutedNodes);
     },
 }));
 function randomFiveDigit() {

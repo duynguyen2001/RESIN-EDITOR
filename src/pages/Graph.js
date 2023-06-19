@@ -5,6 +5,7 @@ import ReactFlow, {
     NodeToolbar,
     Position,
     ReactFlowProvider,
+    useOnSelectionChange,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { EventGraphNode } from "../components/EventGraphNode";
@@ -14,7 +15,7 @@ import { RangeSlider } from "../components/RangeSlider";
 import { EditEventPanel, InfoPanel } from "./Panel";
 import "./graph.css";
 import useStore from "./store";
-import {useReactFlow} from "reactflow";
+import { useReactFlow } from "reactflow";
 
 const nodeTypes = {
     eventNode: EventGraphNode,
@@ -32,6 +33,8 @@ export const Graph = ({ eventNodes }) => {
         showAddPanel,
         deltaX,
         deltaY,
+        selectionNodes,
+        selectionContextMenu,
         setShowAddPanel,
         setClickedNode,
         setContextMenu,
@@ -41,7 +44,10 @@ export const Graph = ({ eventNodes }) => {
         onNodeClick,
         onConnect,
         onEdgeUpdate,
+        onPaneContextMenu,
+        onSelectionContextMenu,
         onNodesDelete,
+        onSelectionChange,
         setConfidenceInterval,
     } = useStore();
 
@@ -65,13 +71,15 @@ export const Graph = ({ eventNodes }) => {
     return (
         <div className="layoutflow">
             <ReactFlowProvider>
-                <NewPanel deltaX={deltaX} deltaY={deltaY}/>
+                <NewPanel deltaX={deltaX} deltaY={deltaY} />
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onNodeClick={onNodeClick}
+                    multiSelectionKeyCode={"Ctrl"}
+                    onSelectionChange={onSelectionChange}
                     onNodeContextMenu={(event, node) => {
                         event.preventDefault();
                         setContextMenu(node);
@@ -79,12 +87,24 @@ export const Graph = ({ eventNodes }) => {
                     onPaneClick={() => {
                         setClickedNode(null);
                         setContextMenu(null);
-                        setShowAddPanel(false);
+                        setShowAddPanel(null);
+                    }}
+                    onSelectionContextMenu={onSelectionContextMenu}
+                    onSelectionDragStop={(event) => {
+                        console.log("selection drag stop");
+                        console.log(event);
+
                     }}
                     nodeTypes={nodeTypes}
                     onConnect={onConnect}
                     onEdgeUpdate={onEdgeUpdate}
                     onNodesDelete={onNodesDelete}
+                    onPaneContextMenu={(event) => {
+                        console.log("pane context menu");
+                        console.log(event);
+                        event.preventDefault();
+                        setContextMenu("null");
+                    }}
                     maxZoom={2}
                     minZoom={0.1}
                     fitView
@@ -137,7 +157,7 @@ export const Graph = ({ eventNodes }) => {
                                 onNodesDelete([mapNodes.get(contextMenu.id)]);
                                 setContextMenu(null);
                                 setClickedNode(null);
-                                setShowAddPanel(false);
+                                setShowAddPanel(null);
                             }}
                         >
                             <span className="fa fa-trash-o" />
@@ -145,24 +165,58 @@ export const Graph = ({ eventNodes }) => {
                         <button
                             className="selection-button"
                             onClick={() => {
-                                setShowAddPanel(true);
+                                setClickedNode(contextMenu);
+                                setShowAddPanel(
+                                    contextMenu.data.isGate
+                                        ? contextMenu.data.referredNode
+                                        : contextMenu.id
+                                );
                             }}
                         >
                             <span className="fa fa-plus" />
                         </button>
                     </NodeToolbar>
                 )}
+                {selectionContextMenu && selectionNodes.length > 0 && (
+                    <NodeToolbar
+                        nodeId={selectionNodes[0].id}
+                        position={Position.Bottom}
+                        isVisible={true}
+                    >
+                        <button
+                            className="selection-button"
+                            onClick={() => {
+                                onNodesDelete(selectionNodes);
+                                setContextMenu(null);
+                                setClickedNode(null);
+                                setShowAddPanel(null);
+                            }}
+                            >
+                            <span className="fa fa-trash-o" />
+                            </button>
+                        <button
+                            className="selection-button"
+                            onClick={() => {
+                                setClickedNode(selectionNodes[0]);
+                                setShowAddPanel(
+                                    selectionNodes[0].data.isGate
+                                        ? selectionNodes[0].data.referredNode
+                                        : selectionNodes[0].id
+                                );
+                            }}
+                            >
+                            <span className="fa fa-plus" />
+
+                            </button>
+                    </NodeToolbar>
+                )
+                }
                 {showAddPanel && (
                     <EditEventPanel
-                        parentId={
-                            clickedNode.data.isGate
-                                ? clickedNode.data.referredNode
-                                : clickedNode.id
-                        }
+                        parentId={showAddPanel}
                         onClose={() => {
-                            setShowAddPanel(false);
+                            setShowAddPanel(null);
                             setClickedNode(null);
-                            setShowAddPanel(false);
                         }}
                     />
                 )}
@@ -172,15 +226,17 @@ export const Graph = ({ eventNodes }) => {
         </div>
     );
 };
-const NewPanel = ({deltaX, deltaY}) => {
-    const {setViewport, getViewport} = useReactFlow((instance) => instance);
+const NewPanel = ({ deltaX, deltaY }) => {
+    const { setViewport, getViewport } = useReactFlow((instance) => instance);
     useEffect(() => {
-        console.log("deltaX, deltaY", deltaX, deltaY);
-        console.log("viewport", getViewport());
-        const {x, y, zoom} = getViewport();
+        const { x, y, zoom } = getViewport();
 
-        setViewport({x: x + deltaX * zoom, y:y + deltaY * zoom, zoom: zoom}, {duration: 0});
-    }, [ deltaX]);
+        setViewport(
+            { x: x + deltaX * zoom, y: y + deltaY * zoom, zoom: zoom },
+            { duration: 0 }
+        );
+    }, [deltaX]);
     return null;
 };
+
 export default Graph;
