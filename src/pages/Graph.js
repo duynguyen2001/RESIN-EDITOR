@@ -257,7 +257,6 @@ export const Graph = ({ eventNodes }) => {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            border: "black 1px solid",
                         }}
                     >
                         <button
