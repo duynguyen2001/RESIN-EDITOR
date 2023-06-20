@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ReactFlow, {
     Controls,
     MiniMap,
@@ -16,6 +16,7 @@ import { EditEventPanel, InfoPanel } from "./Panel";
 import "./graph.css";
 import useStore from "./store";
 import { useReactFlow } from "reactflow";
+import { set } from "idb-keyval";
 
 const nodeTypes = {
     eventNode: EventGraphNode,
@@ -35,9 +36,12 @@ export const Graph = ({ eventNodes }) => {
         deltaY,
         selectionNodes,
         selectionContextMenu,
+        firstNode,
+        paneContextMenu,
         setShowAddPanel,
         setClickedNode,
         setContextMenu,
+        setPaneContextMenu,
         onNodesChange,
         onEdgesChange,
         updateGraphByEventNodes,
@@ -53,6 +57,9 @@ export const Graph = ({ eventNodes }) => {
 
     const handleClosePanel = () => {
         setClickedNode(null);
+        setShowAddPanel(null);
+        setContextMenu(null);
+        setPaneContextMenu(null);
     };
 
     // layout related functions
@@ -60,6 +67,8 @@ export const Graph = ({ eventNodes }) => {
         updateGraphByEventNodes(eventNodes);
     }, [eventNodes]);
 
+    const [grouping, setGrouping] = useState(false);
+    const [addInPanel, setAddInPanel] = useState(false);
     // useEffect(() => {
     //     console.log("deltaX, deltaY", deltaX, deltaY);
     //     setCenter(getViewPort().x + deltaX, getViewPort().y + deltaY);
@@ -83,28 +92,20 @@ export const Graph = ({ eventNodes }) => {
                     onNodeContextMenu={(event, node) => {
                         event.preventDefault();
                         setContextMenu(node);
+                        setPaneContextMenu(null);
                     }}
                     onPaneClick={() => {
                         setClickedNode(null);
                         setContextMenu(null);
+                        setPaneContextMenu(null);
                         setShowAddPanel(null);
                     }}
                     onSelectionContextMenu={onSelectionContextMenu}
-                    onSelectionDragStop={(event) => {
-                        console.log("selection drag stop");
-                        console.log(event);
-
-                    }}
                     nodeTypes={nodeTypes}
                     onConnect={onConnect}
                     onEdgeUpdate={onEdgeUpdate}
                     onNodesDelete={onNodesDelete}
-                    onPaneContextMenu={(event) => {
-                        console.log("pane context menu");
-                        console.log(event);
-                        event.preventDefault();
-                        setContextMenu("null");
-                    }}
+                    onPaneContextMenu={onPaneContextMenu}
                     maxZoom={2}
                     minZoom={0.1}
                     fitView
@@ -156,8 +157,11 @@ export const Graph = ({ eventNodes }) => {
                             onClick={() => {
                                 onNodesDelete([mapNodes.get(contextMenu.id)]);
                                 setContextMenu(null);
+                                setPaneContextMenu(null);
                                 setClickedNode(null);
                                 setShowAddPanel(null);
+                                setGrouping(false);
+                                setAddInPanel(false);
                             }}
                         >
                             <span className="fa fa-trash-o" />
@@ -175,11 +179,28 @@ export const Graph = ({ eventNodes }) => {
                         >
                             <span className="fa fa-plus" />
                         </button>
+                        {contextMenu.id !== firstNode && !contextMenu.id.startsWith("gate-")&&<button
+                            className="selection-button"
+                            onClick={() => {
+                                setClickedNode(contextMenu);
+                                setGrouping(true);
+                                const parentId = contextMenu.parentNode;
+                                setShowAddPanel(
+                                    parentId === null || parentId === undefined
+                                        ? "null"
+                                        : parentId.startsWith("gate-")
+                                        ? parentId.replace("gate-", "")
+                                        : parentId
+                                );
+                            }}
+                        >
+                            <span className="fa fa-object-group" />
+                        </button>}
                     </NodeToolbar>
                 )}
                 {selectionContextMenu && selectionNodes.length > 0 && (
                     <NodeToolbar
-                        nodeId={selectionNodes[0].id}
+                        nodeId={selectionNodes.map((node) => node.id)}
                         position={Position.Bottom}
                         isVisible={true}
                     >
@@ -189,39 +210,89 @@ export const Graph = ({ eventNodes }) => {
                                 onNodesDelete(selectionNodes);
                                 setContextMenu(null);
                                 setClickedNode(null);
+                                setGrouping(false);
+                                setPaneContextMenu(null);
+                                setAddInPanel(false);
                                 setShowAddPanel(null);
                             }}
-                            >
+                        >
                             <span className="fa fa-trash-o" />
-                            </button>
+                        </button>
                         <button
                             className="selection-button"
                             onClick={() => {
-                                setClickedNode(selectionNodes[0]);
-                                setShowAddPanel(
-                                    selectionNodes[0].data.isGate
-                                        ? selectionNodes[0].data.referredNode
-                                        : selectionNodes[0].id
+                                const parentId = selectionNodes.reduce(
+                                    (acc, node) => {
+                                        if (node.parentNode === acc) {
+                                            return node.parentNode;
+                                        } else {
+                                            return null;
+                                        }
+                                    },
+                                    selectionNodes[0].parentNode
                                 );
+                                console.log("parentId", parentId);
+                                setClickedNode(selectionNodes[0]);
+                                setGrouping(true);
+                                setShowAddPanel(
+                                    parentId === null
+                                        ? "null"
+                                        : parentId.startsWith("gate-")
+                                        ? parentId.replace("gate-", "")
+                                        : parentId
+                                );
+                            }}
+                        >
+                            <span className="fa fa-object-group" />
+                        </button>
+                    </NodeToolbar>
+                )}
+                {paneContextMenu && (
+                    <div
+                        style={{
+                            position: "fixed",
+                            left: paneContextMenu.clientX - 50,
+                            top: paneContextMenu.clientY,
+                            width: 100,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "black 1px solid",
+                        }}
+                    >
+                        <button
+                            className="selection-button"
+                            onClick={() => {
+                                setClickedNode(null);
+                                setContextMenu(null);
+                                setPaneContextMenu(null);
+                                setShowAddPanel('null');
                             }}
                             >
                             <span className="fa fa-plus" />
-
                             </button>
-                    </NodeToolbar>
-                )
-                }
+                    </div>
+                )}
                 {showAddPanel && (
                     <EditEventPanel
                         parentId={showAddPanel}
                         onClose={() => {
+                            setGrouping(false);
+                            setAddInPanel(false);
                             setShowAddPanel(null);
                             setClickedNode(null);
                         }}
+                        subgroupEvents={
+                            selectionNodes.length > 0
+                                ? selectionNodes.map((node) => node.id) || []
+                                : clickedNode?
+                                [clickedNode.id]: []
+                        }
+                        grouping={grouping}
+                        addInPanel={addInPanel}
                     />
                 )}
             </ReactFlowProvider>
-
             <Menu />
         </div>
     );

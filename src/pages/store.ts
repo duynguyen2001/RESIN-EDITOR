@@ -24,6 +24,8 @@ import {
     SourceOnlyNodeStrategy,
 } from "../components/Library";
 import getLayoutedElementsNested from "./layout";
+import { JsonConvert } from "json2typescript";
+import context from "react-bootstrap/esm/AccordionContext";
 
 enum GraphEdgeType {
     or = "or",
@@ -69,6 +71,7 @@ type RFState = {
     clickedNode: Node | null;
     firstNode: string | null;
     selectionContextMenu: boolean;
+    paneContextMenu: object | null;
     selectionNodes: Node[];
     edgeStyle: EdgeStyle;
     key: number;
@@ -87,11 +90,13 @@ type RFState = {
     setMapNodes: (mapNodes: Map<string, any>) => void;
     setShowAddPanel: (showAddPanel: string) => void;
     setSelectionContextMenu: (selectionContextMenu: boolean) => void;
+    setPaneContextMenu: (paneContextMenu: object | null) => void;
     setContextMenu: (contextMenu: Node | null) => void;
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
     setEntityChosenEvents: (entityChosenEvents: []) => void;
-    addEventNode: (node: EventNode) => void;
+    addNodeOnPanel: (node: EventNode)=> void;
+    addEventNode: (node: EventNode, grouping: boolean) => void;
     getNewIdInEventMap: () => string;
     onNodesChange: OnNodesChange;
     onEdgesChange: OnEdgesChange;
@@ -134,6 +139,7 @@ const useStore = create<RFState>((set, get) => ({
     contextMenu: null,
     clickedNode: null,
     selectionContextMenu: false,
+    paneContextMenu: null,
     firstNode: null,
     confidenceInterval: [0.0, 1.0],
     key: 0,
@@ -251,12 +257,56 @@ const useStore = create<RFState>((set, get) => ({
         nodeRerender("eventNode");
     },
 
-    addEventNode: (node: EventNode) => {
+    addEventNode: (node: EventNode, grouping : Boolean = false) => {
         const { mapNodes, updateLayout } = get();
+        console.log("subgroupEvent here here", node);
         mapNodes.set(node.id, node);
         const parentId = node.parent;
         if (parentId === undefined) {
             return;
+        }
+        if (grouping) {
+            const subgroupEvents = node.subgroupEvents;
+            const outlinks: string[] =[]
+            console.log("node.subgroupEvents", node.subgroupEvents);
+
+            subgroupEvents.forEach((subgroupEvent: string) => {
+                const subgroupEventNode = mapNodes.get(subgroupEvent);
+                console.log("subgroupEventNode", subgroupEventNode);
+                subgroupEventNode.parent = node.id;
+                outlinks.push(...subgroupEventNode.outlinks.filter((outlink: string) => !node.subgroupEvents.includes(outlink)));
+                
+                subgroupEventNode.outlinks = subgroupEventNode.outlinks.filter(
+                    (outlink: string) => node.subgroupEvents.includes(outlink)
+                );
+            });
+            node.outlinks = outlinks;
+
+            const parentNode = mapNodes.get(parentId);
+            if (parentNode) {
+                parentNode.subgroupEvents = parentNode.subgroupEvents.filter(
+                    (subgroupEvent: string) =>
+                        !node.subgroupEvents.includes(subgroupEvent)
+                );
+                parentNode.subgroupEvents.push(node.id);
+                parentNode.subgroupEvents.forEach((subgroupEvent: string) => {
+                    const subgroupEventNode = mapNodes.get(subgroupEvent);
+                    console.log("subgroupEventNode", subgroupEventNode);
+                    if (subgroupEventNode.outlinks === undefined) {
+                        return;
+                    }
+                    if (subgroupEventNode.outlinks.filter((outlink: string) => subgroupEvents.includes(outlink)).length === 0) {
+                        return;
+                    }
+                    subgroupEventNode.outlinks = subgroupEventNode.outlinks.filter(
+                        (outlink: string) => !subgroupEvents.includes(outlink)
+                    );
+                    subgroupEventNode.outlinks.push(node.id);
+                    
+                })
+            }
+            
+
         }
         const parentNode = mapNodes.get(parentId);
         if (parentNode) {
@@ -279,6 +329,7 @@ const useStore = create<RFState>((set, get) => ({
     setSelectionContextMenu: (selectionContextMenu) => set({ selectionContextMenu }),
     setContextMenu: (contextMenu) => set({ contextMenu }),
     setFirstNode: (firstNode) => set({ firstNode }),
+    setPaneContextMenu  : (paneContextMenu) => set({ paneContextMenu }),    
     setChosenEntities(chosenEntities) {
         const { nodes, confidenceInterval, nodeRerender } = get();
         const chosenEvents = new Set<string>();
@@ -311,14 +362,18 @@ const useStore = create<RFState>((set, get) => ({
     getNodeById: (id: string) => {
         return get().mapNodes.get(id);
     },
+    groupingNodes(nodes: string[]) {
 
+    },
     onNodesChange: (changes: NodeChange[]) => {
         set({
             nodes: applyNodeChanges(changes, get().nodes),
         });
     },
     onPaneContextMenu: (event) => {
-        console.log("onPaneContextMenu", event);
+        event.preventDefault();
+        console.log("event", event);
+        set({paneContextMenu: event, contextMenu: null, selectionContextMenu: false});
     },
     onEdgesChange: (changes: EdgeChange[]) => {
         changes.forEach((change) => {
@@ -390,10 +445,10 @@ const useStore = create<RFState>((set, get) => ({
         }
     },
     onSelectionChange: (params: OnSelectionChangeParams) => {
-        console.log("params", params);
         const { nodes } = params;
+        const newNodes = nodes.filter(q => q.type === "eventNode")
         set({
-            selectionNodes: nodes,
+            selectionNodes: newNodes,
             selectionContextMenu: false
         })
     },
@@ -465,8 +520,47 @@ const useStore = create<RFState>((set, get) => ({
         event.preventDefault();
         set({
             selectionNodes: nodes,
-            selectionContextMenu: true
+            selectionContextMenu: true,
+            paneContextMenu: null,
+            contextMenu: null
         })
+    },
+    addNodeOnPanel(node: EventNode) {
+        // we add a new parent node to the root node of the graph, and change istoplevel of that node to false, then we add the new node and the old subnode as subgroupEvents of the new parent node
+        const { mapNodes, firstNode, chosenNodes, updateLayout, getNewIdInEventMap } = get();
+        const newMapNodes = new Map(mapNodes);
+        const newFirstNode = getNewIdInEventMap();
+        if (firstNode === null) {
+            return;
+        }
+        const FirstNodeObject = mapNodes.get(firstNode);
+        const newFirstNodeObject = new EventNode(newFirstNode, "none", "");
+        newFirstNodeObject.subgroupEvents = [firstNode, node.id];
+        newFirstNodeObject.isTopLevel = true;
+        newFirstNodeObject.parent = FirstNodeObject.parent;
+        newFirstNodeObject.childrenGate = "or";
+        newFirstNodeObject.confidence = [1.0];
+        console.log("newFirstNodeObject", newFirstNodeObject);
+        
+        // set up the old firstnode
+        FirstNodeObject.isTopLevel = false;
+        FirstNodeObject.parent = newFirstNode;
+        console.log("FirstNodeObject", FirstNodeObject);
+
+        //set up the new node
+        node.parent = newFirstNode;
+        node.isTopLevel = false;
+        console.log("node", node);
+
+        newMapNodes.set(node.id, node);
+        newMapNodes.set(firstNode, FirstNodeObject);
+        newMapNodes.set(newFirstNode, newFirstNodeObject);
+        set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
+
+        console.log("newMapNodes", newMapNodes);
+        console.log("chosenNodes", chosenNodes);
+        console.log("firstNode", firstNode);
+        updateLayout();
     },
     updateEdgeAttribute: (edgeType: GraphEdgeType, key: string, body: any) => {
         const { edgeStyle } = get();
