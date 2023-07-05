@@ -3,13 +3,11 @@ import { JsonObject, JsonProperty, JsonConvert } from "json2typescript";
 import {
     ForceNumberArray,
     ForceStringArray,
-    StringOrStringArrayConverter,
+    LowerCaseString,
     UniqueString,
 } from "./TypeScriptUtils";
 import { Handle, Position } from "reactflow";
-import { JsonCustomConvert, JsonConverter } from "json2typescript";
 import "./Library.css";
-import { json } from "react-router-dom";
 
 export type RenderOptions = {
     color?: string;
@@ -438,7 +436,7 @@ export class EventNode {
     @JsonProperty("subgroup_events", [String], true)
     subgroupEvents: string[];
 
-    @JsonProperty("children_gate", String, true)
+    @JsonProperty("children_gate", LowerCaseString, true)
     childrenGate: string;
 
     @JsonProperty("outlinks", [String], true)
@@ -450,14 +448,14 @@ export class EventNode {
     @JsonProperty("confidence", ForceNumberArray, true)
     confidence?: number[];
 
-    @JsonProperty("wd_node", StringOrStringArrayConverter, true)
-    wdNode?: string | string[];
+    @JsonProperty("wd_node", ForceStringArray, true)
+    wdNode?: string[];
 
-    @JsonProperty("wd_label", String, true)
-    wdLabel?: string;
+    @JsonProperty("wd_label", ForceStringArray, true)
+    wdLabel?: string[];
 
-    @JsonProperty("wd_description", String, true)
-    wdDescription?: string;
+    @JsonProperty("wd_description", ForceStringArray, true)
+    wdDescription?: string[];
 
     @JsonProperty("provenance", ForceStringArray, true)
     provenance?: string[];
@@ -468,11 +466,11 @@ export class EventNode {
     @JsonProperty("ta2wd_node", ForceStringArray, true)
     ta2wdNode?: string[];
 
-    @JsonProperty("ta2wd_label", String, true)
-    ta2wdLabel?: string;
+    @JsonProperty("ta2wd_label", ForceStringArray, true)
+    ta2wdLabel?: string[];
 
-    @JsonProperty("ta2wd_description", String, true)
-    ta2wdDescription?: string;
+    @JsonProperty("ta2wd_description", ForceStringArray, true)
+    ta2wdDescription?: string[];
 
     @JsonProperty("optional", Boolean, true)
     optional?: boolean;
@@ -498,14 +496,14 @@ export class EventNode {
         outlinks?: string[],
         predictionProvenance?: string[],
         confidence?: number[],
-        wdNode?: string,
-        wdLabel?: string,
-        wdDescription?: string,
+        wdNode?: string[],
+        wdLabel?: string[],
+        wdDescription?: string[],
         provenance?: string[],
         participants?: Participant[],
         ta2wdNode?: string[],
-        ta2wdLabel?: string,
-        ta2wdDescription?: string,
+        ta2wdLabel?: string[],
+        ta2wdDescription?: string[],
         optional?: boolean
     ) {
         this.id = id;
@@ -519,14 +517,14 @@ export class EventNode {
         this.outlinks = outlinks || [];
         this.predictionProvenance = predictionProvenance;
         this.confidence = confidence || [];
-        this.wdNode = wdNode || "";
-        this.wdLabel = wdLabel || "";
-        this.wdDescription = wdDescription || "";
+        this.wdNode = wdNode || [];
+        this.wdLabel = wdLabel ;
+        this.wdDescription = wdDescription || [];
         this.provenance = provenance || [];
         this.participants = participants || [];
         this.ta2wdNode = ta2wdNode || [];
-        this.ta2wdLabel = ta2wdLabel || "";
-        this.ta2wdDescription = ta2wdDescription || "";
+        this.ta2wdLabel = ta2wdLabel || [];
+        this.ta2wdDescription = ta2wdDescription || [];
         this.optional = optional || false;
     }
 
@@ -693,34 +691,36 @@ export class Entity {
     @JsonProperty("name", String)
     name: string = undefined!;
 
-    @JsonProperty("wd_node", StringOrStringArrayConverter, true)
-    wd_node?: string | [string];
+    @JsonProperty("wd_node", ForceStringArray, true)
+    wd_node?: string[];
 
-    @JsonProperty("wd_label", StringOrStringArrayConverter, true)
-    wd_label?: string | [string];
+    @JsonProperty("wd_label", ForceStringArray, true)
+    wd_label?: string[];
 
-    @JsonProperty("wd_description", StringOrStringArrayConverter, true)
-    wd_description?: string | [string];
+    @JsonProperty("wd_description", ForceStringArray, true)
+    wd_description?: string[];
 
-    @JsonProperty("ta2wd_node", StringOrStringArrayConverter, true)
-    ta2wd_node?: string | [string];
+    @JsonProperty("ta2wd_node", ForceStringArray, true)
+    ta2wd_node?: string[];
 
-    @JsonProperty("ta2wd_label", String, true)
-    ta2wd_label?: string | [string];
+    @JsonProperty("ta2wd_label", ForceStringArray, true)
+    ta2wd_label?: string[];
 
-    @JsonProperty("ta2wd_description", StringOrStringArrayConverter, true)
-    ta2wd_description?: string | [string];
+    @JsonProperty("ta2wd_description", ForceStringArray, true)
+    ta2wd_description?: string[];
 
     constructor(
         id: string,
-        wd_node: string = undefined!,
-        wd_label: string = undefined!,
-        wd_description: string = undefined!,
-        ta2wd_node: string = undefined!,
-        ta2wd_label: string = undefined!,
-        ta2wd_description: string = undefined!
+        name: string,
+        wd_node: string[] = undefined!,
+        wd_label: string[] = undefined!,
+        wd_description: string[] = undefined!,
+        ta2wd_node: string[] = undefined!,
+        ta2wd_label: string[] = undefined!,
+        ta2wd_description: string[] = undefined!
     ) {
         this.id = id;
+        this.name = name;
         this.wd_node = wd_node;
         this.wd_label = wd_label;
         this.wd_description = wd_description;

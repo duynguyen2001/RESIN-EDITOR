@@ -9,6 +9,7 @@ const EditableText = ({
     variant,
     onClick,
     key,
+    index = -1,
     onTable = false,
     ...props
 }) => {
@@ -25,7 +26,7 @@ const EditableText = ({
 
     const handleSaveClick = () => {
         setIsEditMode(false);
-        onSave(value, field);
+        onSave(value, field, index);
     };
 
     const handleChange = (event) => {

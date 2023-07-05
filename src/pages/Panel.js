@@ -179,9 +179,13 @@ function TableInfoPanel({ data, parentId, editMode = false }) {
             if (participant.values && participant.values instanceof Array) {
                 participant.values?.forEach((value) => {
                     const valueEntity = entitiesMap.get(value.ta2entity);
+                    if (valueEntity === undefined) {
+                        return;
+                    }
                     if (value.provenance) {
                         // Add a clickable text to open the provenance map
-                        console.log("valueEntity", value);
+                        console.log("valueEntity", valueEntity);
+
                         values.push(
                             <EditableText
                                 values={valueEntity.name}
@@ -467,8 +471,8 @@ function EventNodeInfoPanel({ data, onClose }) {
     };
 
     const provenanceExisted = data.provenance && data.provenance.length > 0;
-    const handleOnSave = (value, field) => {
-        editMapNode(data.id, field, value);
+    const handleOnSave = (value, field, index = -1) => {
+        editMapNode(data.id, field, value, index);
     };
     return (
         <div
@@ -514,9 +518,9 @@ function EventNodeInfoPanel({ data, onClose }) {
                     parentId={data.id}
                 />
             )}
-            {data.wdLabel &&
-                data.wdLabel !== null &&
-                data.wdLabel !== "null" && (
+            {data.wdNode &&
+                data.wdNode !== null &&
+                data.wdNode !== "null" && (
                     <details open>
                         <summary
                             style={{
@@ -526,18 +530,23 @@ function EventNodeInfoPanel({ data, onClose }) {
                         >
                             Event Type
                         </summary>
+                        {data.wdNode.map((node, index) => (
+                            <div key={node}>
                         <EditableText
-                            values={data.wdLabel}
+                            values={data.wdLabel[index]}
                             variant="h3"
+                            index={index}
                             onSave={handleOnSave}
                             field="wdLabel"
                         />
                         <EditableText
-                            values={data.wdDescription}
+                            values={data.wdDescription[index]}
                             variant="p"
+                            index={index}
                             onSave={handleOnSave}
                             field="wdDescription"
                         />
+                            </div>))}
                     </details>
                 )}
 
@@ -851,7 +860,7 @@ export const EditEventPanel = ({
                 </div>
                 <div className="form-group">
                     <label>WikiData Node:</label>
-                    <input type="text" name="wdNode" onChange={handleChange} />
+                    <input type="text" name="wdNode" onChange={handleArrayChange} />
                 </div>
                 <div className="form-group">
                     <label>WikiData Label:</label>
@@ -859,7 +868,7 @@ export const EditEventPanel = ({
                         type="text"
                         name="wdLabel"
                         value={data.wdLabel}
-                        onChange={handleChange}
+                        onChange={handleArrayChange}
                     />
                 </div>
                 <div className="form-group">
@@ -868,7 +877,7 @@ export const EditEventPanel = ({
                         type="text"
                         name="wdDescription"
                         value={data.wdDescription}
-                        onChange={handleChange}
+                        onChange={handleArrayChange}
                     />
                 </div>
                 <div className="form-group">

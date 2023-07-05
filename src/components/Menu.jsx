@@ -606,6 +606,9 @@ function GlobalEntityList() {
         for (const [entityName, events] of relatedEntities) {
             const key = `${entityName}`;
             const entity = Entities.get(entityName);
+            if (entity === undefined) {
+                continue;
+            }
             newEntitiesList.push(
                 <ToggleButton
                     key={key}

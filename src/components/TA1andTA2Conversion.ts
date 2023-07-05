@@ -51,7 +51,7 @@ export function convertTA1toTA2format(schemas: any): any {
             ...event,
             parent: parentMap.get(event["@id"])
                 ? parentMap.get(event["@id"])
-                : "kairos:NULL",
+                : null,
             isTopLevel: parentMap.get(event["@id"]) === undefined,
         };
     });

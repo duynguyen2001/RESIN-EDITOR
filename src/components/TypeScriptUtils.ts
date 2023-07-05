@@ -89,6 +89,16 @@ export class UniqueString implements JsonCustomConvert<string> {
     }
 }
 
+@JsonConverter
+export class LowerCaseString implements JsonCustomConvert<string> {
+    serialize(data: string): any {
+        return data;
+    }
+    deserialize(data: any): string {
+        return String(data).toLowerCase();
+    }
+}
+
 const randomFiveDigits = () => {
     return Math.floor(10000 + Math.random() * 90000);
 };

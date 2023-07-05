@@ -83,7 +83,7 @@ type RFState = {
     setConfidenceInterval: (confidenceInterval: [number, number]) => void;
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
-    editMapNode: (nodeId: string, field: string, value: any) => void;
+    editMapNode: (nodeId: string, field: string, value: any, index:number) => void;
     nodeRerender: (typeNode: string) => void;
     setChosenEntities: (chosenEntities: string[]) => void;
     setChosenNodes: (chosenNodes: string[]) => void;
@@ -233,9 +233,13 @@ const useStore = create<RFState>((set, get) => ({
         const entityChosenEventsSet = new Set(entityChosenEvents);
         set({ entityChosenEvents: entityChosenEventsSet });
     },
-    editMapNode: (nodeId: string, field: string, value: any) => {
+    editMapNode: (nodeId: string, field: string, value: any, index:number = -1) => {
         const { mapNodes, nodeRerender } = get();
-        mapNodes.get(nodeId)[field] = value;
+        if(index === -1){
+            mapNodes.get(nodeId)[field] = value;
+        }else{
+            mapNodes.get(nodeId)[field][index] = value;
+        }
         nodeRerender("eventNode");
     },
     setConfidenceInterval: (confidenceInterval) => {
