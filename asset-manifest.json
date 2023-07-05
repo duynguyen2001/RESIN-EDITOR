@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/kairos-visualization/static/css/main.d7ca3b75.css",
-    "main.js": "/kairos-visualization/static/js/main.c36e39a2.js",
+    "main.css": "/kairos-visualization/static/css/main.7cac745a.css",
+    "main.js": "/kairos-visualization/static/js/main.9c47f260.js",
     "static/js/787.745c57d2.chunk.js": "/kairos-visualization/static/js/787.745c57d2.chunk.js",
     "static/media/fontawesome-webfont.svg?v=4.7.0": "/kairos-visualization/static/media/fontawesome-webfont.c1e38fd9e0e74ba58f7a.svg",
     "static/media/fontawesome-webfont.eot": "/kairos-visualization/static/media/fontawesome-webfont.8b43027f47b20503057d.eot",
@@ -9,12 +9,12 @@
     "static/media/fontawesome-webfont.woff?v=4.7.0": "/kairos-visualization/static/media/fontawesome-webfont.f691f37e57f04c152e23.woff",
     "static/media/fontawesome-webfont.woff2?v=4.7.0": "/kairos-visualization/static/media/fontawesome-webfont.20fd1704ea223900efa9.woff2",
     "index.html": "/kairos-visualization/index.html",
-    "main.d7ca3b75.css.map": "/kairos-visualization/static/css/main.d7ca3b75.css.map",
-    "main.c36e39a2.js.map": "/kairos-visualization/static/js/main.c36e39a2.js.map",
+    "main.7cac745a.css.map": "/kairos-visualization/static/css/main.7cac745a.css.map",
+    "main.9c47f260.js.map": "/kairos-visualization/static/js/main.9c47f260.js.map",
     "787.745c57d2.chunk.js.map": "/kairos-visualization/static/js/787.745c57d2.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.d7ca3b75.css",
-    "static/js/main.c36e39a2.js"
+    "static/css/main.7cac745a.css",
+    "static/js/main.9c47f260.js"
   ]
 }
