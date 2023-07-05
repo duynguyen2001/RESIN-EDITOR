@@ -32,7 +32,10 @@ import {
 import ToggleButton from "./ToggleButton";
 import { UniqueString } from "./TypeScriptUtils";
 import ZipReader from "./ZipReader";
-import { convertTA1toTA2format, convertTA2toTA1format } from "./TA1andTA2Conversion";
+import {
+    convertTA1toTA2format,
+    convertTA2toTA1format,
+} from "./TA1andTA2Conversion";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -117,7 +120,7 @@ const MenuOptionPanel = ({ option, setOption }) => {
 };
 
 function AddJSONPanel() {
-    const [activeTab, setActiveTab] = useState('ta2');
+    const [activeTab, setActiveTab] = useState("ta2");
     const [jsonData, setJsonData] = useContext(DataContext);
     const [extractedTexts, setExtractedTexts] = useContext(
         ExtractedTextsContext
@@ -133,7 +136,7 @@ function AddJSONPanel() {
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
-      };
+    };
 
     const handleJSONUpload = (event) => {
         const fileReader = new FileReader();
@@ -144,9 +147,9 @@ function AddJSONPanel() {
         UniqueString.reset();
         fileReader.onload = (e) => {
             let parsedJson = JSON.parse(e.target.result);
-            if (activeTab === 'ta1') {
+            if (activeTab === "ta1") {
                 parsedJson = convertTA1toTA2format(parsedJson);
-            } 
+            }
             setJsonData(parsedJson);
         };
     };
@@ -171,33 +174,58 @@ function AddJSONPanel() {
     return (
         <div>
             <div className="tab-bar">
-        <button 
-          className={activeTab === 'tab1' ? 'active' : ''} 
-          onClick={() => handleTabClick('ta1')}>
-          TA1
-        </button>
-        <button 
-          className={activeTab === 'tab2' ? 'active' : ''} 
-          onClick={() => handleTabClick('ta2')}>
-          TA2
-        </button>
-      </div>
-      {activeTab === 'ta1' && (<><h2>Visualize TA1 Schema</h2>
-            <h3>Upload TA1 Schema File</h3>
-            {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
-            <input type="file" accept=".json" onChange={handleJSONUpload} />
-      </>)}
-            {activeTab === 'ta2' && (<><h2>Visualize TA2 Schema</h2>
-            <h3>Upload TA2 Schema File</h3>
-            {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
-            <input type="file" accept=".json" onChange={handleJSONUpload} />
-            <h3>Provenance Source Text File</h3>
-            {extractedTexts && (
-                <h4>Number of Extracted Text: {extractedTexts.size}</h4>
+                <button
+                    className={` button-tabbar ${
+                        activeTab === "ta1" ? "button-tabbar-active" : ""
+                    }`}
+                    onClick={() => handleTabClick("ta1")}
+                >
+                    TA1
+                </button>
+                <button
+                    className={`button-tabbar ${
+                        activeTab === "ta2" ? "button-tabbar-active" : ""
+                    } `}
+                    onClick={() => handleTabClick("ta2")}
+                >
+                    TA2
+                </button>
+            </div>
+            {activeTab === "ta1" && (
+                <>
+                    <h2>Visualize TA1 Schema</h2>
+                    <h3>Upload TA1 Schema File</h3>
+                    {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
+                    <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleJSONUpload}
+                    />
+                </>
             )}
-            <input type="file" accept=".json" onChange={handleParsedTextFile} />
-            <h3>Image Zip File</h3>
-            <ZipReader /></>)}
+            {activeTab === "ta2" && (
+                <>
+                    <h2>Visualize TA2 Schema</h2>
+                    <h3>Upload TA2 Schema File</h3>
+                    {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
+                    <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleJSONUpload}
+                    />
+                    <h3>Provenance Source Text File</h3>
+                    {extractedTexts && (
+                        <h4>Number of Extracted Text: {extractedTexts.size}</h4>
+                    )}
+                    <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleParsedTextFile}
+                    />
+                    <h3>Image Zip File</h3>
+                    <ZipReader />
+                </>
+            )}
         </div>
     );
 }
@@ -210,19 +238,27 @@ function DownloadJSONPanel() {
     const jsonConverter = new JsonConvert();
     const newData = { ...jsonData };
     newData.instances[0].events = jsonConverter.serializeArray(
-        Array.from(mapNodes.values()), EventNode
+        Array.from(mapNodes.values()),
+        EventNode
     );
     newData.instances[0].entities = jsonConverter.serializeArray(
-        Array.from(Entities.values()), Entity
+        Array.from(Entities.values()),
+        Entity
     );
     newData.provenanceData = jsonConverter.serializeArray(
         Array.from(Provenances.values())
     );
-    console.log('newData', newData);
-    const downloadJSON = (mode = 'ta2') => {
+    console.log("newData", newData);
+    const downloadJSON = (mode = "ta2") => {
         const dataStr =
             "data:text/json;charset=utf-8," +
-            encodeURIComponent(JSON.stringify(mode === 'ta1'? convertTA2toTA1format(newData): newData, null, "\t"));
+            encodeURIComponent(
+                JSON.stringify(
+                    mode === "ta1" ? convertTA2toTA1format(newData) : newData,
+                    null,
+                    "\t"
+                )
+            );
         const downloadAnchorNode = document.createElement("a");
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", "data.json");
@@ -237,7 +273,7 @@ function DownloadJSONPanel() {
             <h3>TA2 schema</h3>
             <button onClick={downloadJSON}>Download</button>
             <h3>TA1 schema</h3>
-            <button onClick={() => downloadJSON('ta1')}>Download</button>
+            <button onClick={() => downloadJSON("ta1")}>Download</button>
         </div>
     );
 }
