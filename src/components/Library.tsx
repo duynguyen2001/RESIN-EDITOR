@@ -9,6 +9,7 @@ import {
 import { Handle, Position } from "reactflow";
 import { JsonCustomConvert, JsonConverter } from "json2typescript";
 import "./Library.css";
+import { json } from "react-router-dom";
 
 export type RenderOptions = {
     color?: string;
@@ -349,35 +350,6 @@ export class Value {
     }
 }
 
-@JsonConverter
-export class ValueOrValueArrayConverter
-    implements JsonCustomConvert<Value | Value[]>
-{
-    serialize(data: Value | Value[]): any {
-        return data;
-    }
-
-    deserialize(json: any): Value | Value[] {
-        if (Array.isArray(json)) {
-            return json.map(
-                (item) =>
-                    new Value(
-                        item["@id"],
-                        item.confidence,
-                        item.provenance,
-                        item.ta2entity
-                    )
-            );
-        } else {
-            return new Value(
-                json["@id"],
-                json.confidence,
-                json.provenance,
-                json.ta2entity
-            );
-        }
-    }
-}
 @JsonObject("Participant")
 export class Participant {
     @JsonProperty("@id", UniqueString)
@@ -389,10 +361,10 @@ export class Participant {
     @JsonProperty("roleName", String, true)
     roleName: string;
 
-    @JsonProperty("values", ValueOrValueArrayConverter, true)
-    values: Value | Value[] = [];
+    @JsonProperty("values", [Value], true)
+    values: Value[];
 
-    constructor(id: string, entity: string, roleName: string, values: Value) {
+    constructor(id: string, entity: string, roleName: string, values: Value[]) {
         this.id = id;
         this.entity = entity;
         this.roleName = roleName;
@@ -635,7 +607,7 @@ class ImageRenderStrategy implements ProvenanceRenderStrategy {
 
 // Define ProvenanceEntity with json2typescript decorators
 @JsonObject("ProvenanceEntity")
-abstract class ProvenanceEntity {
+export abstract class ProvenanceEntity {
     @JsonProperty("provenanceID", String)
     id: string = undefined!;
 

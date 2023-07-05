@@ -21,15 +21,18 @@ import useStore from "../pages/store";
 import EventGraphNode from "./EventGraphNode";
 import {
     DetectedNodeStrategy,
+    Entity,
     EventNode,
     EventNodeType,
     NodeRenderingStrategy,
     PredictedNodeStrategy,
+    ProvenanceEntity,
     SourceOnlyNodeStrategy,
 } from "./Library";
 import ToggleButton from "./ToggleButton";
 import { UniqueString } from "./TypeScriptUtils";
 import ZipReader from "./ZipReader";
+import { convertTA1toTA2format, convertTA2toTA1format } from "./TA1andTA2Conversion";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -114,10 +117,12 @@ const MenuOptionPanel = ({ option, setOption }) => {
 };
 
 function AddJSONPanel() {
+    const [activeTab, setActiveTab] = useState('ta2');
     const [jsonData, setJsonData] = useContext(DataContext);
     const [extractedTexts, setExtractedTexts] = useContext(
         ExtractedTextsContext
     );
+
     const [setChosenNodes, setChosenEntities, setClickedNode] = useStore(
         (state) => [
             state.setChosenNodes,
@@ -126,19 +131,26 @@ function AddJSONPanel() {
         ]
     );
 
+    const handleTabClick = (tab) => {
+        setActiveTab(tab);
+      };
+
     const handleJSONUpload = (event) => {
         const fileReader = new FileReader();
         fileReader.readAsText(event.target.files[0], "UTF-8");
-
         setChosenNodes([]);
         setChosenEntities([]);
         setClickedNode(null);
         UniqueString.reset();
         fileReader.onload = (e) => {
-            const parsedJson = JSON.parse(e.target.result);
+            let parsedJson = JSON.parse(e.target.result);
+            if (activeTab === 'ta1') {
+                parsedJson = convertTA1toTA2format(parsedJson);
+            } 
             setJsonData(parsedJson);
         };
     };
+
     const handleParsedTextFile = (event) => {
         const fileReader = new FileReader();
         const extractedTexts = new Map();
@@ -158,8 +170,25 @@ function AddJSONPanel() {
 
     return (
         <div>
-            <h2>Upload JSON Schema</h2>
-            <h3>RESIN TA2 File</h3>
+            <div className="tab-bar">
+        <button 
+          className={activeTab === 'tab1' ? 'active' : ''} 
+          onClick={() => handleTabClick('ta1')}>
+          TA1
+        </button>
+        <button 
+          className={activeTab === 'tab2' ? 'active' : ''} 
+          onClick={() => handleTabClick('ta2')}>
+          TA2
+        </button>
+      </div>
+      {activeTab === 'ta1' && (<><h2>Visualize TA1 Schema</h2>
+            <h3>Upload TA1 Schema File</h3>
+            {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
+            <input type="file" accept=".json" onChange={handleJSONUpload} />
+      </>)}
+            {activeTab === 'ta2' && (<><h2>Visualize TA2 Schema</h2>
+            <h3>Upload TA2 Schema File</h3>
             {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
             <input type="file" accept=".json" onChange={handleJSONUpload} />
             <h3>Provenance Source Text File</h3>
@@ -168,7 +197,7 @@ function AddJSONPanel() {
             )}
             <input type="file" accept=".json" onChange={handleParsedTextFile} />
             <h3>Image Zip File</h3>
-            <ZipReader />
+            <ZipReader /></>)}
         </div>
     );
 }
@@ -181,19 +210,19 @@ function DownloadJSONPanel() {
     const jsonConverter = new JsonConvert();
     const newData = { ...jsonData };
     newData.instances[0].events = jsonConverter.serializeArray(
-        Array.from(mapNodes.values())
+        Array.from(mapNodes.values()), EventNode
     );
     newData.instances[0].entities = jsonConverter.serializeArray(
-        Array.from(Entities.values())
+        Array.from(Entities.values()), Entity
     );
     newData.provenanceData = jsonConverter.serializeArray(
         Array.from(Provenances.values())
     );
-    console.log(newData);
-    const downloadJSON = () => {
+    console.log('newData', newData);
+    const downloadJSON = (mode = 'ta2') => {
         const dataStr =
             "data:text/json;charset=utf-8," +
-            encodeURIComponent(JSON.stringify(newData, null, "\t"));
+            encodeURIComponent(JSON.stringify(mode === 'ta1'? convertTA2toTA1format(newData): newData, null, "\t"));
         const downloadAnchorNode = document.createElement("a");
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", "data.json");
@@ -204,8 +233,11 @@ function DownloadJSONPanel() {
 
     return (
         <div>
-            <h2>Download JSON File</h2>
-            <button onClick={downloadJSON}>Download JSON</button>
+            <h2>Download JSON Files</h2>
+            <h3>TA2 schema</h3>
+            <button onClick={downloadJSON}>Download</button>
+            <h3>TA1 schema</h3>
+            <button onClick={() => downloadJSON('ta1')}>Download</button>
         </div>
     );
 }

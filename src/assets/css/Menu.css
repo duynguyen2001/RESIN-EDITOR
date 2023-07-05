@@ -77,3 +77,20 @@
     align-items: center;
     margin-bottom: 10px;
   }
+  .active {
+
+  background-color: #4caf50;
+  color: white;
+  }
+  .button {
+    background-color: #ddd;
+    color: black;
+    padding: 10px 15px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+  
+  .button:hover {
+    background-color: #bbb;
+  }
