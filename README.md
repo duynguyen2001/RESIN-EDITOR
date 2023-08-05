@@ -1,70 +1,32 @@
-# Getting Started with Create React App
+# RESIN-EDITOR: A Schema-guided Hierarchical Event Graph Visualizer and Editor
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+RESIN-Editor is an interactive graphical inteface tool for perform error analysis on schema matching tools. The tool is hosted at https://duynguyen2001.github.io/RESIN-EDITOR. Example files can be obtained in the `demonstration_files` folder.
 
-## Available Scripts
+# Prerequisites
 
-In the project directory, you can run:
+Before you begin, ensure you have met the following requirements:
 
-### `npm start`
+You have installed `Node.js`` and `npm``. If not, you can download them from [here](https://nodejs.org/en).
+# Instructions to Run
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Clone the repository to your local machine. Open your terminal and use the following command:
+```
+git clone https://github.com/duynguyen2001/RESIN-EDITOR.git
+```
+Navigate to the project directory:
+```cd RESIN-EDITOR```
+Install all the necessary dependencies:
+```npm install```
+Start the React development server:
+```npm start```
+After running the npm start command, the application should automatically open in your default web browser at http://localhost:3000. If it does not open automatically, you can manually open a browser and enter the URL.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+# License
 
-### `npm test`
+This project is licensed under the terms of the MIT license.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Contact
 
-### `npm run build`
+If you want to contact the maintainer of the project, you can reach out at kduyng71@gmail.com.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Thank you for your interest in our project!
