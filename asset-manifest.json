@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/kairos-visualization/static/css/main.7cac745a.css",
-    "main.js": "/kairos-visualization/static/js/main.7496e728.js",
-    "static/js/787.745c57d2.chunk.js": "/kairos-visualization/static/js/787.745c57d2.chunk.js",
-    "static/media/fontawesome-webfont.svg?v=4.7.0": "/kairos-visualization/static/media/fontawesome-webfont.c1e38fd9e0e74ba58f7a.svg",
-    "static/media/fontawesome-webfont.eot": "/kairos-visualization/static/media/fontawesome-webfont.8b43027f47b20503057d.eot",
-    "static/media/fontawesome-webfont.ttf?v=4.7.0": "/kairos-visualization/static/media/fontawesome-webfont.1e59d2330b4c6deb84b3.ttf",
-    "static/media/fontawesome-webfont.woff?v=4.7.0": "/kairos-visualization/static/media/fontawesome-webfont.f691f37e57f04c152e23.woff",
-    "static/media/fontawesome-webfont.woff2?v=4.7.0": "/kairos-visualization/static/media/fontawesome-webfont.20fd1704ea223900efa9.woff2",
-    "index.html": "/kairos-visualization/index.html",
-    "main.7cac745a.css.map": "/kairos-visualization/static/css/main.7cac745a.css.map",
-    "main.7496e728.js.map": "/kairos-visualization/static/js/main.7496e728.js.map",
-    "787.745c57d2.chunk.js.map": "/kairos-visualization/static/js/787.745c57d2.chunk.js.map"
+    "main.css": "/RESIN-EDITOR/static/css/main.ec805709.css",
+    "main.js": "/RESIN-EDITOR/static/js/main.6bc70932.js",
+    "static/js/787.745c57d2.chunk.js": "/RESIN-EDITOR/static/js/787.745c57d2.chunk.js",
+    "static/media/fontawesome-webfont.svg?v=4.7.0": "/RESIN-EDITOR/static/media/fontawesome-webfont.c1e38fd9e0e74ba58f7a.svg",
+    "static/media/fontawesome-webfont.eot": "/RESIN-EDITOR/static/media/fontawesome-webfont.8b43027f47b20503057d.eot",
+    "static/media/fontawesome-webfont.ttf?v=4.7.0": "/RESIN-EDITOR/static/media/fontawesome-webfont.1e59d2330b4c6deb84b3.ttf",
+    "static/media/fontawesome-webfont.woff?v=4.7.0": "/RESIN-EDITOR/static/media/fontawesome-webfont.f691f37e57f04c152e23.woff",
+    "static/media/fontawesome-webfont.woff2?v=4.7.0": "/RESIN-EDITOR/static/media/fontawesome-webfont.20fd1704ea223900efa9.woff2",
+    "index.html": "/RESIN-EDITOR/index.html",
+    "main.ec805709.css.map": "/RESIN-EDITOR/static/css/main.ec805709.css.map",
+    "main.6bc70932.js.map": "/RESIN-EDITOR/static/js/main.6bc70932.js.map",
+    "787.745c57d2.chunk.js.map": "/RESIN-EDITOR/static/js/787.745c57d2.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.7cac745a.css",
-    "static/js/main.7496e728.js"
+    "static/css/main.ec805709.css",
+    "static/js/main.6bc70932.js"
   ]
 }
