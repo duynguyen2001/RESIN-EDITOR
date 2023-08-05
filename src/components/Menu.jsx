@@ -193,7 +193,7 @@ function AddJSONPanel() {
             </div>
             {activeTab === "ta1" && (
                 <>
-                    <h2>Visualize TA1 Schema</h2>
+                    <h2>Upload TA1 Schema</h2>
                     <h3>Upload TA1 Schema File</h3>
                     {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
                     <input
@@ -205,8 +205,8 @@ function AddJSONPanel() {
             )}
             {activeTab === "ta2" && (
                 <>
-                    <h2>Visualize TA2 Schema</h2>
-                    <h3>Upload TA2 Schema File</h3>
+                    <h2>Upload TA2 Schema Matching Results</h2>
+                    <h3>TA2 Schema Matching Results</h3>
                     {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
                     <input
                         type="file"
