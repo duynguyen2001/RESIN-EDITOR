@@ -169,3 +169,4 @@ export function convertTA2toTA1format(schemas: any): any {
         events: newSchema["events"],
     };
 }
+export {}

@@ -14,6 +14,7 @@ import {
     DataContext,
     EntitiesContext,
     ExtractedTextsContext,
+    SchemaTypeContext,
     ProvenanceContext,
 } from "../pages/DataReader";
 import { Modal } from "../pages/Panel";
@@ -32,10 +33,10 @@ import {
 import ToggleButton from "./ToggleButton";
 import { UniqueString } from "./TypeScriptUtils";
 import ZipReader from "./ZipReader";
-import {
-    convertTA1toTA2format,
-    convertTA2toTA1format,
-} from "./TA1andTA2Conversion";
+// import {
+//     // convertTA1toTA2format,
+//     convertTA2toTA1format,
+// } from "./TA1andTA2Conversion";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -121,6 +122,7 @@ const MenuOptionPanel = ({ option, setOption }) => {
 
 function AddJSONPanel() {
     const [activeTab, setActiveTab] = useState("ta2");
+    const [SchemaType, setSchemaType] = useContext(SchemaTypeContext);
     const [jsonData, setJsonData] = useContext(DataContext);
     const [extractedTexts, setExtractedTexts] = useContext(
         ExtractedTextsContext
@@ -148,9 +150,13 @@ function AddJSONPanel() {
         fileReader.onload = (e) => {
             let parsedJson = JSON.parse(e.target.result);
             if (activeTab === "ta1") {
-                parsedJson = convertTA1toTA2format(parsedJson);
+                // parsedJson = convertTA1toTA2format(parsedJson);
+                setSchemaType("ta1");
+                setJsonData(parsedJson);
+            } else {
+                setSchemaType("ta2");
+                setJsonData(parsedJson);
             }
-            setJsonData(parsedJson);
         };
     };
 
@@ -170,6 +176,9 @@ function AddJSONPanel() {
             }
         };
     };
+    useEffect(() => {
+        console.log("schemaType", SchemaType);
+    }, [SchemaType]);
 
     return (
         <div>
@@ -254,7 +263,8 @@ function DownloadJSONPanel() {
             "data:text/json;charset=utf-8," +
             encodeURIComponent(
                 JSON.stringify(
-                    mode === "ta1" ? convertTA2toTA1format(newData) : newData,
+                    // mode === "ta1" ? convertTA2toTA1format(newData) : newData,
+                    newData,
                     null,
                     "\t"
                 )

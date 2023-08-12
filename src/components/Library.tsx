@@ -63,7 +63,11 @@ export abstract class NodeRenderingStrategy {
 
     render(isConnectable: boolean | undefined): ReactElement {
         return (
-            <div className="hover-container">
+            <div className="hover-container" style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+            }}>
                 <span className="hover-text">{this.eventNode.description}</span>
                 {this.shape === "diamond" ? (
                     <div
@@ -558,7 +562,7 @@ export class EventNode {
         return (
             <div>
                 {this.renderStrategy.render(isConnectable)}
-                <div className=" font-bold" style={{ fontSize: "1.5rem"
+                <div className=" font-bold" style={{ fontSize: "1.5rem", width: "fit-content", maxInlineSize: "200px", overflowWrap: "anywhere", textAlign: "center", hyphens: "auto"
                 }}>{this.name}</div>
             </div>
         );

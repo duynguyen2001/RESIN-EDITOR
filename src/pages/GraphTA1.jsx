@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo } from "react";
 import ReactFlow, {
     Controls,
     MiniMap,
@@ -12,14 +12,14 @@ import Menu from "../components/Menu";
 import { RangeSlider } from "../components/RangeSlider";
 import { EditEventPanel, InfoPanel } from "./Panel";
 import "./graph.css";
-import useStore from "./store";
+import useStore from "./storeTA1";
 import { useReactFlow } from "reactflow";
+import { EventsContext, SchemaTypeContext } from "./DataReader";
 import { nodeTypes } from "./DataReader";
-import { set } from "idb-keyval";
-import { EventsContext } from "./DataReader";
-
-export const Graph = () => {
-    const [eventNodes]  = useContext(EventsContext);
+import { TA1Event } from "../components/LibraryTA1";
+export const GraphTA1 = () => {
+    const [eventNodes] = useContext(EventsContext);
+    const [schemaType, setSchemaType] = useContext(SchemaTypeContext);
     const {
         nodes,
         edges,
@@ -40,7 +40,7 @@ export const Graph = () => {
         setPaneContextMenu,
         onNodesChange,
         onEdgesChange,
-        updateGraphByEventNodes,
+        updateGraphByTA1Events,
         onNodeClick,
         onConnect,
         onEdgeUpdate,
@@ -50,6 +50,9 @@ export const Graph = () => {
         onSelectionChange,
         setConfidenceInterval,
     } = useStore();
+    useEffect(() => {
+        console.log("eventNodes", nodes);
+    }, [nodes]);
 
     const handleClosePanel = () => {
         setClickedNode(null);
@@ -60,7 +63,9 @@ export const Graph = () => {
 
     // layout related functions
     useEffect(() => {
-        updateGraphByEventNodes(eventNodes);
+        if (schemaType !== "ta1" || !eventNodes || eventNodes.length === 0 || !(eventNodes[0] instanceof TA1Event)) return;
+        console.log("herehere eventNodes", eventNodes);
+        updateGraphByTA1Events(eventNodes);
     }, [eventNodes]);
 
     const [grouping, setGrouping] = useState(false);
@@ -175,23 +180,27 @@ export const Graph = () => {
                         >
                             <span className="fa fa-plus" />
                         </button>
-                        {contextMenu.id !== firstNode && !contextMenu.id.startsWith("gate-")&&<button
-                            className="selection-button"
-                            onClick={() => {
-                                setClickedNode(contextMenu);
-                                setGrouping(true);
-                                const parentId = contextMenu.parentNode;
-                                setShowAddPanel(
-                                    parentId === null || parentId === undefined
-                                        ? "null"
-                                        : parentId.startsWith("gate-")
-                                        ? parentId.replace("gate-", "")
-                                        : parentId
-                                );
-                            }}
-                        >
-                            <span className="fa fa-object-group" />
-                        </button>}
+                        {contextMenu.id !== firstNode &&
+                            !contextMenu.id.startsWith("gate-") && (
+                                <button
+                                    className="selection-button"
+                                    onClick={() => {
+                                        setClickedNode(contextMenu);
+                                        setGrouping(true);
+                                        const parentId = contextMenu.parentNode;
+                                        setShowAddPanel(
+                                            parentId === null ||
+                                                parentId === undefined
+                                                ? "null"
+                                                : parentId.startsWith("gate-")
+                                                ? parentId.replace("gate-", "")
+                                                : parentId
+                                        );
+                                    }}
+                                >
+                                    <span className="fa fa-object-group" />
+                                </button>
+                            )}
                     </NodeToolbar>
                 )}
                 {selectionContextMenu && selectionNodes.length > 0 && (
@@ -261,11 +270,11 @@ export const Graph = () => {
                                 setClickedNode(null);
                                 setContextMenu(null);
                                 setPaneContextMenu(null);
-                                setShowAddPanel('null');
+                                setShowAddPanel("null");
                             }}
-                            >
+                        >
                             <span className="fa fa-plus" />
-                            </button>
+                        </button>
                     </div>
                 )}
                 {showAddPanel && (
@@ -280,8 +289,9 @@ export const Graph = () => {
                         subgroupEvents={
                             selectionNodes.length > 0
                                 ? selectionNodes.map((node) => node.id) || []
-                                : clickedNode?
-                                [clickedNode.id]: []
+                                : clickedNode
+                                ? [clickedNode.id]
+                                : []
                         }
                         grouping={grouping}
                         addInPanel={addInPanel}
@@ -305,4 +315,4 @@ const NewPanel = ({ deltaX, deltaY }) => {
     return null;
 };
 
-export default Graph;
+export default GraphTA1;

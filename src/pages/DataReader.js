@@ -5,10 +5,16 @@ import {
     EventNode,
     createProvenanceEntity,
 } from "../components/Library.tsx";
+import { Relation, TA1Entity, TA1Event } from "../components/LibraryTA1";
+
 import defaultData from "../data/resin-resin-task1-ce2013.json";
 import defaultText from "../data/triggers.json";
 import Graph from "./Graph";
+import GraphTA1 from "./GraphTA1";
 import CountProvider from "./newdataIndexes";
+import {EventGraphNode} from "../components/EventGraphNode";
+import Gate from "../components/Gate";
+import { CustomNode } from "../components/customNode.js";
 
 export const EntitiesContext = createContext({});
 export const ProvenanceContext = createContext([]);
@@ -16,6 +22,13 @@ export const DataContext = createContext({});
 export const ExtractedFilesContext = createContext(new Map());
 export const ExtractedTextsContext = createContext({});
 export const EventsContext = createContext([]);
+export const SchemaTypeContext = createContext("ta2");
+export const nodeTypes = {
+    eventNode: EventGraphNode,
+    customNode: CustomNode,
+    gate: Gate,
+};
+
 
 const defaultExtractedText = () => {
     const mapText = new Map();
@@ -30,14 +43,46 @@ const DataReader = () => {
     let jsonConvert = new JsonConvert();
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
+    const [Relations, setRelations] = React.useState({});
     const [Provenances, setProvenances] = React.useState({});
     const [extractedFiles, setExtractedFiles] = React.useState(new Map());
     const [extractedTexts, setExtractedTexts] = React.useState(
         defaultExtractedText()
     );
+    const [schemaType, setSchemaType] = React.useState("ta2");
 
     useEffect(() => {
         console.log("rawdata", data);
+        console.log("schemaType", schemaType);
+        // ta1 handling
+        if (schemaType === "ta1"){
+            if (data.events && data.events.length > 0) {
+                setEvents(
+                    jsonConvert.deserializeArray(data.events, TA1Event)
+                );
+
+                const entitiesMap = new Map();
+                const relationsMap = new Map();
+                data.events.forEach((event) => {
+                    if (event.relations) {
+                        event.relations.forEach((relation) => {
+                            relationsMap.set(relation["@id"], jsonConvert.deserialize(relation, Relation));
+                        });
+                    }
+                    if (event.entities) {
+                        event.entities.forEach((entity) => {
+                            entitiesMap.set(entity["@id"], jsonConvert.deserialize(entity, TA1Entity));
+                        });
+                    }
+                });
+                setEntities(entitiesMap);
+                setRelations(relationsMap);
+
+            }
+
+            return;
+        }
+        // ta2 data handling
         if (data.instances) {
             if (data.instances[0].entities) {
                 const entitiesMap = new Map();
@@ -70,38 +115,47 @@ const DataReader = () => {
     }, [data]);
 
     useEffect(() => {
-        console.log("entities", Entities);
+        console.log("****************");
+        console.log("schemaType", schemaType);
         console.log("events", Events);
+        console.log("relations", Relations);
+        console.log("entities", Entities);
         console.log("provenances", Provenances);
-    }, [Entities, Events, Provenances]);
+        console.log("****************");
+    }, [Events]);
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <CountProvider>
-                <DataContext.Provider value={[data, setData]}>
-                    <ProvenanceContext.Provider
-                        value={[Provenances, setProvenances]}
-                    >
-                        <EventsContext.Provider value={[Events, setEvents]}>
-                            <EntitiesContext.Provider
-                                value={[Entities, setEntities]}
-                            >
-                                <ExtractedTextsContext.Provider
-                                    value={[extractedTexts, setExtractedTexts]}
+                <SchemaTypeContext.Provider value={[schemaType, setSchemaType]}>
+                    <DataContext.Provider value={[data, setData]}>
+                        <ProvenanceContext.Provider
+                            value={[Provenances, setProvenances]}
+                        >
+                            <EventsContext.Provider value={[Events, setEvents]}>
+                                <EntitiesContext.Provider
+                                    value={[Entities, setEntities]}
                                 >
-                                    <ExtractedFilesContext.Provider
+                                    <ExtractedTextsContext.Provider
                                         value={[
-                                            extractedFiles,
-                                            setExtractedFiles,
+                                            extractedTexts,
+                                            setExtractedTexts,
                                         ]}
                                     >
-                                        <Graph eventNodes={Events} />
-                                    </ExtractedFilesContext.Provider>
-                                </ExtractedTextsContext.Provider>
-                            </EntitiesContext.Provider>
-                        </EventsContext.Provider>
-                    </ProvenanceContext.Provider>
-                </DataContext.Provider>
+                                        <ExtractedFilesContext.Provider
+                                            value={[
+                                                extractedFiles,
+                                                setExtractedFiles,
+                                            ]}
+                                        >
+                                            {schemaType === "ta2"? <Graph/>: <GraphTA1/>}
+                                        </ExtractedFilesContext.Provider>
+                                    </ExtractedTextsContext.Provider>
+                                </EntitiesContext.Provider>
+                            </EventsContext.Provider>
+                        </ProvenanceContext.Provider>
+                    </DataContext.Provider>
+                </SchemaTypeContext.Provider>
             </CountProvider>
         </div>
     );

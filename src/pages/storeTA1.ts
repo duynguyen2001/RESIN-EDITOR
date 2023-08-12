@@ -16,16 +16,9 @@ import {
 } from "reactflow";
 import { create } from "zustand";
 import {
-    DetectedNodeStrategy,
-    EventNode,
-    EventNodeType,
-    NodeRenderingStrategy,
-    PredictedNodeStrategy,
-    SourceOnlyNodeStrategy,
-} from "../components/Library";
-import getLayoutedElementsNested from "./layout";
-import { JsonConvert } from "json2typescript";
-import context from "react-bootstrap/esm/AccordionContext";
+    TA1Event,
+} from "../components/LibraryTA1";
+import getLayoutedElementsNested from "./layoutTA1";
 
 enum GraphEdgeType {
     or = "or",
@@ -95,8 +88,8 @@ type RFState = {
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
     setEntityChosenEvents: (entityChosenEvents: []) => void;
-    addNodeOnPanel: (node: EventNode)=> void;
-    addEventNode: (node: EventNode, grouping: boolean) => void;
+    addNodeOnPanel: (node: TA1Event)=> void;
+    addTA1Event: (node: TA1Event, grouping: boolean) => void;
     getNewIdInEventMap: () => string;
     onNodesChange: OnNodesChange;
     onEdgesChange: OnEdgesChange;
@@ -108,7 +101,7 @@ type RFState = {
     onSelectionChange: (params: OnSelectionChangeParams) => void;
     onNodeClick: (event: any, node: Node) => void;
     updateNodeAttribute: (
-        nodeType: EventNodeType,
+        // nodeType: TA1EventType,
         key: string,
         value: string
     ) => void;
@@ -120,7 +113,7 @@ type RFState = {
     updateTreeNodeAttribute: (key: string, value: string) => void;
     updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => void;
     refreshGate: (gateType: GraphEdgeType) => void;
-    updateGraphByEventNodes: (eventNodes: EventNode[]) => void;
+    updateGraphByTA1Events: (eventNodes: TA1Event[]) => void;
     getAllCurrentSubgroupEvents: (node: string) => string[];
     getNodeById: (id: string) => Node | undefined;
     updateLayout: () => void;
@@ -225,7 +218,6 @@ const useStore = create<RFState>((set, get) => ({
         set({ nodes });
     },
     setChosenNodes: (chosenNodes) => {
-        console.log("chosenNodes", chosenNodes);
         set({ chosenNodes });
         get().updateLayout();
     },
@@ -262,68 +254,68 @@ const useStore = create<RFState>((set, get) => ({
         nodeRerender("eventNode");
     },
 
-    addEventNode: (node: EventNode, grouping : Boolean = false) => {
-        const { mapNodes, updateLayout } = get();
-        console.log("subgroupEvent here here", node);
-        mapNodes.set(node.id, node);
-        const parentId = node.parent;
-        if (parentId === undefined) {
-            return;
-        }
-        if (grouping) {
-            const subgroupEvents = node.subgroupEvents;
-            const outlinks: string[] =[]
-            console.log("node.subgroupEvents", node.subgroupEvents);
+    addTA1Event: (node: TA1Event, grouping : Boolean = false) => {
+        // const { mapNodes, updateLayout } = get();
+        // console.log("subgroupEvent here here", node);
+        // mapNodes.set(node.id, node);
+        // const parentId = node.parent;
+        // if (parentId === undefined) {
+        //     return;
+        // }
+        // if (grouping) {
+        //     const children = node.children;
+        //     const outlinks: string[] =[]
+        //     console.log("node.children", node.children);
 
-            subgroupEvents.forEach((subgroupEvent: string) => {
-                const subgroupEventNode = mapNodes.get(subgroupEvent);
-                console.log("subgroupEventNode", subgroupEventNode);
-                subgroupEventNode.parent = node.id;
-                outlinks.push(...subgroupEventNode.outlinks.filter((outlink: string) => !node.subgroupEvents.includes(outlink)));
+        //     children.forEach((subgroupEvent: string) => {
+        //         const subgroupTA1Event = mapNodes.get(subgroupEvent);
+        //         console.log("subgroupTA1Event", subgroupTA1Event);
+        //         subgroupTA1Event.parent = node.id;
+        //         outlinks.push(...subgroupTA1Event.outlinks.filter((outlink: string) => !node.children.includes(outlink)));
                 
-                subgroupEventNode.outlinks = subgroupEventNode.outlinks.filter(
-                    (outlink: string) => node.subgroupEvents.includes(outlink)
-                );
-            });
-            node.outlinks = outlinks;
+        //         subgroupTA1Event.outlinks = subgroupTA1Event.outlinks.filter(
+        //             (outlink: string) => node.children.includes(outlink)
+        //         );
+        //     });
+        //     node.outlinks = outlinks;
 
-            const parentNode = mapNodes.get(parentId);
-            if (parentNode) {
-                parentNode.subgroupEvents = parentNode.subgroupEvents.filter(
-                    (subgroupEvent: string) =>
-                        !node.subgroupEvents.includes(subgroupEvent)
-                );
-                parentNode.subgroupEvents.push(node.id);
-                parentNode.subgroupEvents.forEach((subgroupEvent: string) => {
-                    const subgroupEventNode = mapNodes.get(subgroupEvent);
-                    console.log("subgroupEventNode", subgroupEventNode);
-                    if (subgroupEventNode.outlinks === undefined) {
-                        return;
-                    }
-                    if (subgroupEventNode.outlinks.filter((outlink: string) => subgroupEvents.includes(outlink)).length === 0) {
-                        return;
-                    }
-                    subgroupEventNode.outlinks = subgroupEventNode.outlinks.filter(
-                        (outlink: string) => !subgroupEvents.includes(outlink)
-                    );
-                    subgroupEventNode.outlinks.push(node.id);
+        //     const parentNode = mapNodes.get(parentId);
+        //     if (parentNode) {
+        //         parentNode.children = parentNode.children.filter(
+        //             (subgroupEvent: string) =>
+        //                 !node.children.includes(subgroupEvent)
+        //         );
+        //         parentNode.children.push(node.id);
+        //         parentNode.children.forEach((subgroupEvent: string) => {
+        //             const subgroupTA1Event = mapNodes.get(subgroupEvent);
+        //             console.log("subgroupTA1Event", subgroupTA1Event);
+        //             if (subgroupTA1Event.outlinks === undefined) {
+        //                 return;
+        //             }
+        //             if (subgroupTA1Event.outlinks.filter((outlink: string) => children.includes(outlink)).length === 0) {
+        //                 return;
+        //             }
+        //             subgroupTA1Event.outlinks = subgroupTA1Event.outlinks.filter(
+        //                 (outlink: string) => !children.includes(outlink)
+        //             );
+        //             subgroupTA1Event.outlinks.push(node.id);
                     
-                })
-            }
+        //         })
+        //     }
             
 
-        }
-        const parentNode = mapNodes.get(parentId);
-        if (parentNode) {
-            parentNode.subgroupEvents = parentNode.subgroupEvents
-                ? [...parentNode.subgroupEvents, node.id]
-                : [node.id];
-            if (!parentNode.childrenGate) {
-                parentNode.childrenGate = "or";
-            }
-        }
-        console.log("parentNode", parentNode);
-        updateLayout();
+        // }
+        // const parentNode = mapNodes.get(parentId);
+        // if (parentNode) {
+        //     parentNode.children = parentNode.children
+        //         ? [...parentNode.children, node.id]
+        //         : [node.id];
+        //     if (!parentNode.childrenGate) {
+        //         parentNode.childrenGate = "or";
+        //     }
+        // }
+        // console.log("parentNode", parentNode);
+        // updateLayout();
     },
     setMapNodes: (mapNodes) => {
         set({ mapNodes });
@@ -336,33 +328,33 @@ const useStore = create<RFState>((set, get) => ({
     setFirstNode: (firstNode) => set({ firstNode }),
     setPaneContextMenu  : (paneContextMenu) => set({ paneContextMenu }),    
     setChosenEntities(chosenEntities) {
-        const { nodes, confidenceInterval, nodeRerender } = get();
-        const chosenEvents = new Set<string>();
-        for (const entityName of chosenEntities) {
-            const events = get().entitiesRelatedEventMap.get(entityName);
-            if (events === undefined) {
-                continue;
-            }
-            for (const event of events) {
-                chosenEvents.add(event);
-            }
-        }
-        console.log("chosenEvents", chosenEvents);
-        nodes.forEach((node) => {
-            const opacity =
-                (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
-                node.data.confidence >= confidenceInterval[0] &&
-                node.data.confidence <= confidenceInterval[1]
-                    ? 1
-                    : 0.5;
-            node.style = {
-                ...node.style,
-                opacity: opacity,
-            };
-        });
+        // const { nodes, confidenceInterval, nodeRerender } = get();
+        // const chosenEvents = new Set<string>();
+        // for (const entityName of chosenEntities) {
+        //     const events = get().entitiesRelatedEventMap.get(entityName);
+        //     if (events === undefined) {
+        //         continue;
+        //     }
+        //     for (const event of events) {
+        //         chosenEvents.add(event);
+        //     }
+        // }
+        // console.log("chosenEvents", chosenEvents);
+        // nodes.forEach((node) => {
+        //     const opacity =
+        //         (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
+        //         node.data.confidence >= confidenceInterval[0] &&
+        //         node.data.confidence <= confidenceInterval[1]
+        //             ? 1
+        //             : 0.5;
+        //     node.style = {
+        //         ...node.style,
+        //         opacity: opacity,
+        //     };
+        // });
 
-        set({ entityChosenEvents: chosenEvents, chosenEntities, nodes });
-        nodeRerender("eventNode");
+        // set({ entityChosenEvents: chosenEvents, chosenEntities, nodes });
+        // nodeRerender("eventNode");
     },
     getNodeById: (id: string) => {
         return get().mapNodes.get(id);
@@ -402,43 +394,48 @@ const useStore = create<RFState>((set, get) => ({
         });
     },
     updateNodeAttribute: (
-        nodeType: EventNodeType,
+        // nodeType: TA1EventType,
         key: string,
         value: string
     ) => {
-        if (nodeType === EventNodeType.Detected) {
-            DetectedNodeStrategy.options = {
-                ...DetectedNodeStrategy.options,
-                [key]: value,
-            };
-        } else if (nodeType === EventNodeType.SourceOnly) {
-            SourceOnlyNodeStrategy.options = {
-                ...SourceOnlyNodeStrategy.options,
-                [key]: value,
-            };
-        } else if (nodeType === EventNodeType.Predicted) {
-            PredictedNodeStrategy.options = {
-                ...PredictedNodeStrategy.options,
-                [key]: value,
-            };
-        }
-        get().nodeRerender("eventNode");
+        // if (nodeType === TA1EventType.Detected) {
+        //     DetectedNodeStrategy.options = {
+        //         ...DetectedNodeStrategy.options,
+        //         [key]: value,
+        //     };
+        // } else if (nodeType === TA1EventType.SourceOnly) {
+        //     SourceOnlyNodeStrategy.options = {
+        //         ...SourceOnlyNodeStrategy.options,
+        //         [key]: value,
+        //     };
+        // } else if (nodeType === TA1EventType.Predicted) {
+        //     PredictedNodeStrategy.options = {
+        //         ...PredictedNodeStrategy.options,
+        //         [key]: value,
+        //     };
+        // }
+        // get().nodeRerender("eventNode");
     },
     updateTreeNodeAttribute: (key: string, value: string) => {
-        NodeRenderingStrategy.nodeOptions = {
-            ...NodeRenderingStrategy.nodeOptions,
-            [key]: value,
-        };
-        get().nodeRerender("eventNode");
+        // NodeRenderingStrategy.nodeOptions = {
+        //     ...NodeRenderingStrategy.nodeOptions,
+        //     [key]: value,
+        // };
+        // get().nodeRerender("eventNode");
     },
 
-    updateGraphByEventNodes: (eventNodes: EventNode[]) => {
+    updateGraphByTA1Events: (eventNodes: TA1Event[]) => {
+        console.log("eventNodes", eventNodes);
         if (eventNodes.length > 0) {
-            const firstNode = eventNodes.find((node) => node.isTopLevel);
+            const allChildren = eventNodes.map((node) => node.children).flat();
+            const firstNode = eventNodes.find((node) => !allChildren.includes(node.id));
+            console.log("firstNode", firstNode);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
             });
+            console.log("newMap", newMap);
+
 
             set({
                 mapNodes: newMap,
@@ -446,7 +443,7 @@ const useStore = create<RFState>((set, get) => ({
             });
 
             get().getEntitiesRelatedEventMap();
-            get().setChosenNodes(firstNode ? [firstNode.id] : []);
+            get().setChosenNodes(firstNode ? [firstNode.id ||  ""] : []);
         }
     },
     onSelectionChange: (params: OnSelectionChangeParams) => {
@@ -530,42 +527,42 @@ const useStore = create<RFState>((set, get) => ({
             contextMenu: null
         })
     },
-    addNodeOnPanel(node: EventNode) {
-        // we add a new parent node to the root node of the graph, and change istoplevel of that node to false, then we add the new node and the old subnode as subgroupEvents of the new parent node
-        const { mapNodes, firstNode, chosenNodes, updateLayout, getNewIdInEventMap } = get();
-        const newMapNodes = new Map(mapNodes);
-        const newFirstNode = getNewIdInEventMap();
-        if (firstNode === null) {
-            return;
-        }
-        const FirstNodeObject = mapNodes.get(firstNode);
-        const newFirstNodeObject = new EventNode(newFirstNode, "none", "");
-        newFirstNodeObject.subgroupEvents = [firstNode, node.id];
-        newFirstNodeObject.isTopLevel = true;
-        newFirstNodeObject.parent = FirstNodeObject.parent;
-        newFirstNodeObject.childrenGate = "or";
-        newFirstNodeObject.confidence = [1.0];
-        console.log("newFirstNodeObject", newFirstNodeObject);
+    addNodeOnPanel(node: TA1Event) {
+        // // we add a new parent node to the root node of the graph, and change istoplevel of that node to false, then we add the new node and the old subnode as children of the new parent node
+        // const { mapNodes, firstNode, chosenNodes, updateLayout, getNewIdInEventMap } = get();
+        // const newMapNodes = new Map(mapNodes);
+        // const newFirstNode = getNewIdInEventMap();
+        // if (firstNode === null) {
+        //     return;
+        // }
+        // const FirstNodeObject = mapNodes.get(firstNode);
+        // const newFirstNodeObject = new TA1Event(newFirstNode, "none", "");
+        // newFirstNodeObject.children = [firstNode, node.id];
+        // newFirstNodeObject.isTopLevel = true;
+        // newFirstNodeObject.parent = FirstNodeObject.parent;
+        // newFirstNodeObject.childrenGate = "or";
+        // newFirstNodeObject.confidence = [1.0];
+        // console.log("newFirstNodeObject", newFirstNodeObject);
         
-        // set up the old firstnode
-        FirstNodeObject.isTopLevel = false;
-        FirstNodeObject.parent = newFirstNode;
-        console.log("FirstNodeObject", FirstNodeObject);
+        // // set up the old firstnode
+        // FirstNodeObject.isTopLevel = false;
+        // FirstNodeObject.parent = newFirstNode;
+        // console.log("FirstNodeObject", FirstNodeObject);
 
-        //set up the new node
-        node.parent = newFirstNode;
-        node.isTopLevel = false;
-        console.log("node", node);
+        // //set up the new node
+        // node.parent = newFirstNode;
+        // node.isTopLevel = false;
+        // console.log("node", node);
 
-        newMapNodes.set(node.id, node);
-        newMapNodes.set(firstNode, FirstNodeObject);
-        newMapNodes.set(newFirstNode, newFirstNodeObject);
-        set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
+        // newMapNodes.set(node.id, node);
+        // newMapNodes.set(firstNode, FirstNodeObject);
+        // newMapNodes.set(newFirstNode, newFirstNodeObject);
+        // set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
 
-        console.log("newMapNodes", newMapNodes);
-        console.log("chosenNodes", chosenNodes);
-        console.log("firstNode", firstNode);
-        updateLayout();
+        // console.log("newMapNodes", newMapNodes);
+        // console.log("chosenNodes", chosenNodes);
+        // console.log("firstNode", firstNode);
+        // updateLayout();
     },
     updateEdgeAttribute: (edgeType: GraphEdgeType, key: string, body: any) => {
         const { edgeStyle } = get();
@@ -631,8 +628,8 @@ const useStore = create<RFState>((set, get) => ({
             : mapNodes.get(node.id);
         console.log("currentNode", currentNode);
         if (
-            !currentNode.subgroupEvents ||
-            currentNode.subgroupEvents.length === 0 ||
+            !currentNode.children ||
+            currentNode.children.length === 0 ||
             node.data.isGate
         ) {
             set({ clickedNode: node });
@@ -703,12 +700,12 @@ const useStore = create<RFState>((set, get) => ({
         const { mapNodes, chosenNodes } = get();
         const objectNode = mapNodes.get(node);
 
-        if (objectNode?.subgroupEvents === undefined) {
+        if (objectNode?.children === undefined) {
             return tractNodes;
         }
 
         if (node && chosenNodes.includes(node)) {
-            for (const child of objectNode.subgroupEvents) {
+            for (const child of objectNode.children) {
                 const childNode = mapNodes.get(child)?.id;
                 tractNodes.push(
                     ...get().getAllCurrentSubgroupEvents(childNode)
@@ -828,20 +825,20 @@ const useStore = create<RFState>((set, get) => ({
             }
             const parentNode = mapNodes.get(nodeToDelete.parent);
             if (parentNode) {
-                parentNode.subgroupEvents = parentNode.subgroupEvents.filter(
+                parentNode.children = parentNode.children.filter(
                     (subgroupEvent: string) => subgroupEvent !== nodeId
                 );
-                parentNode.subgroupEvents.forEach((subgroupEvent: string) => {
-                    const subgroupEventNode = mapNodes.get(subgroupEvent);
-                    if (subgroupEventNode.outlinks === undefined) {
+                parentNode.children.forEach((subgroupEvent: string) => {
+                    const subgroupTA1Event = mapNodes.get(subgroupEvent);
+                    if (subgroupTA1Event.outlinks === undefined) {
                         return;
                     }
-                    if (subgroupEventNode.outlinks.includes(nodeId)) {
-                        subgroupEventNode.outlinks =
-                            subgroupEventNode.outlinks.filter(
+                    if (subgroupTA1Event.outlinks.includes(nodeId)) {
+                        subgroupTA1Event.outlinks =
+                            subgroupTA1Event.outlinks.filter(
                                 (outlink: string) => outlink !== nodeId
                             );
-                        subgroupEventNode.outlinks.push(
+                        subgroupTA1Event.outlinks.push(
                             ...nodeToDelete.outlinks
                         );
                     }
@@ -877,7 +874,10 @@ const useStore = create<RFState>((set, get) => ({
         if (firstNode === null || mapNodes.size === 0) {
             return;
         }
-
+        console.log("updateLayout");
+        console.log("chosenNodes", chosenNodes);
+        console.log("mapNodes", mapNodes);
+        console.log("firstNode", firstNode);
         const newNodes = getLayoutedElementsNested(
             chosenNodes,
             mapNodes,
@@ -899,7 +899,7 @@ const useStore = create<RFState>((set, get) => ({
 
             return {
                 ...node,
-                type: isGate ? "gate" : "eventNode",
+                type: isGate ? "gate" : "customNode",
                 key: Date.now(),
                 data: isGate
                     ? {
@@ -924,7 +924,7 @@ const useStore = create<RFState>((set, get) => ({
         const newEdges: Edge[] = [];
         chosenNodes.forEach((source) => {
             const sourceNode = mapNodes.get(source);
-            if (sourceNode.subgroupEvents) {
+            if (sourceNode.children) {
                 const childrenGate = sourceNode.childrenGate;
                 newEdges.push({
                     id: `e-${source}-subgroup-to-gate`,
