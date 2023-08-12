@@ -16,15 +16,18 @@ import {
 } from "reactflow";
 import { create } from "zustand";
 import {
+    Relation,
     TA1Event,
 } from "../components/LibraryTA1";
 import getLayoutedElementsNested from "./layoutTA1";
+import { Entity, Participant } from "../components/Library";
 
 enum GraphEdgeType {
     or = "or",
     xor = "xor",
     and = "and",
     outlink = "outlink",
+    relation = "relation",
 }
 
 type EdgeStyle = {
@@ -59,6 +62,7 @@ type RFState = {
     entityChosenEvents: Set<string>;
     entitiesRelatedEventMap: Map<string, string[]>;
     mapNodes: Map<string, any>;
+    mapEntities: Map<string, Entity>;
     showAddPanel: string | null;
     contextMenu: Node | null;
     clickedNode: Node | null;
@@ -76,6 +80,7 @@ type RFState = {
     setConfidenceInterval: (confidenceInterval: [number, number]) => void;
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
+    setMapEntities: (mapEntities: Map<string, Entity>) => void;
     editMapNode: (nodeId: string, field: string, value: any, index:number) => void;
     nodeRerender: (typeNode: string) => void;
     setChosenEntities: (chosenEntities: string[]) => void;
@@ -117,6 +122,7 @@ type RFState = {
     getAllCurrentSubgroupEvents: (node: string) => string[];
     getNodeById: (id: string) => Node | undefined;
     updateLayout: () => void;
+    getMapEntities: (eventNodes: TA1Event[]) => void;
 };
 
 // this is our useStore hook that we can use in our components to get parts of the store and call actions
@@ -126,6 +132,7 @@ const useStore = create<RFState>((set, get) => ({
     chosenNodes: [],
     chosenEntities: [],
     mapNodes: new Map(),
+    mapEntities: new Map(),
     entityChosenEvents: new Set(),
     entitiesRelatedEventMap: new Map(),
     showAddPanel: null,
@@ -210,6 +217,29 @@ const useStore = create<RFState>((set, get) => ({
             sourcePosition: Position.Right,
             targetPosition: Position.Left,
         },
+        relation: {
+            data: {
+                edgeType: "relation",
+            },
+            animated: false,
+            type: ConnectionLineType.Straight,
+            zIndex: 10,
+            labelStyle: { fill: "#798223", fontWeight: 700, fontSize: 32 },
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+                size: 20,
+                color: "#9DA8AF",
+            },
+            width: 10,
+            style: {
+                stroke: "#9DA8AF",
+                strokeWidth: 5,
+                strokeDasharray: "none",
+                zIndex: 10,
+            },
+            sourcePosition: Position.Right,
+            targetPosition: Position.Left,
+        }
     },
     setEdges: (edges: Edge[]) => {
         set({ edges });
@@ -221,7 +251,9 @@ const useStore = create<RFState>((set, get) => ({
         set({ chosenNodes });
         get().updateLayout();
     },
-
+    setMapEntities: (mapEntities) => {
+        set({ mapEntities });
+    },
     setEntityChosenEvents: (entityChosenEvents) => {
         const entityChosenEventsSet = new Set(entityChosenEvents);
         set({ entityChosenEvents: entityChosenEventsSet });
@@ -328,36 +360,37 @@ const useStore = create<RFState>((set, get) => ({
     setFirstNode: (firstNode) => set({ firstNode }),
     setPaneContextMenu  : (paneContextMenu) => set({ paneContextMenu }),    
     setChosenEntities(chosenEntities) {
-        // const { nodes, confidenceInterval, nodeRerender } = get();
-        // const chosenEvents = new Set<string>();
-        // for (const entityName of chosenEntities) {
-        //     const events = get().entitiesRelatedEventMap.get(entityName);
-        //     if (events === undefined) {
-        //         continue;
-        //     }
-        //     for (const event of events) {
-        //         chosenEvents.add(event);
-        //     }
-        // }
-        // console.log("chosenEvents", chosenEvents);
-        // nodes.forEach((node) => {
-        //     const opacity =
-        //         (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
-        //         node.data.confidence >= confidenceInterval[0] &&
-        //         node.data.confidence <= confidenceInterval[1]
-        //             ? 1
-        //             : 0.5;
-        //     node.style = {
-        //         ...node.style,
-        //         opacity: opacity,
-        //     };
-        // });
+        const { nodes, confidenceInterval, nodeRerender } = get();
+        const chosenEvents = new Set<string>();
+        for (const entityName of chosenEntities) {
+            const events = get().entitiesRelatedEventMap.get(entityName);
+            if (events === undefined) {
+                continue;
+            }
+            for (const event of events) {
+                chosenEvents.add(event);
+            }
+        }
+        console.log("chosenEvents", chosenEvents);
+        nodes.forEach((node) => {
+            const opacity =
+                (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
+                node.data.confidence >= confidenceInterval[0] &&
+                node.data.confidence <= confidenceInterval[1]
+                    ? 1
+                    : 0.5;
+            node.style = {
+                ...node.style,
+                opacity: opacity,
+            };
+        });
 
-        // set({ entityChosenEvents: chosenEvents, chosenEntities, nodes });
-        // nodeRerender("eventNode");
+        set({ entityChosenEvents: chosenEvents, chosenEntities, nodes });
+        nodeRerender("eventNode");
     },
     getNodeById: (id: string) => {
-        return get().mapNodes.get(id);
+        const node = get().mapNodes.get(id)
+        return node ? node : get().mapEntities.get(id);
     },
     groupingNodes(nodes: string[]) {
 
@@ -443,7 +476,9 @@ const useStore = create<RFState>((set, get) => ({
             });
 
             get().getEntitiesRelatedEventMap();
+            get().getMapEntities(eventNodes);
             get().setChosenNodes(firstNode ? [firstNode.id ||  ""] : []);
+
         }
     },
     onSelectionChange: (params: OnSelectionChangeParams) => {
@@ -489,16 +524,26 @@ const useStore = create<RFState>((set, get) => ({
         const { mapNodes } = get();
         const entitiesRelatedEventMap = new Map();
         mapNodes.forEach((event, key) => {
-            event.relatedEntities().forEach((entity: string) => {
-                if (entitiesRelatedEventMap.has(entity)) {
-                    entitiesRelatedEventMap.set(entity, [
-                        ...entitiesRelatedEventMap.get(entity),
+            event.participants?.forEach((participant: Participant) => {
+                if (entitiesRelatedEventMap.has(participant.entity)) {
+                    entitiesRelatedEventMap.set(participant.entity, [
+                        ...entitiesRelatedEventMap.get(participant.entity),
                         key,
                     ]);
                 } else {
-                    entitiesRelatedEventMap.set(entity, [key]);
+                    entitiesRelatedEventMap.set(participant.entity, [key]);
                 }
-            });
+            })
+            // event.entities.forEach((entity: string) => {
+            //     if (entitiesRelatedEventMap.has(entity)) {
+            //         entitiesRelatedEventMap.set(entity, [
+            //             ...entitiesRelatedEventMap.get(entity),
+            //             key,
+            //         ]);
+            //     } else {
+            //         entitiesRelatedEventMap.set(entity, [key]);
+            //     }
+            // });
         });
         // get rid of entity with only 1 event
         entitiesRelatedEventMap.forEach((value, key) => {
@@ -622,6 +667,10 @@ const useStore = create<RFState>((set, get) => ({
     },
     onNodeClick: (event, node) => {
         set({ contextMenu: null, showAddPanel: null });
+        if (node.data.isEntity) {
+            // get().entitiesRelatedEventMap.get(node.id).forEach((eventId) => {
+            return;
+        }
         const mapNodes = get().mapNodes;
         const currentNode = node.data.isGate
             ? mapNodes.get(node.data.referredNode)
@@ -870,6 +919,7 @@ const useStore = create<RFState>((set, get) => ({
             edgeStyle,
             confidenceInterval,
             entityChosenEvents,
+            mapEntities,
         } = get();
         if (firstNode === null || mapNodes.size === 0) {
             return;
@@ -881,11 +931,13 @@ const useStore = create<RFState>((set, get) => ({
         const newNodes = getLayoutedElementsNested(
             chosenNodes,
             mapNodes,
-            firstNode
+            firstNode,
+            mapEntities
         );
 
         const layoutedNodes = newNodes.map((node) => {
             const isGate = node.data.isGate;
+            const isEntity = node.data.isEntity;
             const gateColor = isGate
                 ? `${edgeStyle[node.data.gate as GraphEdgeType].style.stroke}70`
                 : "white";
@@ -937,7 +989,7 @@ const useStore = create<RFState>((set, get) => ({
 
         const uniqueEdges = new Map<string, Edge>();
         newNodes.forEach((node) => {
-            if (!node.data.isGate) {
+            if (!node.data.isGate && !node.data.isEntity) {
                 const currentNode = mapNodes.get(node.id);
                 currentNode.outlinks?.forEach((outlink: string) => {
                     const edgeId = `e-${node.id}-${outlink}-outlink`;
@@ -952,6 +1004,18 @@ const useStore = create<RFState>((set, get) => ({
                         });
                     }
                 });
+                currentNode.relations?.forEach((relation: Relation) => {
+                        uniqueEdges.set(relation.id, {
+                            id: relation.id,
+                            source: relation.relationSubject,
+                            target: relation.relationObject,
+                            sourceHandle: relation.relationSubject + "_right",
+                            targetHandle: relation.relationObject + "_left",
+                            label: relation.name,
+                            ...edgeStyle.relation,
+                        });
+                    
+                });
             }
         });
 
@@ -960,6 +1024,15 @@ const useStore = create<RFState>((set, get) => ({
             edges: [...newEdges, ...Array.from(uniqueEdges.values())],
         });
     },
+    getMapEntities: (eventNodes: TA1Event[]) => {
+        const mapEntities = new Map<string, Entity>();
+        eventNodes.forEach((eventNode) => {
+            eventNode.entities?.forEach((entity) => {
+                    mapEntities.set(entity.id, entity);
+                });
+            });
+        set({ mapEntities });
+    }
 }));
 
 function randomFiveDigit() {

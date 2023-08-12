@@ -7,10 +7,11 @@ export const CustomNode = ({ id, data, isConnectable, onHover }) => {
     if (!node) {
         return null;
     }
-
+    console.log("nodedata", data);
     return (
         <div className="eventnode">
             {node.render(isConnectable)}
+            {data &&data.isEntity === true && (<h3>{data.roleName}</h3>)}
         </div>
     );
 };

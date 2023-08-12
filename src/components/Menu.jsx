@@ -30,13 +30,15 @@ import {
     ProvenanceEntity,
     SourceOnlyNodeStrategy,
 } from "./Library";
-import ToggleButton from "./ToggleButton";
+import ToggleButton, { ToggleButtonTA1 } from "./ToggleButton";
 import { UniqueString } from "./TypeScriptUtils";
 import ZipReader from "./ZipReader";
 // import {
 //     // convertTA1toTA2format,
 //     convertTA2toTA1format,
 // } from "./TA1andTA2Conversion";
+import useStoreTA1 from "../pages/storeTA1";
+import { EntityGraphPanelTA1, TableRow, TableRowTA1 } from "./TableRow";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -287,8 +289,36 @@ function DownloadJSONPanel() {
         </div>
     );
 }
-
-function SeeLegendPanel() {
+const TA1Legend = () => {
+    return (
+        <div className="legend">
+            <h2>Legend</h2>
+            <h3>Colors</h3>
+            <div className="legend-colors">
+                <div className="legend-colors-item">
+                    <div className="legend-colors-item-color legend-colors-item-color-event"></div>
+                    <div className="legend-colors-item-text">Event</div>
+                </div>
+                <div className="legend-colors-item">
+                    <div className="legend-colors-item-color legend-colors-item-color-entity"></div>
+                    <div className="legend-colors-item-text">Entity</div>
+                </div>
+            </div>
+            <h3>Shapes</h3>
+            <div className="legend-shapes">
+                <div className="legend-shapes-item">
+                    <div className="legend-shapes-item-shape legend-shapes-item-shape-rectangle"></div>
+                    <div className="legend-shapes-item-text">Rectangle</div>
+                </div>
+                <div className="legend-shapes-item">
+                    <div className="legend-shapes-item-shape legend-shapes-item-shape-circle"></div>
+                    <div className="legend-shapes-item-text">Circle</div>
+                </div>
+            </div>
+        </div>
+    );
+};
+const TA2Legend = () => {
     const [
         updateNodeAttribute,
         updateTreeNodeAttribute,
@@ -600,17 +630,66 @@ function SeeLegendPanel() {
             </ReactFlowProvider>
         </div>
     );
+};
+function SeeLegendPanel() {
+    const [schemaType] = useContext(SchemaTypeContext);
+    if (schemaType === "ta1") {
+        return <TA1Legend />;
+    }
+    if (schemaType === "ta2") {
+        return <TA2Legend />;
+    }
+    return null;
 }
+const TA1GlobalEntityList = () => {
+    const [Entities] = useContext(EntitiesContext);
+    const [relatedEntities, chosenEntities] = useStoreTA1((state) => [
+        state.entitiesRelatedEventMap,
+        state.chosenEntities,
+    ]);
+    const [EntitiesList, setEntitiesList] = useState([]);
+    console.log("relatedEntities", relatedEntities);
+    console.log("entities", Entities);
+    useEffect(() => {
+        const newEntitiesList = [];
+        for (const [entityName, events] of relatedEntities) {
+            const key = `${entityName}`;
+            const entity = Entities.get(entityName);
+            if (entity === undefined) {
+                continue;
+            }
+            newEntitiesList.push(
+                <ToggleButtonTA1
+                    key={key}
+                    id={key}
+                    name={entity.name}
+                    relatedEventsLength={events.length}
+                    chosen={chosenEntities.includes(key)}
+                />
+            );
+        }
+        setEntitiesList(
+            newEntitiesList.length > 0 ? (
+                newEntitiesList
+            ) : (
+                <div>No Entities</div>
+            )
+        );
+    }, [Entities]);
 
-function GlobalEntityList() {
+    return (
+        <div>
+            <div>{EntitiesList}</div>
+        </div>
+    );
+};
+const TA2GlobalEntityList = () => {
     const [Entities] = useContext(EntitiesContext);
     const [relatedEntities, chosenEntities] = useStore((state) => [
         state.entitiesRelatedEventMap,
         state.chosenEntities,
-        state.setChosenEntities,
     ]);
     const [EntitiesList, setEntitiesList] = useState([]);
-
     useEffect(() => {
         const newEntitiesList = [];
         for (const [entityName, events] of relatedEntities) {
@@ -640,9 +719,160 @@ function GlobalEntityList() {
 
     return (
         <div>
-            <h2>Global Entity List</h2>
             <div>{EntitiesList}</div>
         </div>
+    );
+};
+
+const TA1GlobalEntityTable = () => {
+    const [Entities] = useContext(EntitiesContext);
+    const [relatedEntities, chosenEntities] = useStoreTA1((state) => [
+        state.entitiesRelatedEventMap,
+        state.chosenEntities,
+    ]);
+    const [EntitiesTable, setEntitiesTable] = useState([]);
+    useEffect(() => {
+        const newEntitiesTable = [];
+        for (const [entityName, events] of relatedEntities) {
+            const key = `${entityName}`;
+            const entity = Entities.get(entityName);
+            if (entity === undefined) {
+                continue;
+            }
+            newEntitiesTable.push(
+                <TableRowTA1
+                    key={key}
+                    id={key}
+                    name={entity.name}
+                    wd_label={entity.wd_label}
+                    relatedEvents={events}
+                    chosen={chosenEntities.includes(key)}
+                />
+            );
+        }
+        setEntitiesTable(
+            newEntitiesTable.length > 0 ? (
+                newEntitiesTable
+            ) : (
+                <div>No Entities</div>
+            )
+        );
+    }, [Entities]);
+
+    return (
+        <table>
+            <tr>
+                <th scope="col">Filter</th>
+                <th scope="col">Entity Name</th>
+                <th scope="col">WikiData Label</th>
+                <th scope="col">Entity Id</th>
+                <th scope="col">Participate In</th>
+            </tr>
+            {EntitiesTable}
+        </table>
+    );
+};
+const TA2GlobalEntityTable = () => {
+    const [Entities] = useContext(EntitiesContext);
+    const [relatedEntities, chosenEntities] = useStore((state) => [
+        state.entitiesRelatedEventMap,
+        state.chosenEntities,
+    ]);
+    const [EntitiesTable, setEntitiesTable] = useState([]);
+    useEffect(() => {
+        const newEntitiesTable = [];
+        for (const [entityName, events] of relatedEntities) {
+            const key = `${entityName}`;
+            const entity = Entities.get(entityName);
+            if (entity === undefined) {
+                continue;
+            }
+            newEntitiesTable.push(
+                <TableRow
+                    key={key}
+                    id={key}
+                    
+                    wd_label={entity.wd_label}
+                    name={entity.name}
+                    relatedEvents={events}
+                    chosen={chosenEntities.includes(key)}
+                />
+            );
+        }
+        setEntitiesTable(
+            newEntitiesTable.length > 0 ? (
+                newEntitiesTable
+            ) : (
+                <div>No Entities</div>
+            )
+        );
+    }, [Entities]);
+
+    return (
+        <table>
+            <tr>
+                <th>Filter</th>
+                <th>Entity Name</th>
+                <th>WikiData Label</th>
+                <th>Entity Id</th>
+                <th>Participate In</th>
+            </tr>
+            {EntitiesTable}
+        </table>
+    );
+};
+function GlobalEntityList() {
+    const [schemaType] = useContext(SchemaTypeContext);
+    console.log("schemaType over here", schemaType);
+    const [mode, setMode] = useState("list");
+    return (
+        <>
+            <div className="tab-bar">
+                <button
+                    className={` button-tabbar ${
+                        mode === "list" ? "button-tabbar-active" : ""
+                    }`}
+                    onClick={() => setMode("list")}
+                >
+                    List
+                </button>
+                <button
+                    className={`button-tabbar ${
+                        mode === "table" ? "button-tabbar-active" : ""
+                    } `}
+                    onClick={() => setMode("table")}
+                >
+                    Table
+                </button>
+                {schemaType === "ta1" && <button
+                    className={`button-tabbar ${
+                        mode === "graph" ? "button-tabbar-active" : ""
+                    } `}
+                    onClick={() => setMode("graph")}
+                >
+                    Graph
+                </button>}
+            </div>
+            {mode === "list" ? (
+                <div>
+                    <h2>Global Entity List</h2>
+                    {schemaType === "ta1" ? (
+                        <TA1GlobalEntityList />
+                    ) : (
+                        <TA2GlobalEntityList />
+                    )}
+                </div>
+            ) : mode === "table" ? (
+                <div>
+                    <h2>Global Entity Table</h2>
+                    {schemaType === "ta1" ? (
+                        <TA1GlobalEntityTable />
+                    ) : (
+                        <TA2GlobalEntityTable />
+                    )}
+                </div>
+            ) : <EntityGraphPanelTA1/>}
+        </>
     );
 }
 

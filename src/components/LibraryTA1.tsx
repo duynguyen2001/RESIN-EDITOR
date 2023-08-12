@@ -287,6 +287,7 @@ export class TA1Entity {
     @JsonProperty("wd_description", ForceStringArray, true)
     wd_description?: string[];
 
+
     constructor(
         id: string,
         name: string,
@@ -339,9 +340,9 @@ export class Relation {
     @JsonProperty("wd_description", ForceStringArray, true)
     wd_description?: string[];
     @JsonProperty("relationSubject", String, true)
-    relationSubject?: string;
+    relationSubject: string;
     @JsonProperty("relationObject", String, true)
-    relationObject?: string;
+    relationObject: string;
 
     constructor(
         id: string,
@@ -479,6 +480,9 @@ export class TA1Event {
 
     @JsonProperty("relations", [Relation], true)
     relations?: Relation[];
+
+    @JsonProperty("optional", Boolean, true)
+    optional?: boolean;
 
     get renderStrategy(): TA1NodeRenderingStrategy {
         return new TA1EventStrategy(this);

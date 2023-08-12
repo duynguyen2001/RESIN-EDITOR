@@ -1,7 +1,7 @@
 import dagre from "dagre";
 const nodeWidth = 200;
 const nodeHeight = 200;
-const getLayoutedElements = (
+export const getLayoutedElements = (
     nodes,
     edges,
     direction = "TB",
@@ -61,7 +61,7 @@ const getLayoutedElements = (
 
     return { nodes, edges };
 };
-const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
+const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities) => {
     const nodes = [];
     const parentMap = new Map();
     chosenNodes.forEach((node) => {
@@ -102,34 +102,43 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                     position: { x: 0, y: 0 },
                 };
             });
-            currentNode.participants?.forEach((participants) => {
-                const entity = currentNode.entities.find(
-                    (entity) => entity.id === participants.entityId
-                );
-                subGraphNodes.push({
-                    id: entity.id,
-                    data: {
-                        isGate: false,
-                        isEntity: true,
-                        isTopLevel: false,
-                        parent: node,
-                        confidence:  1,
-                        color: entity.renderStrategy.color,
-                    },
-                    position: { x: 0, y: 0 },
-                });
-            });
-                        
+             
 
             
             const subGraphEdges =
                 currentNode.children?.flatMap((subNode) =>
-                    mapNodes.get(subNode).outlinks.map((outlinkNode) => ({
+                    mapNodes.get(subNode)?.outlinks.map((outlinkNode) => ({
                         id: `outlink-${subNode}-${outlinkNode}`,
                         source: subNode,
                         target: outlinkNode,
                     }))
                 ) || [];
+            
+            currentNode.participants?.forEach((participant) => {
+                    const entity = mapEntities.get(participant.entity);
+                    console.log("participant here", participant)
+                    subGraphNodes.push({
+                        id: entity.id,
+                        data: {
+                            isGate: false,
+                            isEntity: true,
+                            isTopLevel: false,
+                            parent: node,
+                            confidence:  1,
+                            roleName: participant.roleName,
+                            color: entity.renderStrategy.color,
+                        },
+                        position: { x: 0, y: 0 },
+                    });
+                });
+            currentNode.relations?.forEach((relation) => {
+                console.log("relationherehere", relation)
+                subGraphEdges.push({ 
+                    id: relation.id,
+                    source: relation.relationSubject,
+                    target: relation.relationObject
+                });
+            });
 
             const graph = getLayoutedElements(
                 subGraphNodes,

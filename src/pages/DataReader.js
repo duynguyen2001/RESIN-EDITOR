@@ -21,6 +21,7 @@ export const ProvenanceContext = createContext([]);
 export const DataContext = createContext({});
 export const ExtractedFilesContext = createContext(new Map());
 export const ExtractedTextsContext = createContext({});
+export const RelationsContext = createContext([]);
 export const EventsContext = createContext([]);
 export const SchemaTypeContext = createContext("ta2");
 export const nodeTypes = {
@@ -43,7 +44,7 @@ const DataReader = () => {
     let jsonConvert = new JsonConvert();
     const [Entities, setEntities] = React.useState([]);
     const [Events, setEvents] = React.useState([]);
-    const [Relations, setRelations] = React.useState({});
+    const [Relations, setRelations] = React.useState([]);
     const [Provenances, setProvenances] = React.useState({});
     const [extractedFiles, setExtractedFiles] = React.useState(new Map());
     const [extractedTexts, setExtractedTexts] = React.useState(
@@ -62,11 +63,13 @@ const DataReader = () => {
                 );
 
                 const entitiesMap = new Map();
-                const relationsMap = new Map();
+                const relationList = [];
                 data.events.forEach((event) => {
                     if (event.relations) {
                         event.relations.forEach((relation) => {
-                            relationsMap.set(relation["@id"], jsonConvert.deserialize(relation, Relation));
+                            relationList.push(
+                                jsonConvert.deserialize(relation, Relation)
+                            );
                         });
                     }
                     if (event.entities) {
@@ -76,7 +79,7 @@ const DataReader = () => {
                     }
                 });
                 setEntities(entitiesMap);
-                setRelations(relationsMap);
+                setRelations(relationList);
 
             }
 
@@ -148,7 +151,15 @@ const DataReader = () => {
                                                 setExtractedFiles,
                                             ]}
                                         >
+                                            <RelationsContext.Provider
+                                                value={[
+                                                    Relations,
+                                                    setRelations,
+                                                ]}
+                                            >
+
                                             {schemaType === "ta2"? <Graph/>: <GraphTA1/>}
+                                            </RelationsContext.Provider>
                                         </ExtractedFilesContext.Provider>
                                     </ExtractedTextsContext.Provider>
                                 </EntitiesContext.Provider>
