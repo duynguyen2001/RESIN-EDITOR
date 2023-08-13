@@ -12,13 +12,10 @@ import {
     Position,
     applyEdgeChanges,
     applyNodeChanges,
-    OnSelectionChangeParams
+    OnSelectionChangeParams,
 } from "reactflow";
 import { create } from "zustand";
-import {
-    Relation,
-    TA1Event,
-} from "../components/LibraryTA1";
+import { Relation, TA1Event } from "../components/LibraryTA1";
 import getLayoutedElementsNested from "./layoutTA1";
 import { Entity, Participant } from "../components/Library";
 
@@ -81,7 +78,12 @@ type RFState = {
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
     setMapEntities: (mapEntities: Map<string, Entity>) => void;
-    editMapNode: (nodeId: string, field: string, value: any, index:number) => void;
+    editMapNode: (
+        nodeId: string,
+        field: string,
+        value: any,
+        index: number
+    ) => void;
     nodeRerender: (typeNode: string) => void;
     setChosenEntities: (chosenEntities: string[]) => void;
     setChosenNodes: (chosenNodes: string[]) => void;
@@ -93,7 +95,7 @@ type RFState = {
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
     setEntityChosenEvents: (entityChosenEvents: []) => void;
-    addNodeOnPanel: (node: TA1Event)=> void;
+    addNodeOnPanel: (node: TA1Event) => void;
     addTA1Event: (node: TA1Event, grouping: boolean) => void;
     getNewIdInEventMap: () => string;
     onNodesChange: OnNodesChange;
@@ -145,7 +147,7 @@ const useStore = create<RFState>((set, get) => ({
     key: 0,
     deltaX: 0,
     deltaY: 0,
-    selectionNodes:[],
+    selectionNodes: [],
     edgeStyle: {
         or: {
             data: {
@@ -239,7 +241,7 @@ const useStore = create<RFState>((set, get) => ({
             },
             sourcePosition: Position.Right,
             targetPosition: Position.Left,
-        }
+        },
     },
     setEdges: (edges: Edge[]) => {
         set({ edges });
@@ -258,11 +260,16 @@ const useStore = create<RFState>((set, get) => ({
         const entityChosenEventsSet = new Set(entityChosenEvents);
         set({ entityChosenEvents: entityChosenEventsSet });
     },
-    editMapNode: (nodeId: string, field: string, value: any, index:number = -1) => {
+    editMapNode: (
+        nodeId: string,
+        field: string,
+        value: any,
+        index: number = -1
+    ) => {
         const { mapNodes, nodeRerender } = get();
-        if(index === -1){
+        if (index === -1) {
             mapNodes.get(nodeId)[field] = value;
-        }else{
+        } else {
             mapNodes.get(nodeId)[field][index] = value;
         }
         nodeRerender("eventNode");
@@ -286,7 +293,7 @@ const useStore = create<RFState>((set, get) => ({
         nodeRerender("eventNode");
     },
 
-    addTA1Event: (node: TA1Event, grouping : Boolean = false) => {
+    addTA1Event: (node: TA1Event, grouping: Boolean = false) => {
         // const { mapNodes, updateLayout } = get();
         // console.log("subgroupEvent here here", node);
         // mapNodes.set(node.id, node);
@@ -298,19 +305,16 @@ const useStore = create<RFState>((set, get) => ({
         //     const children = node.children;
         //     const outlinks: string[] =[]
         //     console.log("node.children", node.children);
-
         //     children.forEach((subgroupEvent: string) => {
         //         const subgroupTA1Event = mapNodes.get(subgroupEvent);
         //         console.log("subgroupTA1Event", subgroupTA1Event);
         //         subgroupTA1Event.parent = node.id;
         //         outlinks.push(...subgroupTA1Event.outlinks.filter((outlink: string) => !node.children.includes(outlink)));
-                
         //         subgroupTA1Event.outlinks = subgroupTA1Event.outlinks.filter(
         //             (outlink: string) => node.children.includes(outlink)
         //         );
         //     });
         //     node.outlinks = outlinks;
-
         //     const parentNode = mapNodes.get(parentId);
         //     if (parentNode) {
         //         parentNode.children = parentNode.children.filter(
@@ -331,11 +335,8 @@ const useStore = create<RFState>((set, get) => ({
         //                 (outlink: string) => !children.includes(outlink)
         //             );
         //             subgroupTA1Event.outlinks.push(node.id);
-                    
         //         })
         //     }
-            
-
         // }
         // const parentNode = mapNodes.get(parentId);
         // if (parentNode) {
@@ -355,10 +356,11 @@ const useStore = create<RFState>((set, get) => ({
     },
     setShowAddPanel: (showAddPanel) => set({ showAddPanel }),
     setClickedNode: (clickedNode) => set({ clickedNode }),
-    setSelectionContextMenu: (selectionContextMenu) => set({ selectionContextMenu }),
+    setSelectionContextMenu: (selectionContextMenu) =>
+        set({ selectionContextMenu }),
     setContextMenu: (contextMenu) => set({ contextMenu }),
     setFirstNode: (firstNode) => set({ firstNode }),
-    setPaneContextMenu  : (paneContextMenu) => set({ paneContextMenu }),    
+    setPaneContextMenu: (paneContextMenu) => set({ paneContextMenu }),
     setChosenEntities(chosenEntities) {
         const { nodes, confidenceInterval, nodeRerender } = get();
         const chosenEvents = new Set<string>();
@@ -389,12 +391,10 @@ const useStore = create<RFState>((set, get) => ({
         nodeRerender("eventNode");
     },
     getNodeById: (id: string) => {
-        const node = get().mapNodes.get(id)
+        const node = get().mapNodes.get(id);
         return node ? node : get().mapEntities.get(id);
     },
-    groupingNodes(nodes: string[]) {
-
-    },
+    groupingNodes(nodes: string[]) {},
     onNodesChange: (changes: NodeChange[]) => {
         set({
             nodes: applyNodeChanges(changes, get().nodes),
@@ -403,7 +403,11 @@ const useStore = create<RFState>((set, get) => ({
     onPaneContextMenu: (event) => {
         event.preventDefault();
         console.log("event", event);
-        set({paneContextMenu: event, contextMenu: null, selectionContextMenu: false});
+        set({
+            paneContextMenu: event,
+            contextMenu: null,
+            selectionContextMenu: false,
+        });
     },
     onEdgesChange: (changes: EdgeChange[]) => {
         changes.forEach((change) => {
@@ -461,14 +465,15 @@ const useStore = create<RFState>((set, get) => ({
         console.log("eventNodes", eventNodes);
         if (eventNodes.length > 0) {
             const allChildren = eventNodes.map((node) => node.children).flat();
-            const firstNode = eventNodes.find((node) => !allChildren.includes(node.id));
+            const firstNode = eventNodes.find(
+                (node) => !allChildren.includes(node.id)
+            );
             console.log("firstNode", firstNode);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
             });
             console.log("newMap", newMap);
-
 
             set({
                 mapNodes: newMap,
@@ -477,17 +482,16 @@ const useStore = create<RFState>((set, get) => ({
 
             get().getEntitiesRelatedEventMap();
             get().getMapEntities(eventNodes);
-            get().setChosenNodes(firstNode ? [firstNode.id ||  ""] : []);
-
+            get().setChosenNodes(firstNode ? [firstNode.id || ""] : []);
         }
     },
     onSelectionChange: (params: OnSelectionChangeParams) => {
         const { nodes } = params;
-        const newNodes = nodes.filter(q => q.type === "eventNode")
+        const newNodes = nodes.filter((q) => q.type === "eventNode");
         set({
             selectionNodes: newNodes,
-            selectionContextMenu: false
-        })
+            selectionContextMenu: false,
+        });
     },
     updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => {
         const { edgeStyle } = get();
@@ -533,7 +537,7 @@ const useStore = create<RFState>((set, get) => ({
                 } else {
                     entitiesRelatedEventMap.set(participant.entity, [key]);
                 }
-            })
+            });
             // event.entities.forEach((entity: string) => {
             //     if (entitiesRelatedEventMap.has(entity)) {
             //         entitiesRelatedEventMap.set(entity, [
@@ -562,15 +566,14 @@ const useStore = create<RFState>((set, get) => ({
         return sortedEntitiesRelatedEventMap;
     },
     onSelectionContextMenu: (event, nodes) => {
-
         console.log("nodes multiselect", nodes);
         event.preventDefault();
         set({
             selectionNodes: nodes,
             selectionContextMenu: true,
             paneContextMenu: null,
-            contextMenu: null
-        })
+            contextMenu: null,
+        });
     },
     addNodeOnPanel(node: TA1Event) {
         // // we add a new parent node to the root node of the graph, and change istoplevel of that node to false, then we add the new node and the old subnode as children of the new parent node
@@ -588,22 +591,18 @@ const useStore = create<RFState>((set, get) => ({
         // newFirstNodeObject.childrenGate = "or";
         // newFirstNodeObject.confidence = [1.0];
         // console.log("newFirstNodeObject", newFirstNodeObject);
-        
         // // set up the old firstnode
         // FirstNodeObject.isTopLevel = false;
         // FirstNodeObject.parent = newFirstNode;
         // console.log("FirstNodeObject", FirstNodeObject);
-
         // //set up the new node
         // node.parent = newFirstNode;
         // node.isTopLevel = false;
         // console.log("node", node);
-
         // newMapNodes.set(node.id, node);
         // newMapNodes.set(firstNode, FirstNodeObject);
         // newMapNodes.set(newFirstNode, newFirstNodeObject);
         // set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
-
         // console.log("newMapNodes", newMapNodes);
         // console.log("chosenNodes", chosenNodes);
         // console.log("firstNode", firstNode);
@@ -699,7 +698,7 @@ const useStore = create<RFState>((set, get) => ({
             const oldNodePosition = get().nodes.find(
                 (n) => n.id === parentId
             )?.position;
-            
+
             set({ chosenNodes: newChosenNodes, clickedNode: node });
             get().updateLayout();
 
@@ -951,7 +950,7 @@ const useStore = create<RFState>((set, get) => ({
 
             return {
                 ...node,
-                type: isGate ? "gate" : "customNode",
+                type: isGate && isEntity? "":isGate ? "gate" : "customNode",
                 key: Date.now(),
                 data: isGate
                     ? {
@@ -959,11 +958,20 @@ const useStore = create<RFState>((set, get) => ({
                           color: edgeStyle[node.data.gate as GraphEdgeType]
                               .style.stroke,
                       }
+                    : isEntity
+                    ? {
+                          ...node.data,
+                          color: edgeStyle.relation.style.stroke,
+                      }
                     : node.data,
-                expandParent: isGate || node.data.isTopLevel ? undefined : true,
+                expandParent:
+                    isGate || isEntity || node.data.isTopLevel
+                        ? undefined
+                        : true,
                 parentNode:
                     isGate || node.id === firstNode
-                        ? undefined
+                        ? undefined:
+                        isEntity? `entity-gate-${node.data.parent}`
                         : `gate-${node.data.parent}`,
                 style: {
                     ...node.style,
@@ -972,6 +980,7 @@ const useStore = create<RFState>((set, get) => ({
                 },
             };
         });
+        console.log("layoutedNodes", layoutedNodes);
 
         const newEdges: Edge[] = [];
         chosenNodes.forEach((source) => {
@@ -983,6 +992,15 @@ const useStore = create<RFState>((set, get) => ({
                     source: source,
                     target: `gate-${source}`,
                     ...edgeStyle[childrenGate as GraphEdgeType],
+                });
+            }
+            if (sourceNode.participants) {
+                sourceNode.participants.forEach((participant) => {
+                    newEdges.push({
+                        id: `e-${source}-participant-${participant.id}`,
+                        source: source,
+                        target: `${participant.entity}-${source}`,
+                    });
                 });
             }
         });
@@ -1005,16 +1023,15 @@ const useStore = create<RFState>((set, get) => ({
                     }
                 });
                 currentNode.relations?.forEach((relation: Relation) => {
-                        uniqueEdges.set(relation.id, {
-                            id: relation.id,
-                            source: relation.relationSubject,
-                            target: relation.relationObject,
-                            sourceHandle: relation.relationSubject + "_right",
-                            targetHandle: relation.relationObject + "_left",
-                            label: relation.name,
-                            ...edgeStyle.relation,
-                        });
-                    
+                    uniqueEdges.set(relation.id, {
+                        id: relation.id,
+                        source: relation.relationSubject,
+                        target: relation.relationObject,
+                        sourceHandle: relation.relationSubject + "_right",
+                        targetHandle: relation.relationObject + "_left",
+                        label: relation.name,
+                        ...edgeStyle.relation,
+                    });
                 });
             }
         });
@@ -1028,11 +1045,11 @@ const useStore = create<RFState>((set, get) => ({
         const mapEntities = new Map<string, Entity>();
         eventNodes.forEach((eventNode) => {
             eventNode.entities?.forEach((entity) => {
-                    mapEntities.set(entity.id, entity);
-                });
+                mapEntities.set(entity.id, entity);
             });
+        });
         set({ mapEntities });
-    }
+    },
 }));
 
 function randomFiveDigit() {

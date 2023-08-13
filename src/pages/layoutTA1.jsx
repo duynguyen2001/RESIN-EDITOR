@@ -1,4 +1,5 @@
 import dagre from "dagre";
+import { First } from "react-bootstrap/esm/PageItem";
 const nodeWidth = 200;
 const nodeHeight = 200;
 export const getLayoutedElements = (
@@ -17,7 +18,7 @@ export const getLayoutedElements = (
         align: isHorizontal ? "UL" : undefined,
         nodesep: isHorizontal ? 50 : 300,
     });
-    console.log("getLayoutedElements")
+    console.log("getLayoutedElements");
     console.log(nodes);
 
     nodes.forEach((node) => {
@@ -61,8 +62,14 @@ export const getLayoutedElements = (
 
     return { nodes, edges };
 };
-const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities) => {
+const getLayoutedElementsNested = (
+    chosenNodes,
+    mapNodes,
+    firstNode,
+    mapEntities
+) => {
     const nodes = [];
+    // create parent map
     const parentMap = new Map();
     chosenNodes.forEach((node) => {
         const currentNode = mapNodes.get(node);
@@ -79,32 +86,35 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
     });
 
     if (firstNode && firstNode !== null && firstNode !== undefined) {
-        const subgraphs = chosenNodes.map((node) => {
+        const subgraphs = chosenNodes.flatMap((node) => {
+            const parentNode = parentMap.get(node)
+                ? parentMap.get(node)
+                : "root";
             const currentNode = mapNodes.get(node);
-            console.log("getLayoutedElementsNested")
-            console.log("currentNode", currentNode)
+            console.log("getLayoutedElementsNested");
+            console.log("currentNode", currentNode);
             const subGraphNodes = currentNode.children?.map((subNode) => {
                 const subNodeData = mapNodes.get(subNode);
-                console.log("subNodeData", subNodeData)
+                console.log("subNodeData", subNodeData);
                 return {
                     id: subNode,
                     data: {
                         isGate: false,
                         isEntity: false,
                         isTopLevel:
-                            currentNode.id === firstNode.id
-                                ? true
-                                : undefined,
+                            currentNode.id === firstNode.id ? true : undefined,
                         parent: node,
-                        confidence: subNodeData.importance && subNodeData.importance.length > 0? subNodeData.importance[0]: 1,
+                        confidence:
+                            subNodeData.importance &&
+                            subNodeData.importance.length > 0
+                                ? subNodeData.importance[0]
+                                : 1,
                         color: subNodeData.renderStrategy.color,
                     },
                     position: { x: 0, y: 0 },
                 };
             });
-             
 
-            
             const subGraphEdges =
                 currentNode.children?.flatMap((subNode) =>
                     mapNodes.get(subNode)?.outlinks.map((outlinkNode) => ({
@@ -113,32 +123,6 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
                         target: outlinkNode,
                     }))
                 ) || [];
-            
-            currentNode.participants?.forEach((participant) => {
-                    const entity = mapEntities.get(participant.entity);
-                    console.log("participant here", participant)
-                    subGraphNodes.push({
-                        id: entity.id,
-                        data: {
-                            isGate: false,
-                            isEntity: true,
-                            isTopLevel: false,
-                            parent: node,
-                            confidence:  1,
-                            roleName: participant.roleName,
-                            color: entity.renderStrategy.color,
-                        },
-                        position: { x: 0, y: 0 },
-                    });
-                });
-            currentNode.relations?.forEach((relation) => {
-                console.log("relationherehere", relation)
-                subGraphEdges.push({ 
-                    id: relation.id,
-                    source: relation.relationSubject,
-                    target: relation.relationObject
-                });
-            });
 
             const graph = getLayoutedElements(
                 subGraphNodes,
@@ -147,7 +131,40 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
                 true
             );
             console.log("graph", graph);
-            return {
+
+            // ENTITY NODES AND EDGES HANDLING
+            const entityNodes = currentNode.participants?.map((participant) => {
+                const entity = mapEntities.get(participant.entity);
+                return {
+                    id: `${entity.id}-${node}`,
+                    data: {
+                        isGate: false,
+                        isEntity: true,
+                        isTopLevel: false,
+                        parent: node,
+                        confidence: 1,
+                        roleName: participant.roleName,
+                        color: entity.renderStrategy.color,
+                    },
+                    position: { x: 0, y: 0 },
+                };
+            });
+            const entityEdges = currentNode.relations?.map((relation) => {
+                return {
+                    id: `edge-relation-${relation.id}-${node}`,
+                    source: `${relation.relationSubject}-${node}`,
+                    target: `${relation.relationObject}-${node}`,
+                    label: relation.name,
+                };
+            });
+            const entityGraph = getLayoutedElements(
+                entityNodes,
+                entityEdges,
+                "TB",
+                true
+            );
+
+            return [{
                 id: `subgraph-${node}`,
                 width: graph.width,
                 height: graph.height,
@@ -161,7 +178,11 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
                                 name: currentNode.name,
                                 isGate: true,
                                 referredNode: currentNode.id,
-                                confidence: currentNode.importance && currentNode.importance.length > 0? currentNode.importance[0]: 1,
+                                confidence:
+                                    currentNode.importance &&
+                                    currentNode.importance.length > 0
+                                        ? currentNode.importance[0]
+                                        : 1,
                             },
                             style: {
                                 width: graph.width + 100,
@@ -173,7 +194,39 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
                     ],
                     edges: graph.edges,
                 },
-            };
+            }, {
+                id: `entityGraph-${parentNode}`,
+                width: entityGraph.width,
+                height: entityGraph.height,
+                position: { x: 0, y: 0 },
+                data: {
+                    nodes: [{
+                        id: `entity-gate-${node}`,
+                            data: {
+                                name: currentNode.name,
+                                isGate: true,
+                                isEntity: true,
+                                gate: "relation",
+                                referredNode: currentNode.id,
+                                confidence:
+                                    currentNode.importance &&
+                                    currentNode.importance.length > 0
+                                        ? currentNode.importance[0]
+                                        : 1,
+                            },
+                            style: {
+                                width: entityGraph.width,
+                                height: entityGraph.height,
+                                zIndex: -10,
+                                color: "transparent",
+                                border: "none",
+                            },
+                        },
+                        ...entityGraph.nodes],
+                    edges: entityGraph.edges,
+                },
+            }
+        ];
         });
         const subgraphEdges = chosenNodes.flatMap((node) => {
             const parentNode = parentMap.get(node)
@@ -181,8 +234,13 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
                 : "root";
             return [
                 {
-                    id: `subgraph-edge-${parentNode}-gate-${parentNode}`,
+                    id: `subgraph-edge-${parentNode}-entity-${parentNode}`,
                     source: `subgraph-${parentNode}`,
+                    target: `entityGraph-${parentNode}`,
+                },
+                {
+                    id: `subgraph-edge-entity-${parentNode}-gate-${node}`,
+                    source: `entityGraph-${parentNode}`,
                     target: `gate-${parentNode}`,
                 },
                 {
@@ -194,7 +252,7 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
         });
         const firstNodeData = mapNodes.get(firstNode);
         subgraphs.push({
-            id: `subgraph-${firstNodeData.parent}`,
+            id: `subgraph-root`,
             width: 200,
             height: 200,
             data: {
@@ -203,7 +261,11 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
                         id: firstNode,
                         data: {
                             isGate: false,
-                            confidence: firstNodeData.importance && firstNodeData.importance.length > 0? firstNodeData.importance[0] : 1,
+                            confidence:
+                                firstNodeData.importance &&
+                                firstNodeData.importance.length > 0
+                                    ? firstNodeData.importance[0]
+                                    : 1,
                             color: firstNodeData.renderStrategy.color,
                         },
                         position: { x: 0, y: 0 },
@@ -212,25 +274,77 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode, mapEntities
                 edges: [],
             },
         });
+
+        // chosenNodes.forEach((node) => {
+            
+        //     return {
+        //         id: `entityGraph-${node}`,
+        //         width: entityGraph.width,
+        //         height: entityGraph.height,
+        //         position: { x: 0, y: 0 },
+        //         data: {
+        //             nodes: entityGraph.nodes,
+        //             edges: entityGraph.edges,
+        //         },
+        //     };
+
+            // currentNode.participants?.forEach((participant) => {
+            //     const entity = mapEntities.get(participant.entity);
+            //     console.log("participant here", participant);
+
+            //     const entityGraph = [];
+            //     entityGraph.push({
+            //         id: `${entity.id}-${node}`,
+            //         data: {
+            //             isGate: false,
+            //             isEntity: true,
+            //             isTopLevel: false,
+            //             parent: node,
+            //             confidence: 1,
+            //             roleName: participant.roleName,
+            //             color: entity.renderStrategy.color,
+            //         },
+            //         position: { x: 0, y: 0 },
+            //     });
+            //     entityGraphEdges.push({
+            //         id: `edge-subgraph-${node}-${entity.id}`,
+            //         source: `subgraph-${parentMap.get(node)}`,
+            //         target: `${entity.id}-${node}`,
+            //         // label: participant.roleName,
+            //     });
+            // });
+            // currentNode.relations?.forEach((relation) => {
+            //     console.log("relationherehere", relation);
+            //     subgraphEdges.push({
+            //         id: relation.id,
+            //         source: `${relation.relationSubject}-${node}`,
+            //         target: `${relation.relationObject}-${node}`,
+            //     });
+            // });
+        // });
+
         const outerGraph = getLayoutedElements(
             subgraphs,
             subgraphEdges,
             "TB",
             true
         );
+        console.log("outerGraph", outerGraph);
         nodes.push(
             ...outerGraph.nodes.flatMap((parentNode) =>
-                parentNode.data.nodes.map((node) => ({
-                    ...node,
-                    position: {
-                        x: node.data.isGate
-                            ? parentNode.position.x
-                            : node.position.x + 25,
-                        y: node.data.isGate
-                            ? parentNode.position.y
-                            : node.position.y + 80,
-                    },
-                }))
+                parentNode.data.nodes
+                    ? parentNode.data.nodes.map((node) => ({
+                          ...node,
+                          position: {
+                              x: node.data.isGate 
+                                  ? parentNode.position.x
+                                  : node.position.x + 25,
+                              y: node.data.isGate
+                                  ? parentNode.position.y
+                                  : node.position.y + 80,
+                          },
+                      }))
+                    : parentNode
             )
         );
     }

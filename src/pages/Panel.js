@@ -10,7 +10,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Entity, EventNode, Participant } from "../components/Library";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import { UniqueString } from "../components/TypeScriptUtils";
-import { EntitiesContext } from "./DataReader";
+import { EntitiesContext, SchemaTypeContext } from "./DataReader";
 import Select from "react-select";
 import EditableText from "./EditableText.jsx";
 import "./panel.css";
@@ -20,11 +20,12 @@ import { Slider } from "@mui/material";
 
 function TableInfoPanel({ data, parentId, editMode = false }) {
     const [entitiesMap] = useContext(EntitiesContext);
+    const [schemaType] = useContext(SchemaTypeContext);
     const [showProvenance, setShowProvenance] = useState(false);
     const [keyProvenance, setKeyProvenance] = useState(null);
     const [currentProvenance, setCurrentProvenance] = useState(null);
     const [tableChange, setTableChange] = useState(false);
-    const [showAllEntities, setShowAllEntities] = useState(false);
+    const [showAllEntities, setShowAllEntities] = useState(schemaType === "ta1");
     const [editMapNode, mapNodes, entitiesRelatedEventMap] = useStore(
         (state) => [
             state.editMapNode,

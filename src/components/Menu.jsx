@@ -791,7 +791,6 @@ const TA2GlobalEntityTable = () => {
                 <TableRow
                     key={key}
                     id={key}
-                    
                     wd_label={entity.wd_label}
                     name={entity.name}
                     relatedEvents={events}

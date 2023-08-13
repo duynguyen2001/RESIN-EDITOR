@@ -93,10 +93,17 @@ export const TableRowTA1 = ({ name, wd_label, id, relatedEvents, chosen = false 
 };
 
 export const EntityGraphPanelTA1 = () => {
-    const [mapEntities, getNodeById, edgeStyle] = useStoreTA1((state) => [state.mapEntities, state.getNodeById, state.edgeStyle]);
+    const [mapEntities, getNodeById, edgeStyle, chosenEntities, setChosenEntities] = useStoreTA1((state) => [state.mapEntities, state.getNodeById, state.edgeStyle, state.chosenEntities, state.setChosenEntities]);
     const [relationList, _] = useContext(RelationsContext);
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
+    const handleClick = (e, node) => {
+        console.log("dataathere", node);
+        const updatedList = chosenEntities.includes(node.id)
+            ? chosenEntities.filter((item) => item !== node.id)
+            : [...chosenEntities, node.id];
+        setChosenEntities(updatedList);
+    };
 
     useEffect(() => {
         console.log("relationList", relationList);
@@ -136,10 +143,24 @@ export const EntityGraphPanelTA1 = () => {
         });
     }, [relationList]);
     useEffect(() => {
-        console.log("nodesathere", nodes);
-        console.log("edgesathere", edges);
-    }, [nodes, edges]);
-
+        // console.log("chosenEntities", chosenEntities);
+        // if (chosenEntities.length === 0) {
+        //     setNodes(nodes.map((node) => ({
+        //         ...node,
+        //         style: {
+        //             ...node.style,
+        //         opacity: 1,
+        //         }})));
+        //     return;
+        // }
+        // setNodes(nodes.map((node) => ({
+        //     ...node,
+        //     style: {
+        //         ...node.style,
+        //     opacity: chosenEntities.includes(node.id) ? 1 : 0.5,
+        //     }
+        // })));
+    }, [chosenEntities]);
     return (
         <div>
             <h2>Entity Relation Graph</h2>
@@ -148,8 +169,7 @@ export const EntityGraphPanelTA1 = () => {
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
-                    // onNodesChange={(nodes) => setNodes(nodes)}
-                    // onEdgesChange={(edges) => setEdges(edges)}
+                    onNodeClick={handleClick}
                     nodeTypes={nodeTypes}
                     draggable={true}
                     fitView
