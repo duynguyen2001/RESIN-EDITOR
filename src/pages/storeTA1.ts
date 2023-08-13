@@ -25,6 +25,7 @@ enum GraphEdgeType {
     and = "and",
     outlink = "outlink",
     relation = "relation",
+    participant = "participant",
 }
 
 type EdgeStyle = {
@@ -237,6 +238,24 @@ const useStore = create<RFState>((set, get) => ({
                 stroke: "#9DA8AF",
                 strokeWidth: 5,
                 strokeDasharray: "none",
+                zIndex: 10,
+            },
+            sourcePosition: Position.Right,
+            targetPosition: Position.Left,
+        },
+        participant: {
+            data: {
+                edgeType: "relation",
+            },
+            animated: false,
+            type: ConnectionLineType.Straight,
+            zIndex: 10,
+            labelStyle: { fill: "#798223", fontWeight: 300, fontSize: 16 },
+            width: 5,
+            style: {
+                stroke: "#9DA8AF",
+                strokeWidth: 5,
+                strokeDasharray: "5 5",
                 zIndex: 10,
             },
             sourcePosition: Position.Right,
@@ -950,9 +969,14 @@ const useStore = create<RFState>((set, get) => ({
 
             return {
                 ...node,
-                type: isGate && isEntity? "":isGate ? "gate" : "customNode",
+                type: isGate && isEntity? "": isGate ? "gate" : "customNode",
                 key: Date.now(),
-                data: isGate
+                data: isGate && isEntity
+                ? {
+                    ...node.data,
+                    color: "transparent"
+                }:
+                isGate
                     ? {
                           ...node.data,
                           color: edgeStyle[node.data.gate as GraphEdgeType]
@@ -975,7 +999,7 @@ const useStore = create<RFState>((set, get) => ({
                         : `gate-${node.data.parent}`,
                 style: {
                     ...node.style,
-                    backgroundColor: gateColor,
+                    backgroundColor: isEntity? undefined : gateColor,
                     opacity: opacity,
                 },
             };
@@ -992,15 +1016,6 @@ const useStore = create<RFState>((set, get) => ({
                     source: source,
                     target: `gate-${source}`,
                     ...edgeStyle[childrenGate as GraphEdgeType],
-                });
-            }
-            if (sourceNode.participants) {
-                sourceNode.participants.forEach((participant) => {
-                    newEdges.push({
-                        id: `e-${source}-participant-${participant.id}`,
-                        source: source,
-                        target: `${participant.entity}-${source}`,
-                    });
                 });
             }
         });
@@ -1022,13 +1037,24 @@ const useStore = create<RFState>((set, get) => ({
                         });
                     }
                 });
+                currentNode.participants?.forEach((participant) => {
+                    uniqueEdges.set(
+                        `e-${node.id}-participant-${participant.id}`,
+                        {
+                            id: `e-${node.id}-participant-${participant.id}`,
+                            source: node.id,
+                            target: `${participant.entity}-${node.id}`,
+                            label: participant.roleName,
+                            ...edgeStyle.participant,
+                        })
+                });
                 currentNode.relations?.forEach((relation: Relation) => {
                     uniqueEdges.set(relation.id, {
                         id: relation.id,
-                        source: relation.relationSubject,
-                        target: relation.relationObject,
-                        sourceHandle: relation.relationSubject + "_right",
-                        targetHandle: relation.relationObject + "_left",
+                        source: `${relation.relationSubject}-${node.id}`,
+                        target: `${relation.relationObject}-${node.id}`,
+                        // sourceHandle: relation.relationSubject + "_top",
+                        // targetHandle: relation.relationObject + "_bottom",
                         label: relation.name,
                         ...edgeStyle.relation,
                     });

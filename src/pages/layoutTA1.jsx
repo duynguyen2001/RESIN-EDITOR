@@ -6,7 +6,8 @@ export const getLayoutedElements = (
     nodes,
     edges,
     direction = "TB",
-    getGraph = false
+    getGraph = false,
+    
 ) => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -133,8 +134,10 @@ const getLayoutedElementsNested = (
             console.log("graph", graph);
 
             // ENTITY NODES AND EDGES HANDLING
+            const participantsEntities = [];
             const entityNodes = currentNode.participants?.map((participant) => {
                 const entity = mapEntities.get(participant.entity);
+                participantsEntities.push(participant.entity);
                 return {
                     id: `${entity.id}-${node}`,
                     data: {
@@ -150,13 +153,19 @@ const getLayoutedElementsNested = (
                 };
             });
             const entityEdges = currentNode.relations?.map((relation) => {
+                if (
+                    !participantsEntities.includes(relation.relationSubject) ||
+                    !participantsEntities.includes(relation.relationObject)
+                ) {
+                    return null;
+                }
                 return {
                     id: `edge-relation-${relation.id}-${node}`,
                     source: `${relation.relationSubject}-${node}`,
                     target: `${relation.relationObject}-${node}`,
                     label: relation.name,
                 };
-            });
+            }).filter((edge) => edge !== null) || [];
             const entityGraph = getLayoutedElements(
                 entityNodes,
                 entityEdges,
@@ -195,7 +204,7 @@ const getLayoutedElementsNested = (
                     edges: graph.edges,
                 },
             }, {
-                id: `entityGraph-${parentNode}`,
+                id: `entityGraph-${node}`,
                 width: entityGraph.width,
                 height: entityGraph.height,
                 position: { x: 0, y: 0 },
@@ -236,11 +245,11 @@ const getLayoutedElementsNested = (
                 {
                     id: `subgraph-edge-${parentNode}-entity-${parentNode}`,
                     source: `subgraph-${parentNode}`,
-                    target: `entityGraph-${parentNode}`,
+                    target: `entityGraph-${node}`,
                 },
                 {
                     id: `subgraph-edge-entity-${parentNode}-gate-${node}`,
-                    source: `entityGraph-${parentNode}`,
+                    source: `entityGraph-${node}`,
                     target: `gate-${parentNode}`,
                 },
                 {
@@ -275,79 +284,47 @@ const getLayoutedElementsNested = (
             },
         });
 
-        // chosenNodes.forEach((node) => {
-            
-        //     return {
-        //         id: `entityGraph-${node}`,
-        //         width: entityGraph.width,
-        //         height: entityGraph.height,
-        //         position: { x: 0, y: 0 },
-        //         data: {
-        //             nodes: entityGraph.nodes,
-        //             edges: entityGraph.edges,
-        //         },
-        //     };
-
-            // currentNode.participants?.forEach((participant) => {
-            //     const entity = mapEntities.get(participant.entity);
-            //     console.log("participant here", participant);
-
-            //     const entityGraph = [];
-            //     entityGraph.push({
-            //         id: `${entity.id}-${node}`,
-            //         data: {
-            //             isGate: false,
-            //             isEntity: true,
-            //             isTopLevel: false,
-            //             parent: node,
-            //             confidence: 1,
-            //             roleName: participant.roleName,
-            //             color: entity.renderStrategy.color,
-            //         },
-            //         position: { x: 0, y: 0 },
-            //     });
-            //     entityGraphEdges.push({
-            //         id: `edge-subgraph-${node}-${entity.id}`,
-            //         source: `subgraph-${parentMap.get(node)}`,
-            //         target: `${entity.id}-${node}`,
-            //         // label: participant.roleName,
-            //     });
-            // });
-            // currentNode.relations?.forEach((relation) => {
-            //     console.log("relationherehere", relation);
-            //     subgraphEdges.push({
-            //         id: relation.id,
-            //         source: `${relation.relationSubject}-${node}`,
-            //         target: `${relation.relationObject}-${node}`,
-            //     });
-            // });
-        // });
-
         const outerGraph = getLayoutedElements(
             subgraphs,
             subgraphEdges,
             "TB",
             true
         );
-        console.log("outerGraph", outerGraph);
+        console.log("outerGraphoverhere", outerGraph);
+        // nodes.push(
+        //     ...outerGraph.nodes.flatMap((parentNode) =>
+        //         parentNode.data.nodes
+        //             ? parentNode.data.nodes.map((node) => ({
+        //                   ...node,
+        //                   position: {
+        //                       x: node.data.isGate 
+        //                           ? parentNode.position.x
+        //                           : node.position.x + 25,
+        //                       y: node.data.isGate
+        //                           ? parentNode.position.y
+        //                           : node.position.y + 80,
+        //                   },
+        //               }))
+        //             : parentNode
+        //     )
+        // );
         nodes.push(
             ...outerGraph.nodes.flatMap((parentNode) =>
-                parentNode.data.nodes
-                    ? parentNode.data.nodes.map((node) => ({
-                          ...node,
-                          position: {
-                              x: node.data.isGate 
-                                  ? parentNode.position.x
-                                  : node.position.x + 25,
-                              y: node.data.isGate
-                                  ? parentNode.position.y
-                                  : node.position.y + 80,
-                          },
-                      }))
-                    : parentNode
+                parentNode.data.nodes.map((node) => ({
+                    ...node,
+                    position: {
+                        x: node.data.isGate || node.data.isTopLevel
+                            ? parentNode.position.x
+                            : node.position.x + 25,
+                        y: node.data.isGate || node.data.isTopLevel
+                            ? parentNode.position.y
+                            : node.position.y + 80,
+                    },
+                }))
             )
         );
     }
+    console.log("nodesoverhere", nodes);
     return nodes;
 };
 
