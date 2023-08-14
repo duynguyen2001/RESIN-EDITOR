@@ -14,12 +14,14 @@ import { EditEventPanel, InfoPanel } from "./Panel";
 import "./graph.css";
 import useStore from "./store";
 import { useReactFlow } from "reactflow";
-import { nodeTypes } from "./DataReader";
+import { SchemaTypeContext, nodeTypes } from "./DataReader";
 import { set } from "idb-keyval";
 import { EventsContext } from "./DataReader";
+import { EventNode } from "../components/Library";
 
 export const Graph = () => {
     const [eventNodes]  = useContext(EventsContext);
+    const [schemaType] = useContext(SchemaTypeContext);
     const {
         nodes,
         edges,
@@ -60,6 +62,7 @@ export const Graph = () => {
 
     // layout related functions
     useEffect(() => {
+        if (schemaType !== "ta2" || !eventNodes || eventNodes.length === 0 || !(eventNodes[0] instanceof EventNode)) return;
         updateGraphByEventNodes(eventNodes);
     }, [eventNodes]);
 

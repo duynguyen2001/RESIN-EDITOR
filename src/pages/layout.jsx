@@ -154,6 +154,7 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                             isGate: false,
                             confidence: firstNodeData.confidence[0],
                             color: firstNodeData.renderStrategy.color,
+                            isTopLevel: true
                         },
                         position: { x: 0, y: 0 },
                     },
@@ -172,10 +173,10 @@ const getLayoutedElementsNested = (chosenNodes, mapNodes, firstNode) => {
                 parentNode.data.nodes.map((node) => ({
                     ...node,
                     position: {
-                        x: node.data.isGate
+                        x: node.data.isGate || node.data.isTopLevel
                             ? parentNode.position.x
                             : node.position.x + 25,
-                        y: node.data.isGate
+                        y: node.data.isGate || node.data.isTopLevel
                             ? parentNode.position.y
                             : node.position.y + 80,
                     },
