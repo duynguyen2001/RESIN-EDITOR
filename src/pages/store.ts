@@ -184,11 +184,11 @@ const useStore = create<RFState>((set, get) => ({
             childrenGate: "and",
             animated: false,
             type: ConnectionLineType.Straight,
-            labelStyle: { fill: "#798223", fontWeight: 700, fontSize: 32 },
+            labelStyle: { fill: "#009E73", fontWeight: 700, fontSize: 32 },
             width: 5,
             zIndex: 10,
             style: {
-                stroke: "#4E6E62",
+                stroke: "#009E73",
                 strokeWidth: 5,
                 strokeDasharray: "none",
             },

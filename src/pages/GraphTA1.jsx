@@ -50,9 +50,6 @@ export const GraphTA1 = () => {
         onSelectionChange,
         setConfidenceInterval,
     } = useStore();
-    useEffect(() => {
-        console.log("eventNodes", nodes);
-    }, [nodes]);
 
     const handleClosePanel = () => {
         setClickedNode(null);

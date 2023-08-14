@@ -19,8 +19,8 @@ export const getLayoutedElements = (
         align: isHorizontal ? "UL" : undefined,
         nodesep: isHorizontal ? 50 : 300,
     });
-    console.log("getLayoutedElements");
-    console.log(nodes);
+    // console.log("getLayoutedElements");
+    // console.log(nodes);
 
     nodes.forEach((node) => {
         dagreGraph.setNode(node.id, {
@@ -96,7 +96,7 @@ const getLayoutedElementsNested = (
             if (currentNode.children && currentNode.children.length > 0) {
             const subGraphNodes = currentNode.children?.map((subNode) => {
                 const subNodeData = mapNodes.get(subNode);
-                console.log("subNodeData", subNodeData);
+                // console.log("subNodeData", subNodeData);
                 return {
                     id: subNode,
                     data: {
@@ -293,7 +293,7 @@ const getLayoutedElementsNested = (
             "TB",
             true
         );
-        console.log("outerGraphoverhere", outerGraph);
+        // console.log("outerGraphoverhere", outerGraph);
         nodes.push(
             ...outerGraph.nodes.flatMap((parentNode) =>
                 parentNode.data.nodes.map((node) => ({

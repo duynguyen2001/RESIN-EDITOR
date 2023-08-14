@@ -19,227 +19,36 @@ import { Slider } from "@mui/material";
 import useStoreTA1 from "./storeTA1";
 function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1" }) {
     const [showProvenance, setShowProvenance] = useState(false);
-    const [keyProvenance, setKeyProvenance] = useState(null);
-    const [currentProvenance, setCurrentProvenance] = useState(null);
     const [tableChange, setTableChange] = useState(false);
     const [showAllEntities, setShowAllEntities] = useState(schemaType === "ta1");
-    const [editMapNode, mapNodes, entitiesRelatedEventMap, entitiesMap] = useStoreTA1(
+    const [editMapNode, mapNodes, entitiesRelatedEventMap, mapEntities] = useStoreTA1(
         (state) => [
             state.editMapNode,
             state.mapNodes,
             state.entitiesRelatedEventMap,
-            state.entitiesMap
+            state.mapEntities
         ]
     )
     const [editNode, setEditNode] = useState(null);
-    const closeProvenance = () => {
-        setShowProvenance(false);
-    };
-    const openProvenanceMap = (provenanceIds, key) => {
-        // Add logic here to open the provenance map with the specified provenanceId
-        // console.log(`Opening provenance map for id: ${provenanceId}`);
-        if (provenanceIds instanceof Array && provenanceIds.length > 0) {
-            setCurrentProvenance(provenanceIds);
-            setKeyProvenance(key);
-            setShowProvenance(true);
-        } else if (provenanceIds instanceof String) {
-            setCurrentProvenance([provenanceIds]);
-            setKeyProvenance(key);
-            setShowProvenance(true);
-        }
-    };
-
     const getDisplayParticipantArray = (data, parentId, showAllEntities) => {
+        console.log("dataoverhere", data);
+        console.log("parentId", parentId);
         return data.map((participant) => {
-            const entityObject = entitiesMap.get(
-                participant.entity ? participant.entity : participant.ta2entity
-            );
-            const values = [];
-            if (editNode !== null && participant.id === editNode.id) {
-                if (participant.values && participant.values instanceof Array) {
-                    values.push(
-                        ...participant.values.map((value) => {
-                            const valueEntity = entitiesMap.get(
-                                value.ta2entity
-                            );
-                            return {
-                                value: valueEntity.id,
-                                label: valueEntity.name,
-                            };
-                        })
-                    );
-                }
-                const options = [];
-                entitiesRelatedEventMap.forEach((value, key) => {
-                    options.push({
-                        value: key,
-                        label: entitiesMap.get(key).name,
-                    });
-                });
-                return {
-                    id: participant.id,
-                    entities: (
-                        <Select
-                            options={options}
-                            value={values}
-                            isMulti
-                            onChange={(valueList) => {
-                                const values = [];
-                                // console.log("value", valueList);
-                                valueList.forEach((value) => {
-                                    let foundInOldArray = false;
-                                    participant.values?.forEach((partValue) => {
-                                        if (
-                                            partValue.ta2entity === value.value
-                                        ) {
-                                            values.push(partValue);
-                                            foundInOldArray = true;
-                                        }
-                                    });
-                                    if (foundInOldArray === false) {
-                                        const newEntity = entitiesMap.get(
-                                            value.value
-                                        );
-                                        const newValue = {
-                                            "@id": UniqueString.getUniqueStringWithForm(
-                                                "resin:Value/",
-                                                "/"
-                                            ),
-                                            ta2entity: newEntity.id,
-                                        };
-                                        values.push(newValue);
-                                    }
-                                    // console.log("newvalues", values);
-                                });
-                                participant.values = values;
-                                editMapNode(
-                                    parentId,
-                                    "participants",
-                                    mapNodes
-                                        .get(parentId)
-                                        .participants.map((part) => {
-                                            if (part.id === participant.id) {
-                                                return participant;
-                                            } else {
-                                                return part;
-                                            }
-                                        })
-                                );
-                                setTableChange(!tableChange);
-                            }}
-                        />
-                    ),
-                    roleName: (
-                        <React.Fragment>
-                            <EditableText
-                                values={participant.roleName}
-                                onSave={(value, field) => {
-                                    participant.roleName = value;
-                                    editMapNode(
-                                        parentId,
-                                        "participants",
-                                        mapNodes
-                                            .get(parentId)
-                                            .participants.map((part) => {
-                                                if (
-                                                    part.id === participant.id
-                                                ) {
-                                                    return participant;
-                                                } else {
-                                                    return part;
-                                                }
-                                            })
-                                    );
-                                    setTableChange(!tableChange);
-                                }}
-                                variant="none"
-                                onTable={true}
-                            />
-                        </React.Fragment>
-                    ),
-                };
-            }
-
-            if (showAllEntities && entityObject.name) {
-                values.push(
-                    <EditableText
+            // console.log("entitiesMap", mapEntities);
+            const entityObject = mapEntities.get(participant.entity);
+            return {
+                id: participant.id,
+                entities:
+                <EditableText
                         values={entityObject.name}
                         onSave={(value, field) => {
                             entityObject.name = value;
-                            entitiesMap.set(entityObject.id, entityObject);
+                            mapEntities.set(entityObject.id, entityObject);
                             setTableChange(!tableChange);
                         }}
                         variant="none"
                         onTable={true}
-                    />
-                );
-            }
-
-            if (participant.values && participant.values instanceof Array) {
-                participant.values?.forEach((value) => {
-                    const valueEntity = entitiesMap.get(value.ta2entity);
-                    if (valueEntity === undefined) {
-                        return;
-                    }
-                    if (value.provenance) {
-                        // Add a clickable text to open the provenance map
-                        // console.log("valueEntity", valueEntity);
-
-                        values.push(
-                            <EditableText
-                                values={valueEntity.name}
-                                onSave={(value, field) => {
-                                    valueEntity.name = value;
-                                    entitiesMap.set(
-                                        valueEntity.id,
-                                        valueEntity
-                                    );
-                                    setTableChange(!tableChange);
-                                }}
-                                variant="span"
-                                key={value.ta2entity}
-                                className="clickable-text"
-                                onClick={() =>
-                                    openProvenanceMap(value.provenance, [
-                                        parentId,
-                                        participant.id,
-                                        value.id,
-                                    ])
-                                }
-                                onTable={true}
-                            />
-                        );
-                    } else {
-                        values.push(
-                            <EditableText
-                                values={valueEntity.name}
-                                onSave={(value, field) => {
-                                    valueEntity.name = value;
-                                    entitiesMap.set(
-                                        valueEntity.id,
-                                        valueEntity
-                                    );
-                                    setTableChange(!tableChange);
-                                }}
-                                variant="none"
-                                onTable={true}
-                            />
-                        );
-                    }
-                });
-            }
-
-            return {
-                id: participant.id,
-                entities:
-                    values && values.length > 0
-                        ? values.map((value, index) => (
-                              <React.Fragment key={index}>
-                                  {index > 0 && ", "}
-                                  {value}
-                              </React.Fragment>
-                          ))
-                        : "-",
+                    />,
                 roleName: (
                     <React.Fragment>
                         <EditableText
@@ -414,13 +223,6 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
                     ))}
                 </tbody>
             </table>
-            {showProvenance && (
-                <ProvenancePopup
-                    ids={currentProvenance}
-                    onClose={closeProvenance}
-                    parentId={keyProvenance}
-                />
-            )}
         </div>
     );
             }
@@ -781,11 +583,6 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                                     <span
                                         className="fa fa-edit new-style-button"
                                         onClick={() => {
-                                            // edit the entity
-                                            // console.log(
-                                            //     "participant",
-                                            //     participant
-                                            // );
                                             if (
                                                 editNode !== null &&
                                                 editNode.id === participant.id
@@ -1582,7 +1379,7 @@ export const TA1EditEventPanel = ({
                   participants: [],
                   relations: [],
                   importance: 1,
-                  likelihoos: 1,
+                  likelihood: 1,
                   optional: false,
               }
     );

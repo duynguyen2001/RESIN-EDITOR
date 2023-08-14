@@ -254,7 +254,7 @@ export class PredictedNodeStrategy extends NodeRenderingStrategy {
     predictionProvenance: string[];
     confidence: number[];
     static options: RenderOptions = {
-        color: "#6A7F8F",
+        color: "#56B4E9",
     };
 
     constructor(
@@ -270,7 +270,7 @@ export class PredictedNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return PredictedNodeStrategy.options.color
             ? PredictedNodeStrategy.options.color
-            : "#6A7F8F";
+            : "#56B4E9";
     }
 }
 
@@ -278,7 +278,7 @@ export class DetectedNodeStrategy extends NodeRenderingStrategy {
     provenance: string[];
     confidence: number[];
     static options: RenderOptions = {
-        color: "#A7635A",
+        color: "#D55E00",
     };
 
     constructor(
@@ -294,7 +294,7 @@ export class DetectedNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return DetectedNodeStrategy.options.color
             ? DetectedNodeStrategy.options.color
-            : "#A7635A";
+            : "#D55E00";
     }
     get border(): string {
         return this.eventNode.optional ? "dotted" : "solid";
@@ -305,7 +305,7 @@ export class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
     provenance: string | string[];
     confidence: number | number[];
     static options: RenderOptions = {
-        color: "#D9BF77",
+        color: "#F0E442",
     };
 
     constructor(
@@ -321,7 +321,7 @@ export class SourceOnlyNodeStrategy extends NodeRenderingStrategy {
     get color(): string {
         return SourceOnlyNodeStrategy.options.color
             ? SourceOnlyNodeStrategy.options.color
-            : "#D9BF77";
+            : "#F0E442";
     }
 }
 

@@ -370,14 +370,14 @@ export class Relation {
 }
 
 export class TA1EventStrategy extends TA1NodeRenderingStrategy {
-    static colorOptions: string = "#6A7F8F";
+    static colorOptions: string = "#56B4E9";
     get color(): string {
         return TA1EventStrategy.colorOptions
     }
 }
 
 export class TA1EntityStrategy extends TA1NodeRenderingStrategy {
-    static colorOptions: string = "#B2BEB5";
+    static colorOptions: string = "#D55E00";
     get color(): string {
         return TA1EntityStrategy.colorOptions
     }
