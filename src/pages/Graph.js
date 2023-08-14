@@ -10,7 +10,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import Menu from "../components/Menu";
 import { RangeSlider } from "../components/RangeSlider";
-import { EditEventPanel, InfoPanel } from "./Panel";
+import { TA2EditEventPanel, InfoPanel } from "./Panel";
 import "./graph.css";
 import useStore from "./store";
 import { useReactFlow } from "reactflow";
@@ -272,7 +272,7 @@ export const Graph = () => {
                     </div>
                 )}
                 {showAddPanel && (
-                    <EditEventPanel
+                    <TA2EditEventPanel
                         parentId={showAddPanel}
                         onClose={() => {
                             setGrouping(false);
