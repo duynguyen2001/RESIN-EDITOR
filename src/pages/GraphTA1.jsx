@@ -64,7 +64,6 @@ export const GraphTA1 = () => {
     // layout related functions
     useEffect(() => {
         if (schemaType !== "ta1" || !eventNodes || eventNodes.length === 0 || !(eventNodes[0] instanceof TA1Event)) return;
-        console.log("herehere eventNodes", eventNodes);
         updateGraphByTA1Events(eventNodes);
     }, [eventNodes]);
 

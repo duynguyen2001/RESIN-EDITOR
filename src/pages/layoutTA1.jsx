@@ -7,7 +7,7 @@ export const getLayoutedElements = (
     edges,
     direction = "TB",
     getGraph = false,
-    
+
 ) => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -92,8 +92,8 @@ const getLayoutedElementsNested = (
                 ? parentMap.get(node)
                 : "root";
             const currentNode = mapNodes.get(node);
-            console.log("getLayoutedElementsNested");
-            console.log("currentNode", currentNode);
+            const graphLists = [];
+            if (currentNode.children && currentNode.children.length > 0) {
             const subGraphNodes = currentNode.children?.map((subNode) => {
                 const subNodeData = mapNodes.get(subNode);
                 console.log("subNodeData", subNodeData);
@@ -131,9 +131,40 @@ const getLayoutedElementsNested = (
                 "LR",
                 true
             );
-            console.log("graph", graph);
-
+            graphLists.push({
+                id: `subgraph-${node}`,
+                width: graph.width,
+                height: graph.height,
+                position: { x: 0, y: 0 },
+                data: {
+                    nodes: [
+                        {
+                            id: `gate-${node}`,
+                            data: {
+                                gate: currentNode.childrenGate,
+                                name: currentNode.name,
+                                isGate: true,
+                                referredNode: currentNode.id,
+                                confidence:
+                                    currentNode.importance &&
+                                    currentNode.importance.length > 0
+                                        ? currentNode.importance[0]
+                                        : 1,
+                            },
+                            style: {
+                                width: graph.width + 100,
+                                height: graph.height + 100,
+                                zIndex: -10,
+                            },
+                        },
+                        ...graph.nodes,
+                    ],
+                    edges: graph.edges,
+                },
+            });
+            }
             // ENTITY NODES AND EDGES HANDLING
+            if (currentNode.participants && currentNode.participants.length > 0) {
             const participantsEntities = [];
             const entityNodes = currentNode.participants?.map((participant) => {
                 const entity = mapEntities.get(participant.entity);
@@ -172,38 +203,7 @@ const getLayoutedElementsNested = (
                 "TB",
                 true
             );
-
-            return [{
-                id: `subgraph-${node}`,
-                width: graph.width,
-                height: graph.height,
-                position: { x: 0, y: 0 },
-                data: {
-                    nodes: [
-                        {
-                            id: `gate-${node}`,
-                            data: {
-                                gate: currentNode.childrenGate,
-                                name: currentNode.name,
-                                isGate: true,
-                                referredNode: currentNode.id,
-                                confidence:
-                                    currentNode.importance &&
-                                    currentNode.importance.length > 0
-                                        ? currentNode.importance[0]
-                                        : 1,
-                            },
-                            style: {
-                                width: graph.width + 100,
-                                height: graph.height + 100,
-                                zIndex: -10,
-                            },
-                        },
-                        ...graph.nodes,
-                    ],
-                    edges: graph.edges,
-                },
-            }, {
+            graphLists.push({
                 id: `entityGraph-${node}`,
                 width: entityGraph.width,
                 height: entityGraph.height,
@@ -234,8 +234,10 @@ const getLayoutedElementsNested = (
                         ...entityGraph.nodes],
                     edges: entityGraph.edges,
                 },
+            });
             }
-        ];
+
+            return graphLists;
         });
         const subgraphEdges = chosenNodes.flatMap((node) => {
             const parentNode = parentMap.get(node)
@@ -276,6 +278,7 @@ const getLayoutedElementsNested = (
                                     ? firstNodeData.importance[0]
                                     : 1,
                             color: firstNodeData.renderStrategy.color,
+                            isTopLevel: true,
                         },
                         position: { x: 0, y: 0 },
                     },

@@ -160,7 +160,7 @@ const useStore = create<RFState>((set, get) => ({
             zIndex: 10,
             style: {
                 stroke: "#C0C0C0",
-                strokeWidth: 2,
+                strokeWidth: 10,
                 strokeDasharray: "none",
             },
         },
@@ -172,12 +172,12 @@ const useStore = create<RFState>((set, get) => ({
             animated: false,
             type: ConnectionLineType.Straight,
             labelStyle: { fill: "#798223", fontWeight: 700, fontSize: 32 },
-            width: 5,
+            width: 10,
             zIndex: 10,
             style: {
                 stroke: "#798223",
                 strokeDasharray: "4 1 2 3",
-                strokeWidth: 5,
+                strokeWidth: 10,
             },
         },
         and: {
@@ -188,11 +188,11 @@ const useStore = create<RFState>((set, get) => ({
             animated: false,
             type: ConnectionLineType.Straight,
             labelStyle: { fill: "#798223", fontWeight: 700, fontSize: 32 },
-            width: 5,
+            width: 10,
             zIndex: 10,
             style: {
                 stroke: "#4E6E62",
-                strokeWidth: 5,
+                strokeWidth: 10,
                 strokeDasharray: "none",
             },
         },
@@ -250,7 +250,7 @@ const useStore = create<RFState>((set, get) => ({
             animated: false,
             type: ConnectionLineType.Straight,
             zIndex: 10,
-            labelStyle: { fill: "#798223", fontWeight: 300, fontSize: 16 },
+            labelStyle: { fill: "#798223", fontWeight: 300, fontSize: 32 },
             width: 5,
             style: {
                 stroke: "#9DA8AF",
@@ -695,8 +695,8 @@ const useStore = create<RFState>((set, get) => ({
             : mapNodes.get(node.id);
         console.log("currentNode", currentNode);
         if (
-            !currentNode.children ||
-            currentNode.children.length === 0 ||
+        //     !currentNode.children ||
+        //     currentNode.children.length === 0 ||
             node.data.isGate
         ) {
             set({ clickedNode: node });
