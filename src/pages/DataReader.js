@@ -117,16 +117,6 @@ const DataReader = () => {
         }
     }, [data]);
 
-    useEffect(() => {
-        console.log("****************");
-        console.log("schemaType", schemaType);
-        console.log("events", Events);
-        console.log("relations", Relations);
-        console.log("entities", Entities);
-        console.log("provenances", Provenances);
-        console.log("****************");
-    }, [Events]);
-
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <CountProvider>

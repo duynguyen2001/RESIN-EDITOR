@@ -85,7 +85,7 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
                             isMulti
                             onChange={(valueList) => {
                                 const values = [];
-                                console.log("value", valueList);
+                                // console.log("value", valueList);
                                 valueList.forEach((value) => {
                                     let foundInOldArray = false;
                                     participant.values?.forEach((partValue) => {
@@ -109,7 +109,7 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
                                         };
                                         values.push(newValue);
                                     }
-                                    console.log("newvalues", values);
+                                    // console.log("newvalues", values);
                                 });
                                 participant.values = values;
                                 editMapNode(
@@ -183,7 +183,7 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
                     }
                     if (value.provenance) {
                         // Add a clickable text to open the provenance map
-                        console.log("valueEntity", valueEntity);
+                        // console.log("valueEntity", valueEntity);
 
                         values.push(
                             <EditableText
@@ -375,10 +375,10 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
                                         className="fa fa-edit new-style-button"
                                         onClick={() => {
                                             // edit the entity
-                                            console.log(
-                                                "participant",
-                                                participant
-                                            );
+                                            // console.log(
+                                            //     "participant",
+                                            //     participant
+                                            // );
                                             if (
                                                 editNode !== null &&
                                                 editNode.id === participant.id
@@ -492,7 +492,7 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                             isMulti
                             onChange={(valueList) => {
                                 const values = [];
-                                console.log("value", valueList);
+                                // console.log("value", valueList);
                                 valueList.forEach((value) => {
                                     let foundInOldArray = false;
                                     participant.values?.forEach((partValue) => {
@@ -516,7 +516,7 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                                         };
                                         values.push(newValue);
                                     }
-                                    console.log("newvalues", values);
+                                    // console.log("newvalues", values);
                                 });
                                 participant.values = values;
                                 editMapNode(
@@ -590,7 +590,7 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                     }
                     if (value.provenance) {
                         // Add a clickable text to open the provenance map
-                        console.log("valueEntity", valueEntity);
+                        // console.log("valueEntity", valueEntity);
 
                         values.push(
                             <EditableText
@@ -782,10 +782,10 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                                         className="fa fa-edit new-style-button"
                                         onClick={() => {
                                             // edit the entity
-                                            console.log(
-                                                "participant",
-                                                participant
-                                            );
+                                            // console.log(
+                                            //     "participant",
+                                            //     participant
+                                            // );
                                             if (
                                                 editNode !== null &&
                                                 editNode.id === participant.id
@@ -1010,7 +1010,7 @@ function TA1EventNodeInfoPanel({ data, onClose }) {
                             );
                             Entities.set(newEntityId, newEntity);
 
-                            console.log("newParticipantId", newParticipantId);
+                            // console.log("newParticipantId", newParticipantId);
                             const newParticipant =
                                 jsonConvert.deserializeObject(
                                     {
@@ -1218,7 +1218,7 @@ function TA2EventNodeInfoPanel({ data, onClose }) {
                             );
                             Entities.set(newEntityId, newEntity);
 
-                            console.log("newParticipantId", newParticipantId);
+                            // console.log("newParticipantId", newParticipantId);
                             const newParticipant =
                                 jsonConvert.deserializeObject(
                                     {
@@ -1344,7 +1344,6 @@ export const TA2EditEventPanel = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(data);
         if (parentId === "null" && !grouping) {
             addNodeOnPanel(jsonConvert.deserializeObject(data, EventNode));
             onClose();
@@ -1465,7 +1464,7 @@ export const TA2EditEventPanel = ({
                         }}
                         valueLabelDisplay="on"
                         onChange={(event, value) => {
-                            console.log("value", value);
+                            // console.log("value", value);
                             setData({
                                 ...data,
                                 confidence: value,
@@ -1609,7 +1608,7 @@ export const TA1EditEventPanel = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(data);
+        // console.log(data);
         if (parentId === "null" && !grouping) {
             addNodeOnPanel(jsonConvert.deserializeObject(data, EventNode));
             onClose();
@@ -1703,7 +1702,7 @@ export const TA1EditEventPanel = ({
                         }}
                         valueLabelDisplay="on"
                         onChange={(event, value) => {
-                            console.log("value", value);
+                            // console.log("value", value);
                             setData({
                                 ...data,
                                 confidence: value,
@@ -1727,7 +1726,7 @@ export const TA1EditEventPanel = ({
                         }}
                         valueLabelDisplay="on"
                         onChange={(event, value) => {
-                            console.log("value", value);
+                            // console.log("value", value);
                             setData({
                                 ...data,
                                 confidence: value,

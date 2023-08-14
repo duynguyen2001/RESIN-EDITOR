@@ -225,7 +225,7 @@ const useStore = create<RFState>((set, get) => ({
         set({ nodes });
     },
     setChosenNodes: (chosenNodes) => {
-        console.log("chosenNodes", chosenNodes);
+        // console.log("chosenNodes", chosenNodes);
         set({ chosenNodes });
         get().updateLayout();
     },

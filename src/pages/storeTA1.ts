@@ -380,7 +380,7 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                 chosenEvents.add(event);
             }
         }
-        console.log("chosenEvents", chosenEvents);
+        // console.log("chosenEvents", chosenEvents);
         nodes.forEach((node) => {
             const opacity =
                 (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
@@ -409,7 +409,7 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
     onPaneContextMenu: (event) => {
         event.preventDefault();
-        console.log("event", event);
+        // console.log("event", event);
         set({
             paneContextMenu: event,
             contextMenu: null,
@@ -457,18 +457,18 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
 
     updateGraphByTA1Events: (eventNodes: TA1Event[]) => {
-        console.log("eventNodes", eventNodes);
+        // console.log("eventNodes", eventNodes);
         if (eventNodes.length > 0) {
             const allChildren = eventNodes.map((node) => node.children).flat();
             const firstNode = eventNodes.find(
                 (node) => !allChildren.includes(node.id)
             );
-            console.log("firstNode", firstNode);
+            // console.log("firstNode", firstNode);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
             });
-            console.log("newMap", newMap);
+            // console.log("newMap", newMap);
 
             set({
                 mapNodes: newMap,
@@ -490,7 +490,7 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
     updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => {
         const { edgeStyle } = get();
-        console.log("edgeType", edgeType);
+        // console.log("edgeType", edgeType);
         const newEdgeStyle = {
             ...edgeStyle,
             [edgeType]: {
@@ -551,7 +551,7 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         return sortedEntitiesRelatedEventMap;
     },
     onSelectionContextMenu: (event, nodes) => {
-        console.log("nodes multiselect", nodes);
+        // console.log("nodes multiselect", nodes);
         event.preventDefault();
         set({
             selectionNodes: nodes,
@@ -902,10 +902,10 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         if (firstNode === null || mapNodes.size === 0) {
             return;
         }
-        console.log("updateLayout");
-        console.log("chosenNodes", chosenNodes);
-        console.log("mapNodes", mapNodes);
-        console.log("firstNode", firstNode);
+        // console.log("updateLayout");
+        // console.log("chosenNodes", chosenNodes);
+        // console.log("mapNodes", mapNodes);
+        // console.log("firstNode", firstNode);
         const newNodes = getLayoutedElementsNested(
             chosenNodes,
             mapNodes,
@@ -964,7 +964,7 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                 },
             };
         });
-        console.log("layoutedNodes", layoutedNodes);
+        // console.log("layoutedNodes", layoutedNodes);
 
         const newEdges: Edge[] = [];
         chosenNodes.forEach((source) => {
