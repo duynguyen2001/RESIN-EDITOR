@@ -327,7 +327,7 @@ export class TA1Entity {
                     }}
                 >
                     {this.name}
-                div</div>
+                </div>
             </div>
         );
     }

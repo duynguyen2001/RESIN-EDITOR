@@ -46,7 +46,6 @@ import {
     TA1EventStrategy,
     TA1NodeRenderingStrategy,
 } from "./LibraryTA1";
-import CustomNode from "./customNode";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -387,24 +386,28 @@ const TA1Legend = () => {
                             : "Participant Entity"}
                     </h4>
 
-                    {/* <ReactFlowProvider>
+                    <ReactFlowProvider>
 
                         {key === "parentNode" ? (
                             jsonConverter.deserialize({
                                 "@id": "AA",
                                 "children": ["BB", "CC"],
-                                "name": "Chapter Event",
+                                "name": "",
 
-                            }, TA1Entity).render()
-                        ) : (
+                            }, TA1Event).render()
+                        ): key === "leafNode"
+                        ? jsonConverter.deserialize({
+                            "@id": "AA",
+                            "name": "",
+
+                        }, TA1Event).render(): (
                             jsonConverter.deserialize({
                                 "@id": "AA",
-                                // "children": ["BB", "CC"],
-                                "name": "Chapter Event",
+                                "name": "",
 
                             }, TA1Entity).render()
                         )}
-</ReactFlowProvider> */}
+</ReactFlowProvider>
 
                     <select
                         value={value}
@@ -640,7 +643,7 @@ const TA2Legend = () => {
         state.refreshGate,
     ]);
 
-    const parentNode = new EventNode("newId", null, "Chapter Event");
+    const parentNode = new EventNode("newId", null, " ");
     parentNode.subgroupEvents = ["AAA"];
 
     return (
@@ -708,14 +711,9 @@ const TA2Legend = () => {
                                 : "Primitive Event"}
                         </h4>
                         {key === "parentNode" ? (
-                            <EventGraphNode data={parentNode} id="AA" />
+                            parentNode.render()
                         ) : (
-                            <EventGraphNode
-                                data={
-                                    new EventNode("aa", null, "Primitive Event")
-                                }
-                                id="BB"
-                            />
+                            new EventNode("aa", null, " ").render()
                         )}
                         <select
                             value={value}
