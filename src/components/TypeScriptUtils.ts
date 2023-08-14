@@ -70,7 +70,7 @@ export class UniqueString implements JsonCustomConvert<string> {
     static getUniqueStringWithForm(first: string, last: string): string {
         let uniqueString = `${first}${randomFiveDigits()}${last}`;
         while (UniqueString.uniqueStrings.has(uniqueString)) {
-            console.log("Duplicate String", uniqueString);
+            // console.log("Duplicate String", uniqueString);
             uniqueString = `${first}${randomFiveDigits()}${last}`;
         }
         return uniqueString;
@@ -81,9 +81,9 @@ export class UniqueString implements JsonCustomConvert<string> {
 
     deserialize(json: any): string {
         const convertedString = String(json).toString();
-        if (UniqueString.uniqueStrings.has(convertedString)) {
-            console.log("Duplicate String", convertedString);
-        }
+        // if (UniqueString.uniqueStrings.has(convertedString)) {
+        //     console.log("Duplicate String", convertedString);
+        // }
         UniqueString.uniqueStrings.add(convertedString);
         return convertedString;
     }

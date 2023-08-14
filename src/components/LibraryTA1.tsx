@@ -370,20 +370,16 @@ export class Relation {
 }
 
 export class TA1EventStrategy extends TA1NodeRenderingStrategy {
-    static colorOptions?: string = undefined;
+    static colorOptions: string = "#6A7F8F";
     get color(): string {
         return TA1EventStrategy.colorOptions
-            ? TA1EventStrategy.colorOptions
-            : "#6A7F8F";
     }
 }
 
 export class TA1EntityStrategy extends TA1NodeRenderingStrategy {
-    static colorOptions?: string = undefined;
+    static colorOptions: string = "#B2BEB5";
     get color(): string {
         return TA1EntityStrategy.colorOptions
-            ? TA1EntityStrategy.colorOptions
-            : "#B2BEB5";
     }
 }
 @JsonObject("TA1Participant")

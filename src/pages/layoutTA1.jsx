@@ -294,23 +294,6 @@ const getLayoutedElementsNested = (
             true
         );
         console.log("outerGraphoverhere", outerGraph);
-        // nodes.push(
-        //     ...outerGraph.nodes.flatMap((parentNode) =>
-        //         parentNode.data.nodes
-        //             ? parentNode.data.nodes.map((node) => ({
-        //                   ...node,
-        //                   position: {
-        //                       x: node.data.isGate 
-        //                           ? parentNode.position.x
-        //                           : node.position.x + 25,
-        //                       y: node.data.isGate
-        //                           ? parentNode.position.y
-        //                           : node.position.y + 80,
-        //                   },
-        //               }))
-        //             : parentNode
-        //     )
-        // );
         nodes.push(
             ...outerGraph.nodes.flatMap((parentNode) =>
                 parentNode.data.nodes.map((node) => ({
@@ -327,7 +310,6 @@ const getLayoutedElementsNested = (
             )
         );
     }
-    console.log("nodesoverhere", nodes);
     return nodes;
 };
 

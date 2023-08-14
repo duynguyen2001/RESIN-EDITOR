@@ -15,7 +15,7 @@ import {
     OnSelectionChangeParams,
 } from "reactflow";
 import { create } from "zustand";
-import { Relation, TA1Event } from "../components/LibraryTA1";
+import { Relation, TA1EntityStrategy, TA1Event, TA1EventStrategy, TA1NodeRenderingStrategy } from "../components/LibraryTA1";
 import getLayoutedElementsNested from "./layoutTA1";
 import { Entity, Participant } from "../components/Library";
 
@@ -109,8 +109,7 @@ type RFState = {
     onSelectionChange: (params: OnSelectionChangeParams) => void;
     onNodeClick: (event: any, node: Node) => void;
     updateNodeAttribute: (
-        // nodeType: TA1EventType,
-        key: string,
+        nodeType: string,
         value: string
     ) => void;
     updateEdgeAttribute: (
@@ -129,7 +128,7 @@ type RFState = {
 };
 
 // this is our useStore hook that we can use in our components to get parts of the store and call actions
-const useStore = create<RFState>((set, get) => ({
+const useStoreTA1 = create<RFState>((set, get) => ({
     nodes: [],
     edges: [],
     chosenNodes: [],
@@ -450,34 +449,22 @@ const useStore = create<RFState>((set, get) => ({
         });
     },
     updateNodeAttribute: (
-        // nodeType: TA1EventType,
-        key: string,
+        nodeType: string,
         value: string
     ) => {
-        // if (nodeType === TA1EventType.Detected) {
-        //     DetectedNodeStrategy.options = {
-        //         ...DetectedNodeStrategy.options,
-        //         [key]: value,
-        //     };
-        // } else if (nodeType === TA1EventType.SourceOnly) {
-        //     SourceOnlyNodeStrategy.options = {
-        //         ...SourceOnlyNodeStrategy.options,
-        //         [key]: value,
-        //     };
-        // } else if (nodeType === TA1EventType.Predicted) {
-        //     PredictedNodeStrategy.options = {
-        //         ...PredictedNodeStrategy.options,
-        //         [key]: value,
-        //     };
-        // }
-        // get().nodeRerender("eventNode");
+        if (nodeType === "event") {
+            TA1EventStrategy.colorOptions = value;
+        } else if (nodeType === "entity") {
+            TA1EntityStrategy.colorOptions = value;
+        } 
+        get().nodeRerender("eventNode");
     },
     updateTreeNodeAttribute: (key: string, value: string) => {
-        // NodeRenderingStrategy.nodeOptions = {
-        //     ...NodeRenderingStrategy.nodeOptions,
-        //     [key]: value,
-        // };
-        // get().nodeRerender("eventNode");
+        TA1NodeRenderingStrategy.nodeOptions = {
+            ...TA1NodeRenderingStrategy.nodeOptions,
+            [key]: value,
+        };
+        get().nodeRerender("eventNode");
     },
 
     updateGraphByTA1Events: (eventNodes: TA1Event[]) => {
@@ -693,7 +680,7 @@ const useStore = create<RFState>((set, get) => ({
         const currentNode = node.data.isGate
             ? mapNodes.get(node.data.referredNode)
             : mapNodes.get(node.id);
-        console.log("currentNode", currentNode);
+        // console.log("currentNode", currentNode);
         if (
         //     !currentNode.children ||
         //     currentNode.children.length === 0 ||
@@ -704,16 +691,16 @@ const useStore = create<RFState>((set, get) => ({
         }
 
         if (get().chosenNodes.includes(node.id)) {
-            console.log("node.data.isExpanded", node.data);
+            // console.log("node.data.isExpanded", node.data);
             const allSubEvents = get().getAllCurrentSubgroupEvents(node.id);
 
             const newChosenNodes = get().chosenNodes.filter(
                 (n) => !allSubEvents.includes(n)
             );
 
-            console.log("currentNode", currentNode.id);
+            // console.log("currentNode", currentNode.id);
             const parentId = `gate-${currentNode.parent}`;
-            console.log("parentId", parentId);
+            // console.log("parentId", parentId);
             const oldNodePosition = get().nodes.find(
                 (n) => n.id === parentId
             )?.position;
@@ -725,8 +712,8 @@ const useStore = create<RFState>((set, get) => ({
             const newNodePosition = get().nodes.find(
                 (n) => n.id === parentId
             )?.position;
-            console.log("oldNodePosition", oldNodePosition);
-            console.log("newNodePosition", newNodePosition);
+            // console.log("oldNodePosition", oldNodePosition);
+            // console.log("newNodePosition", newNodePosition);
             if (oldNodePosition && newNodePosition) {
                 set({
                     deltaX: oldNodePosition?.x - newNodePosition?.x,
@@ -739,9 +726,9 @@ const useStore = create<RFState>((set, get) => ({
 
         const newChosenNodes = [...get().chosenNodes, node.id];
 
-        console.log("currentNode", currentNode.id);
+        // console.log("currentNode", currentNode.id);
         const parentId = `gate-${currentNode.parent}`;
-        console.log("parentId", parentId);
+        // console.log("parentId", parentId);
         const oldNodePosition = get().nodes.find(
             (n) => n.id === parentId
         )?.position;
@@ -751,8 +738,8 @@ const useStore = create<RFState>((set, get) => ({
         const newNodePosition = get().nodes.find(
             (n) => n.id === parentId
         )?.position;
-        console.log("oldNodePosition", oldNodePosition);
-        console.log("newNodePosition", newNodePosition);
+        // console.log("oldNodePosition", oldNodePosition);
+        // console.log("newNodePosition", newNodePosition);
         if (oldNodePosition && newNodePosition) {
             set({
                 deltaX: oldNodePosition?.x - newNodePosition?.x,
@@ -832,8 +819,8 @@ const useStore = create<RFState>((set, get) => ({
         get().updateLayout();
     },
     onEdgeUpdate: (oldEdge: Edge, newConnection: Connection) => {
-        console.log("oldEdge", oldEdge);
-        console.log("newConnection", newConnection);
+        // console.log("oldEdge", oldEdge);
+        // console.log("newConnection", newConnection);
 
         const { mapNodes } = get();
         const oldSourceID = oldEdge.source.startsWith("gate-")
@@ -885,7 +872,7 @@ const useStore = create<RFState>((set, get) => ({
             const nodeId = node.id.startsWith("gate-")
                 ? node.id.slice(5)
                 : node.id;
-            console.log("nodeId", nodeId);
+            // console.log("nodeId", nodeId);
             const nodeToDelete = mapNodes.get(nodeId);
             if (nodeToDelete === undefined) {
                 return;
@@ -912,7 +899,6 @@ const useStore = create<RFState>((set, get) => ({
                 });
             }
 
-            console.log();
             getAllCurrentSubgroupEvents(nodeId).forEach(
                 (subgroupEvent: string) => {
                     mapNodes.delete(subgroupEvent);
@@ -1082,4 +1068,4 @@ function randomFiveDigit() {
     return Math.floor(10000 + Math.random() * 90000).toString();
 }
 
-export default useStore;
+export default useStoreTA1;

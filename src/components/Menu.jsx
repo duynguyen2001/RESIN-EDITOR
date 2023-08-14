@@ -39,6 +39,14 @@ import ZipReader from "./ZipReader";
 // } from "./TA1andTA2Conversion";
 import useStoreTA1 from "../pages/storeTA1";
 import { EntityGraphPanelTA1, TableRow, TableRowTA1 } from "./TableRow";
+import {
+    TA1Entity,
+    TA1EntityStrategy,
+    TA1Event,
+    TA1EventStrategy,
+    TA1NodeRenderingStrategy,
+} from "./LibraryTA1";
+import CustomNode from "./customNode";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -240,7 +248,37 @@ function AddJSONPanel() {
         </div>
     );
 }
-function DownloadJSONPanel() {
+const TA1DownloadPanel = () => {
+    const [jsonData] = useContext(DataContext);
+    const [mapNodes, mapEntities] = useStoreTA1((state) => [
+        state.mapNodes,
+        state.mapEntities,
+    ]);
+    const jsonConverter = new JsonConvert();
+    const newData = { ...jsonData };
+    console.log("mapEntity", mapEntities);
+    newData.events.forEach((event) => {
+        event.entities = event.entities.map((entity) =>
+            jsonConverter.serialize(mapEntities.get(entity["@id"]), TA1Entity)
+        );
+    });
+    console.log("newData", newData);
+    const downloadJSON = () => {
+        const dataStr =
+            "data:text/json;charset=utf-8," +
+            encodeURIComponent(JSON.stringify(newData));
+        const dlAnchorElem = document.createElement("a");
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "schema.json");
+        dlAnchorElem.click();
+    };
+    return (
+        <div>
+            <button onClick={downloadJSON}>Download TA1 Schema</button>
+        </div>
+    );
+};
+const TA2DownloadPanel = () => {
     const [jsonData] = useContext(DataContext);
     // const [EventNodes] = useContext(EventsContext);
     const [mapNodes] = useStore((state) => [state.mapNodes]);
@@ -260,17 +298,11 @@ function DownloadJSONPanel() {
         Array.from(Provenances.values())
     );
     console.log("newData", newData);
-    const downloadJSON = (mode = "ta2") => {
+    const downloadJSON = () => {
         const dataStr =
             "data:text/json;charset=utf-8," +
-            encodeURIComponent(
-                JSON.stringify(
-                    // mode === "ta1" ? convertTA2toTA1format(newData) : newData,
-                    newData,
-                    null,
-                    "\t"
-                )
-            );
+            encodeURIComponent(JSON.stringify(newData, null, "\t"));
+
         const downloadAnchorNode = document.createElement("a");
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", "data.json");
@@ -278,43 +310,315 @@ function DownloadJSONPanel() {
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
     };
-
     return (
         <div>
-            <h2>Download JSON Files</h2>
-            <h3>TA2 schema</h3>
-            <button onClick={downloadJSON}>Download</button>
-            <h3>TA1 schema</h3>
-            <button onClick={() => downloadJSON("ta1")}>Download</button>
+            <h2>Download TA2 Result Files</h2>
+            <button onClick={() => downloadJSON()}>Download</button>
         </div>
     );
+};
+function DownloadJSONPanel() {
+    const [schemaType] = useContext(SchemaTypeContext);
+    if (schemaType === "ta1") {
+        return <TA1DownloadPanel />;
+    } else {
+        return <TA2DownloadPanel />;
+    }
 }
 const TA1Legend = () => {
+    const [
+        updateNodeAttribute,
+        updateTreeNodeAttribute,
+        edgeStyle,
+        updateEdgeStyle,
+        updateEdgeAttribute,
+        refreshGate,
+    ] = useStoreTA1((state) => [
+        state.updateNodeAttribute,
+        state.updateTreeNodeAttribute,
+        state.edgeStyle,
+        state.updateEdgeStyle,
+        state.updateEdgeAttribute,
+        state.nodeRerender,
+        state.refreshGate,
+    ]);
+    const jsonConverter = new JsonConvert();
     return (
         <div className="legend">
             <h2>Legend</h2>
             <h3>Colors</h3>
-            <div className="legend-colors">
-                <div className="legend-colors-item">
-                    <div className="legend-colors-item-color legend-colors-item-color-event"></div>
-                    <div className="legend-colors-item-text">Event</div>
+            {[
+                ["event", TA1EventStrategy.colorOptions],
+                ["entity", TA1EntityStrategy.colorOptions],
+            ].map(([key, value]) => (
+                <div
+                    key={key}
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                    }}
+                >
+                    <input
+                        type="color"
+                        value={value}
+                        onChange={(e) =>
+                            updateNodeAttribute(key, e.target.value)
+                        }
+                        key={key}
+                        style={{ marginRight: "10px" }}
+                    />
+                    <h4>{key === "event" ? "Event" : "Entity"}</h4>
                 </div>
-                <div className="legend-colors-item">
-                    <div className="legend-colors-item-color legend-colors-item-color-entity"></div>
-                    <div className="legend-colors-item-text">Entity</div>
-                </div>
-            </div>
+            ))}
+
             <h3>Shapes</h3>
-            <div className="legend-shapes">
-                <div className="legend-shapes-item">
-                    <div className="legend-shapes-item-shape legend-shapes-item-shape-rectangle"></div>
-                    <div className="legend-shapes-item-text">Rectangle</div>
+            {[
+                ["parentNode", TA1NodeRenderingStrategy.nodeOptions.parentNode],
+                ["leafNode", TA1NodeRenderingStrategy.nodeOptions.leafNode],
+                ["entity", TA1NodeRenderingStrategy.nodeOptions.entityNode],
+            ].map(([key, value]) => (
+                <div key={key}>
+                    <h4>
+                        {key === "parentNode"
+                            ? "Chapter Event"
+                            : key === "leafNode"
+                            ? "Primitive Event"
+                            : "Participant Entity"}
+                    </h4>
+
+                    {/* <ReactFlowProvider>
+
+                        {key === "parentNode" ? (
+                            jsonConverter.deserialize({
+                                "@id": "AA",
+                                "children": ["BB", "CC"],
+                                "name": "Chapter Event",
+
+                            }, TA1Entity).render()
+                        ) : (
+                            jsonConverter.deserialize({
+                                "@id": "AA",
+                                // "children": ["BB", "CC"],
+                                "name": "Chapter Event",
+
+                            }, TA1Entity).render()
+                        )}
+</ReactFlowProvider> */}
+
+                    <select
+                        value={value}
+                        // onChange={(e) => handleShapeChange(e, key)}
+                        onChange={(e) =>
+                            updateTreeNodeAttribute(key, e.target.value)
+                        }
+                    >
+                        <option value="circle">Circle</option>
+                        <option value="diamond">Diamond</option>
+                        <option value="square">Square</option>
+                    </select>
                 </div>
-                <div className="legend-shapes-item">
-                    <div className="legend-shapes-item-shape legend-shapes-item-shape-circle"></div>
-                    <div className="legend-shapes-item-text">Circle</div>
-                </div>
-            </div>
+            ))}
+            <h3>Edges</h3>
+                {["or", "and", "xor", "outlink", "participant", "relation"].map((childrenGate, index) => (
+                    <div key={index}>
+                        <h4>{childrenGate}</h4>
+                        <div>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>Color</td>
+                                        <td>
+                                            <input
+                                                type="color"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .style.stroke
+                                                }
+                                                onChange={(e) => {
+                                                    updateEdgeStyle(
+                                                        childrenGate,
+                                                        {
+                                                            stroke: e.target
+                                                                .value,
+                                                        }
+                                                    );
+                                                    if (
+                                                        edgeStyle[childrenGate]
+                                                            .markerEnd
+                                                    ) {
+                                                        updateEdgeAttribute(
+                                                            childrenGate,
+                                                            "markerEnd",
+                                                            {
+                                                                ...edgeStyle[
+                                                                    childrenGate
+                                                                ].markerEnd,
+                                                                color: e.target
+                                                                    .value,
+                                                            }
+                                                        );
+                                                    }
+                                                    if (
+                                                        childrenGate !==
+                                                        "outlink"
+                                                    ) {
+                                                        refreshGate(
+                                                            childrenGate
+                                                        );
+                                                    }
+                                                }}
+                                                label="color"
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Stroke Width</td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .style.strokeWidth
+                                                }
+                                                onChange={(e) =>
+                                                    updateEdgeStyle(
+                                                        childrenGate,
+                                                        {
+                                                            strokeWidth:
+                                                                e.target.value,
+                                                        }
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Label</td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .label
+                                                }
+                                                onChange={(e) =>
+                                                    updateEdgeAttribute(
+                                                        childrenGate,
+                                                        "label",
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Edge Type</td>
+                                        <td>
+                                            <select
+                                                value={
+                                                    edgeStyle[childrenGate].type
+                                                }
+                                                onChange={(e) =>
+                                                    updateEdgeAttribute(
+                                                        childrenGate,
+                                                        "type",
+                                                        e.target.value
+                                                    )
+                                                }
+                                            >
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.Straight
+                                                    }
+                                                >
+                                                    Straight
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.Bezier
+                                                    }
+                                                >
+                                                    Bezier
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.SimpleBezier
+                                                    }
+                                                >
+                                                    Simple Bezier
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.SmoothStep
+                                                    }
+                                                >
+                                                    Smooth Step
+                                                </option>
+                                                <option
+                                                    value={
+                                                        ConnectionLineType.Step
+                                                    }
+                                                >
+                                                    Step
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Edge Pattern</td>
+                                        <td>
+                                            <select
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .style.strokeDasharray
+                                                }
+                                                onChange={(e) =>
+                                                    updateEdgeStyle(
+                                                        childrenGate,
+                                                        {
+                                                            strokeDasharray:
+                                                                e.target.value,
+                                                        }
+                                                    )
+                                                }
+                                            >
+                                                <option value={"none"}>
+                                                    Solid
+                                                </option>
+                                                <option value={"5,5"}>
+                                                    Dashed
+                                                </option>
+                                                <option value={"4 1 2 3"}>
+                                                    Uneven Dashed
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Animation</td>
+                                        <td>
+                                            <input
+                                                type="checkbox"
+                                                value={
+                                                    edgeStyle[childrenGate]
+                                                        .animated
+                                                }
+                                                onChange={(e) =>
+                                                    updateEdgeAttribute(
+                                                        childrenGate,
+                                                        "animated",
+                                                        e.target.checked
+                                                    )
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ))}
         </div>
     );
 };
@@ -843,14 +1147,16 @@ function GlobalEntityList() {
                 >
                     Table
                 </button>
-                {schemaType === "ta1" && <button
-                    className={`button-tabbar ${
-                        mode === "graph" ? "button-tabbar-active" : ""
-                    } `}
-                    onClick={() => setMode("graph")}
-                >
-                    Graph
-                </button>}
+                {schemaType === "ta1" && (
+                    <button
+                        className={`button-tabbar ${
+                            mode === "graph" ? "button-tabbar-active" : ""
+                        } `}
+                        onClick={() => setMode("graph")}
+                    >
+                        Graph
+                    </button>
+                )}
             </div>
             {mode === "list" ? (
                 <div>
@@ -870,7 +1176,9 @@ function GlobalEntityList() {
                         <TA2GlobalEntityTable />
                     )}
                 </div>
-            ) : <EntityGraphPanelTA1/>}
+            ) : (
+                <EntityGraphPanelTA1 />
+            )}
         </>
     );
 }

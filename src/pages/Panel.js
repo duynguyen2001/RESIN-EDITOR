@@ -15,7 +15,6 @@ import Select from "react-select";
 import EditableText from "./EditableText.jsx";
 import "./panel.css";
 import useStore from "./store";
-import RangeSlider from "../components/RangeSlider";
 import { Slider } from "@mui/material";
 
 function TableInfoPanel({ data, parentId, editMode = false }) {
