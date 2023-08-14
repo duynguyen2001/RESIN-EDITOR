@@ -307,8 +307,14 @@ export class TA1Entity {
     }
     render(isConnectable: boolean | undefined) {
         return (
-            <div>
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                }}>
                 {this.renderStrategy.render(isConnectable)}
+                <h1>{parseInt(this.id.replace(/^\D+/g, ''))}</h1>
                 <div
                     className=" font-bold"
                     style={{
@@ -321,7 +327,7 @@ export class TA1Entity {
                     }}
                 >
                     {this.name}
-                </div>
+                div</div>
             </div>
         );
     }
