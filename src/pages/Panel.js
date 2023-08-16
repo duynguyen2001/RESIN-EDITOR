@@ -406,7 +406,7 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                                     setTableChange(!tableChange);
                                 }}
                                 variant="span"
-                                key={value.ta2entity}
+                                id={value.ta2entity}
                                 className="clickable-text"
                                 onClick={() =>
                                     openProvenanceMap(value.provenance, [
@@ -1102,9 +1102,9 @@ export const TA2EditEventPanel = ({
                   name: "",
                   description: "",
                   parent: parentId,
-                  children_gate: "or",
-                  isTopLevel: parentId === "null" ? true : false,
-                  subgroup_events: subgroupEvents,
+                  children_gate: grouping? "or": undefined,
+                  isTopLevel: parentId === "null",
+                  subgroup_events: grouping? subgroupEvents : [],
                   outlinks: [],
                   predictionProvenance: [],
                   confidence: 1.0,

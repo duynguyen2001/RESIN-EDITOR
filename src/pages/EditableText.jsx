@@ -8,7 +8,7 @@ const EditableText = ({
     onSave,
     variant,
     onClick,
-    key,
+    id,
     index = -1,
     onTable = false,
     ...props
@@ -43,9 +43,9 @@ const EditableText = ({
                     {variant === "h3" && <h3>{values}</h3>}
                     {variant === "span" && (
                         <span
-                            key={key}
+                            key={id}
                             className="clickable-text"
-                            onClick={() => onClick(key)}
+                            onClick={() => onClick(id)}
                         >
                             {values}
                         </span>
