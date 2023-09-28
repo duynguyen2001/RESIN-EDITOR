@@ -707,9 +707,9 @@ export function createProvenanceEntity(
 
     if (jsonData.mediaType === "text/plain") {
         return jsonConvert.deserializeObject(jsonData, TextProvenance);
-    } else if (jsonData.mediaType === "image/jpg") {
+    } else if (jsonData.mediaType.startsWith("image")) {
         return jsonConvert.deserializeObject(jsonData, ImageProvenance);
-    } else if (jsonData.mediaType === "video/mpeg") {
+    } else if (jsonData.mediaType.startsWith("video")) {
         return jsonConvert.deserializeObject(jsonData, VideoProvenance);
     }else {
         console.log("Unsupported: " + jsonData);

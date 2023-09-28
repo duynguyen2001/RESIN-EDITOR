@@ -46,8 +46,6 @@ const CustomStartEndSlider = styled(Slider)({
     },
 });
 
-
-
 function VideoWithBox({ data, containerWidth = 500 }) {
     const [provenances, setProvenances] = useContext(ProvenanceContext);
     const [url, setUrl] = useState(data.sourceURL);
@@ -70,7 +68,7 @@ function VideoWithBox({ data, containerWidth = 500 }) {
     const [boundingBoxY, setBoundingBoxY] = useState(y);
 
     const [style, setStyle] = useState({
-        pointerEvents: 'none',
+        pointerEvents: "none",
         left: `${boundingBoxX}px`,
         top: `${boundingBoxY}px`,
         width: `${boundingBoxWidth}px`,
@@ -103,7 +101,7 @@ function VideoWithBox({ data, containerWidth = 500 }) {
             height: `${(y_end - y) * scale}px`,
             border: "1px solid red",
             position: "absolute",
-            pointerEvents: 'none'
+            pointerEvents: "none",
         });
     }, [scale]);
 
@@ -158,54 +156,56 @@ function VideoWithBox({ data, containerWidth = 500 }) {
     useEffect(() => {
         setStyle({
             ...style,
-            pointerEvents: editing ? 'auto' : 'none'
+            pointerEvents: editing ? "auto" : "none",
         });
     }, [editing]);
 
     return (
         <>
             <div>
-                <div style={{
-                    position: "relative",
-                }}>
+                <div
+                    style={{
+                        position: "relative",
+                    }}
+                >
                     <ReactPlayer
-                    url={url}
-                    ref={playerRef}
-                    playing={playing}
-                    controls={false}
-                    light={{
-                        url: url,
-                        width: 1080,
-                        height: 720,
-                    }}
-                    width={containerWidth}
-                    progressInterval={1000}
-                    volume={1}
-                    muted={false}
-                    playbackRate={1}
-                    loop={false}
-                    onReady={onReady}
-                    onPlay={() => {
-                        setPlaying(true);
-                    }}
-                    onPause={() => {
-                        setPlaying(false);
-                    }}
-                    config={{
-                        youtube: {
-                            playerVars: { showinfo: 1 },
-                        },
-                    }}
-                    onProgress={(state) => {
-                        setPlayed(state.playedSeconds);
-                    }}
-                    onDuration={(duration) => {
-                        setDuration(duration);
-                    }}
-                    onStart={() => {
-                        setPlaying(true);
-                    }}
-                />
+                        url={url}
+                        ref={playerRef}
+                        playing={playing}
+                        controls={false}
+                        light={{
+                            url: url,
+                            width: 1080,
+                            height: 720,
+                        }}
+                        width={containerWidth}
+                        progressInterval={1000}
+                        volume={1}
+                        muted={false}
+                        playbackRate={1}
+                        loop={false}
+                        onReady={onReady}
+                        onPlay={() => {
+                            setPlaying(true);
+                        }}
+                        onPause={() => {
+                            setPlaying(false);
+                        }}
+                        config={{
+                            youtube: {
+                                playerVars: { showinfo: 1 },
+                            },
+                        }}
+                        onProgress={(state) => {
+                            setPlayed(state.playedSeconds);
+                        }}
+                        onDuration={(duration) => {
+                            setDuration(duration);
+                        }}
+                        onStart={() => {
+                            setPlaying(true);
+                        }}
+                    />
                     {editing ? (
                         <Rnd
                             style={style}
@@ -239,8 +239,8 @@ function VideoWithBox({ data, containerWidth = 500 }) {
                         <div className="box" style={style}></div>
                     )}
                 </div>
-                
-                    <>
+
+                <>
                     {ready && (
                         <div
                             className="control-bar"
@@ -269,149 +269,155 @@ function VideoWithBox({ data, containerWidth = 500 }) {
                                         .toString()
                                         .padStart(2, "0")}
                                 </text>
-                                {editing? <CustomStartEndSlider
-                                    value={[startTime, endTime]}
-                                    aria-label="Custom marks"
-                                    min={0}
-                                    max={duration}
-                                    // valueLabelDisplay="on"
-                                    onChange={(e, value) => {
-                                        setStartTime(value[0]);
-                                        setEndTime(value[1]);
+                                {editing ? (
+                                    <CustomStartEndSlider
+                                        value={[startTime, endTime]}
+                                        aria-label="Custom marks"
+                                        min={0}
+                                        max={duration}
+                                        // valueLabelDisplay="on"
+                                        onChange={(e, value) => {
+                                            setStartTime(value[0]);
+                                            setEndTime(value[1]);
 
-                                        if (playerRef.current) {
-                                            playerRef.current.seekTo(
-                                                value[0],
-                                                "seconds"
-                                            );
-                                        }
-                                    const newProvenance = {
-                                        ...data,
-                                        startTime: value[0],
-                                        endTime: value[1],
-                                    };
-                                    onProvenanceUpdate(newProvenance);
-                                }}
-                                />:<Slider
-                                    value={played}
-                                    aria-label="Custom marks"
-                                    min={0}
-                                    max={duration}
-                                    // valueLabelDisplay="on"
-                                    marks={[
-                                        {
-                                            value: startTime,
-                                            label: `${Math.floor(
-                                                startTime / 60
-                                            )}:${Math.floor(startTime % 60)
-                                                .toString()
-                                                .padStart(2, "0")}`,
-                                            className: "special",
-                                        },
-                                        {
-                                            value: endTime,
-                                            label: `${Math.floor(
-                                                endTime / 60
-                                            )}:${Math.floor(endTime % 60)
-                                                .toString()
-                                                .padStart(2, "0")}`,
-                                        },
-                                    ]}
-                                    onChange={(e, value) => {
-                                        if (playerRef.current) {
-                                            playerRef.current.seekTo(
-                                                value,
-                                                "seconds"
-                                            );
-                                        }
-                                    }}
-                                />}
+                                            if (playerRef.current) {
+                                                playerRef.current.seekTo(
+                                                    value[0],
+                                                    "seconds"
+                                                );
+                                            }
+                                            data.startTime = value[0];
+                                            data.endTime = value[1];
+                                            onProvenanceUpdate(data);
+                                        }}
+                                    />
+                                ) : (
+                                    <Slider
+                                        value={played}
+                                        aria-label="Custom marks"
+                                        min={0}
+                                        max={duration}
+                                        // valueLabelDisplay="on"
+                                        marks={[
+                                            {
+                                                value: startTime,
+                                                label: `${Math.floor(
+                                                    startTime / 60
+                                                )}:${Math.floor(startTime % 60)
+                                                    .toString()
+                                                    .padStart(2, "0")}`,
+                                                className: "special",
+                                            },
+                                            {
+                                                value: endTime,
+                                                label: `${Math.floor(
+                                                    endTime / 60
+                                                )}:${Math.floor(endTime % 60)
+                                                    .toString()
+                                                    .padStart(2, "0")}`,
+                                            },
+                                        ]}
+                                        onChange={(e, value) => {
+                                            if (playerRef.current) {
+                                                playerRef.current.seekTo(
+                                                    value,
+                                                    "seconds"
+                                                );
+                                            }
+                                        }}
+                                    />
+                                )}
                                 <text>
                                     {Math.floor(duration / 60)}:
-                                    {Math.floor(duration % 60).toString().padStart(2, "0")}
+                                    {Math.floor(duration % 60)
+                                        .toString()
+                                        .padStart(2, "0")}
                                 </text>
                             </Stack>
-                           
                         </div>
                     )}
                     <>
-                    <div
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                width: "100%",
+                                flexDirection: "row",
+                            }}
+                        >
+                            <button
+                                onClick={() => {
+                                    if (playerRef.current) {
+                                        playerRef.current.seekTo(
+                                            played - 5 > startTime
+                                                ? played - 5
+                                                : 0,
+                                            "seconds"
+                                        );
+                                    }
+                                }}
                                 style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    width: "100%",
-                                    flexDirection: "row",
+                                    marginRight: "5px",
+                                    backgroundColor: "transparent",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    outline: "none",
+                                    color: "black",
                                 }}
                             >
-                                <button
-                                    onClick={() => {
-                                       
-                                        if (playerRef.current) {
-                                            playerRef.current.seekTo(
-                                                played - 5 > startTime? played - 5: 0,
-                                                "seconds"
-                                            );
-                                        }
-                                    }}
-                                    style={{
-                                        marginRight: "5px",
-                                        backgroundColor: "transparent",
-                                        border: "none",
-                                        cursor: "pointer",
-                                        outline: "none",
-                                        color: "black",
-                                    }}
-                                >
-                                    <i className="fa fa-backward"></i>
-                                </button>
+                                <i className="fa fa-backward"></i>
+                            </button>
 
-                                <button
-                                    onClick={() => {
-                                        setPlaying(!playing);
-                                        if (playerRef.current) {
-                                            playerRef.current.seekTo(
-                                                startTime,
-                                                "seconds"
-                                            );
-                                        }
-                                    }}
-                                    style={{
-                                        marginRight: "5px",
-                                        backgroundColor: "transparent",
-                                        border: "none",
-                                        cursor: "pointer",
-                                        outline: "none",
-                                        color: "black",
-                                    }}
-                                >
-                                    {playing ? (
-                                        <i className="fa fa-pause"></i>
-                                    ) : (
-                                        <i className="fa fa-play"></i>
-                                    )}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (playerRef.current) {
-                                            playerRef.current.seekTo(
-                                                played + 5 > endTime? endTime: played + 5,
-                                                "seconds"
-                                            );
-                                        }
-                                    }}
-                                    style={{
-                                        marginRight: "5px",
-                                        backgroundColor: "transparent",
-                                        border: "none",
-                                        cursor: "pointer",
-                                        outline: "none",
-                                        color: "black",
-                                    }}
-                                >
-                                    <i className="fa fa-forward"></i>
-                                </button>
-                            </div></>
+                            <button
+                                onClick={() => {
+                                    setPlaying(!playing);
+                                    if (playerRef.current) {
+                                        playerRef.current.seekTo(
+                                            startTime,
+                                            "seconds"
+                                        );
+                                    }
+                                }}
+                                style={{
+                                    marginRight: "5px",
+                                    backgroundColor: "transparent",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    outline: "none",
+                                    color: "black",
+                                }}
+                            >
+                                {playing ? (
+                                    <i className="fa fa-pause"></i>
+                                ) : (
+                                    <i className="fa fa-play"></i>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (playerRef.current) {
+                                        playerRef.current.seekTo(
+                                            played + 5 > endTime
+                                                ? endTime
+                                                : played + 5,
+                                            "seconds"
+                                        );
+                                    }
+                                }}
+                                style={{
+                                    marginRight: "5px",
+                                    backgroundColor: "transparent",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    outline: "none",
+                                    color: "black",
+                                }}
+                            >
+                                <i className="fa fa-forward"></i>
+                            </button>
+                        </div>
+                    </>
 
                     <div
                         style={{
@@ -468,21 +474,6 @@ function VideoWithBox({ data, containerWidth = 500 }) {
 
 function VideoNode({ data }) {
     const divRef = useRef(null);
-    const [divWidth, setDivWidth] = useState(0);
-    useEffect(() => {
-        const updateWidth = () => {
-            if (divRef.current) {
-                setDivWidth(divRef.current.clientWidth);
-            }
-        };
-
-        updateWidth();
-        window.addEventListener("resize", updateWidth);
-
-        return () => {
-            window.removeEventListener("resize", updateWidth);
-        };
-    }, []);
 
     return (
         <div
@@ -496,7 +487,7 @@ function VideoNode({ data }) {
                 boxShadow: "0 0 10px rgba(0,0,0,0.2)",
             }}
         >
-            <VideoWithBox data={data}  />
+            <VideoWithBox data={data} />
         </div>
     );
 }
