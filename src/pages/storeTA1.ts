@@ -15,7 +15,13 @@ import {
     OnSelectionChangeParams,
 } from "reactflow";
 import { create } from "zustand";
-import { Relation, TA1EntityStrategy, TA1Event, TA1EventStrategy, TA1NodeRenderingStrategy } from "../components/LibraryTA1";
+import {
+    Relation,
+    TA1EntityStrategy,
+    TA1Event,
+    TA1EventStrategy,
+    TA1NodeRenderingStrategy,
+} from "../components/LibraryTA1";
 import getLayoutedElementsNested from "./layoutTA1";
 import { Entity, Participant } from "../components/Library";
 import { UniqueString } from "../components/TypeScriptUtils";
@@ -109,10 +115,7 @@ type RFState = {
     onEdgeUpdate: (oldEdge: Edge, newConnection: Connection) => void;
     onSelectionChange: (params: OnSelectionChangeParams) => void;
     onNodeClick: (event: any, node: Node) => void;
-    updateNodeAttribute: (
-        nodeType: string,
-        value: string
-    ) => void;
+    updateNodeAttribute: (nodeType: string, value: string) => void;
     updateEdgeAttribute: (
         edgeType: GraphEdgeType,
         key: string,
@@ -315,17 +318,25 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     addEventNode: (node: TA1Event, grouping: Boolean = false) => {
         const { mapNodes, updateLayout } = get();
         console.log("subgroupEvent here here", node);
-        const nodeId = node.id || `resin:Event:${UniqueString.getUniqueStringWithForm("resin:Event/",
-        "/")}}`;
+        const nodeId =
+            node.id ||
+            `resin:Event:${UniqueString.getUniqueStringWithForm(
+                "resin:Event/",
+                "/"
+            )}}`;
         mapNodes.set(nodeId || ``, node);
         if (grouping) {
             const children = node.children || [];
-            const outlinks: string[] =[]
+            const outlinks: string[] = [];
             console.log("node.children", node.children);
             children.forEach((subgroupEvent: string) => {
                 const subgroupTA1Event = mapNodes.get(subgroupEvent);
                 console.log("subgroupTA1Event", subgroupTA1Event);
-                outlinks.push(...subgroupTA1Event.outlinks.filter((outlink: string) => !node.children?.includes(outlink)));
+                outlinks.push(
+                    ...subgroupTA1Event.outlinks.filter(
+                        (outlink: string) => !node.children?.includes(outlink)
+                    )
+                );
                 subgroupTA1Event.outlinks = subgroupTA1Event.outlinks.filter(
                     (outlink: string) => node.children?.includes(outlink)
                 );
@@ -383,12 +394,16 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         // console.log("chosenEvents", chosenEvents);
         console.log("nodes", nodes);
         nodes.forEach((node) => {
-            if (node.data.isEntity && !node.data.isGate && chosenEntities.includes(node.id.split("-")[0])) {
+            if (
+                node.data.isEntity &&
+                !node.data.isGate &&
+                chosenEntities.includes(node.id.split("-")[0])
+            ) {
                 node.style = {
                     ...node.style,
                     opacity: 1,
-                    };
-                    return;
+                };
+                return;
             }
             const opacity =
                 (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
@@ -445,15 +460,12 @@ const useStoreTA1 = create<RFState>((set, get) => ({
             edges: applyEdgeChanges(changes, get().edges),
         });
     },
-    updateNodeAttribute: (
-        nodeType: string,
-        value: string
-    ) => {
+    updateNodeAttribute: (nodeType: string, value: string) => {
         if (nodeType === "event") {
             TA1EventStrategy.colorOptions = value;
         } else if (nodeType === "entity") {
             TA1EntityStrategy.colorOptions = value;
-        } 
+        }
         get().nodeRerender("eventNode");
     },
     updateTreeNodeAttribute: (key: string, value: string) => {
@@ -570,7 +582,13 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
     addNodeOnPanel(node: TA1Event) {
         // we add a new parent node to the root node of the graph, and change istoplevel of that node to false, then we add the new node and the old subnode as children of the new parent node
-        const { mapNodes, firstNode, chosenNodes, updateLayout, getNewIdInEventMap } = get();
+        const {
+            mapNodes,
+            firstNode,
+            chosenNodes,
+            updateLayout,
+            getNewIdInEventMap,
+        } = get();
         // const newMapNodes = new Map(mapNodes);
         // const newFirstNode = getNewIdInEventMap();
         // if (firstNode === null) {
@@ -664,8 +682,8 @@ const useStoreTA1 = create<RFState>((set, get) => ({
             : mapNodes.get(node.id);
         // console.log("currentNode", currentNode);
         if (
-        //     !currentNode.children ||
-        //     currentNode.children.length === 0 ||
+            //     !currentNode.children ||
+            //     currentNode.children.length === 0 ||
             node.data.isGate
         ) {
             set({ clickedNode: node });
@@ -937,37 +955,39 @@ const useStoreTA1 = create<RFState>((set, get) => ({
 
             return {
                 ...node,
-                type: isGate && isEntity? "": isGate ? "gate" : "customNode",
+                type: isGate && isEntity ? "" : isGate ? "gate" : "customNode",
                 key: Date.now(),
-                data: isGate && isEntity
-                ? {
-                    ...node.data,
-                    color: "transparent"
-                }:
-                isGate
-                    ? {
-                          ...node.data,
-                          color: edgeStyle[node.data.gate as GraphEdgeType]
-                              .style.stroke,
-                      }
-                    : isEntity
-                    ? {
-                          ...node.data,
-                          color: edgeStyle.relation.style.stroke,
-                      }
-                    : node.data,
+                data:
+                    isGate && isEntity
+                        ? {
+                              ...node.data,
+                              color: "transparent",
+                          }
+                        : isGate
+                        ? {
+                              ...node.data,
+                              color: edgeStyle[node.data.gate as GraphEdgeType]
+                                  .style.stroke,
+                          }
+                        : isEntity
+                        ? {
+                              ...node.data,
+                              color: edgeStyle.relation.style.stroke,
+                          }
+                        : node.data,
                 expandParent:
                     isGate || isEntity || node.data.isTopLevel
                         ? undefined
                         : true,
                 parentNode:
                     isGate || node.id === firstNode
-                        ? undefined:
-                        isEntity? `entity-gate-${node.data.parent}`
+                        ? undefined
+                        : isEntity
+                        ? `entity-gate-${node.data.parent}`
                         : `gate-${node.data.parent}`,
                 style: {
                     ...node.style,
-                    backgroundColor: isEntity? undefined : gateColor,
+                    backgroundColor: isEntity ? undefined : gateColor,
                     opacity: opacity,
                 },
             };
@@ -1014,7 +1034,8 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                             target: `${participant.entity}-${node.id}`,
                             label: participant.roleName,
                             ...edgeStyle.participant,
-                        })
+                        }
+                    );
                 });
                 currentNode.relations?.forEach((relation: Relation) => {
                     uniqueEdges.set(relation.id, {
