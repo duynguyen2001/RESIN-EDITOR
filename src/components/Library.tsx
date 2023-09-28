@@ -607,6 +607,12 @@ class ImageRenderStrategy implements ProvenanceRenderStrategy {
     }
 }
 
+class VideoRenderStrategy implements ProvenanceRenderStrategy {
+    render(): void {
+        console.log("Rendering video/mpeg");
+    }
+}
+
 // Define ProvenanceEntity with json2typescript decorators
 @JsonObject("ProvenanceEntity")
 export abstract class ProvenanceEntity {
@@ -667,6 +673,28 @@ class ImageProvenance extends ProvenanceEntity {
         return this.renderStrategy;
     }
 }
+
+@JsonObject("VideoProvenance")
+class VideoProvenance extends ProvenanceEntity {
+    @JsonProperty("boundingBox", [Number])
+    boundingBox: number[] = [];
+
+    @JsonProperty("sourceURL", ForceStringArray)
+    sourceURL: string[] = [];
+
+    @JsonProperty("startTime", Number)
+    startTime: number = 0;
+
+    @JsonProperty("endTime", Number)
+    endTime: number = 0;
+
+    public getRenderStrategy(): ProvenanceRenderStrategy {
+        if (!this.renderStrategy) {
+            this.renderStrategy = new VideoRenderStrategy();
+        }
+        return this.renderStrategy;
+    }
+}
 interface ProvenanceData {
     mediaType: string;
     [key: string]: any;
@@ -681,7 +709,9 @@ export function createProvenanceEntity(
         return jsonConvert.deserializeObject(jsonData, TextProvenance);
     } else if (jsonData.mediaType === "image/jpg") {
         return jsonConvert.deserializeObject(jsonData, ImageProvenance);
-    } else {
+    } else if (jsonData.mediaType === "video/mpeg") {
+        return jsonConvert.deserializeObject(jsonData, VideoProvenance);
+    }else {
         console.log("Unsupported: " + jsonData);
         throw new Error(`Unsupported mediaType: ${jsonData.mediaType}`);
     }

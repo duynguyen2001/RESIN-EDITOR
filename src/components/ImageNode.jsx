@@ -122,6 +122,7 @@ function ImageWithBox({ data, url, containerWidth = 500 }) {
                     <div className="bounding-box" style={style}></div>
                 )}
             </div>
+            
             <div
                 style={{
                     display: "flex",

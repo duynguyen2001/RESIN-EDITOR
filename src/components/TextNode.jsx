@@ -95,8 +95,6 @@ const EditableTextNode = ({ data, fileContent }) => {
     );
 
     useEffect(() => {
-        console.log("dataOffsetrtender: ", data.offset);
-        console.log("dataLengthrender: ", data.length);
         const [nstart, nbeginHighlight, nendHighlight, nend] = extractSentence(
             fileContent,
             nodeData.offset,
