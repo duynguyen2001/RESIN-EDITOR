@@ -381,7 +381,15 @@ const useStoreTA1 = create<RFState>((set, get) => ({
             }
         }
         // console.log("chosenEvents", chosenEvents);
+        console.log("nodes", nodes);
         nodes.forEach((node) => {
+            if (node.data.isEntity && !node.data.isGate && chosenEntities.includes(node.id.split("-")[0])) {
+                node.style = {
+                    ...node.style,
+                    opacity: 1,
+                    };
+                    return;
+            }
             const opacity =
                 (chosenEvents.size === 0 || chosenEvents.has(node.id)) &&
                 node.data.confidence >= confidenceInterval[0] &&
