@@ -18,6 +18,7 @@ import EditableText from "./EditableText.jsx";
 import "./panel.css";
 import useStore from "./store";
 import useStoreTA1 from "./storeTA1";
+import { TA1Entity, TA1Participant } from "../components/LibraryTA1";
 function TA1TableInfoPanel({
     data,
     parentId,
@@ -909,7 +910,7 @@ function TA1EventNodeInfoPanel({ data, onClose }) {
     const editMapNode = useStoreTA1((state) => state.editMapNode);
     const [showEditPanel, setShowEditPanel] = useState(false);
     const [timeFrame, setTimeFrame] = useState(Date.now());
-    const [Entities] = useContext(EntitiesContext);
+    const [mapEntities] = useStoreTA1((state) => [state.mapEntities]);
     const [editMode, setEditMode] = useState(false);
 
     if (data === undefined) {
@@ -1045,27 +1046,22 @@ function TA1EventNodeInfoPanel({ data, onClose }) {
                             const newEntity = jsonConvert.deserializeObject(
                                 {
                                     "@id": newEntityId,
-                                    name: "NewEntity",
-                                    description: "",
-                                    provenance: [],
-                                    ta2wdNode: [],
-                                    ta2wdLabel: "",
-                                    ta2wdDescription: "",
-                                    optional: false,
+                                    name: "New Entity",
+
                                 },
-                                Entity
+                                TA1Entity
                             );
-                            Entities.set(newEntityId, newEntity);
+                            mapEntities.set(newEntityId, newEntity);
 
                             // console.log("newParticipantId", newParticipantId);
                             const newParticipant =
                                 jsonConvert.deserializeObject(
                                     {
                                         "@id": newParticipantId,
-                                        roleName: "new Role",
+                                        roleName: "New Role",
                                         entity: newEntityId,
                                     },
-                                    Participant
+                                    TA1Participant
                                 );
 
                             data.participants.push(newParticipant);
@@ -1074,6 +1070,8 @@ function TA1EventNodeInfoPanel({ data, onClose }) {
                                 "participants",
                                 data.participants
                             );
+                            console.log("data", data);
+
                             setTimeFrame(Date.now());
                         }}
                     >
