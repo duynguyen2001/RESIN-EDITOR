@@ -14,12 +14,11 @@ import {
     DataContext,
     EntitiesContext,
     ExtractedTextsContext,
-    SchemaTypeContext,
     ProvenanceContext,
+    SchemaTypeContext,
 } from "../pages/DataReader";
 import { Modal } from "../pages/Panel";
 import useStore from "../pages/store";
-import EventGraphNode from "./EventGraphNode";
 import {
     DetectedNodeStrategy,
     Entity,
@@ -38,7 +37,6 @@ import ZipReader from "./ZipReader";
 //     convertTA2toTA1format,
 // } from "./TA1andTA2Conversion";
 import useStoreTA1 from "../pages/storeTA1";
-import { EntityGraphPanelTA1, TableRow, TableRowTA1 } from "./TableRow";
 import {
     TA1Entity,
     TA1EntityStrategy,
@@ -46,6 +44,7 @@ import {
     TA1EventStrategy,
     TA1NodeRenderingStrategy,
 } from "./LibraryTA1";
+import { EntityGraphPanelTA1, TableRow, TableRowTA1 } from "./TableRow";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -387,27 +386,37 @@ const TA1Legend = () => {
                     </h4>
 
                     <ReactFlowProvider>
-
-                        {key === "parentNode" ? (
-                            jsonConverter.deserialize({
-                                "@id": "AA",
-                                "children": ["BB", "CC"],
-                                "name": "",
-
-                            }, TA1Event).render()
-                        ): key === "leafNode"
-                        ? jsonConverter.deserialize({
-                            "@id": "AA",
-                            "name": "",
-
-                        }, TA1Event).render(): (
-                            jsonConverter.deserialize({
-                                "@id": "AA",
-                                "name": "",
-
-                            }, TA1Entity).render()
-                        )}
-</ReactFlowProvider>
+                        {key === "parentNode"
+                            ? jsonConverter
+                                  .deserialize(
+                                      {
+                                          "@id": "AA",
+                                          children: ["BB", "CC"],
+                                          name: "",
+                                      },
+                                      TA1Event
+                                  )
+                                  .render()
+                            : key === "leafNode"
+                            ? jsonConverter
+                                  .deserialize(
+                                      {
+                                          "@id": "AA",
+                                          name: "",
+                                      },
+                                      TA1Event
+                                  )
+                                  .render()
+                            : jsonConverter
+                                  .deserialize(
+                                      {
+                                          "@id": "AA",
+                                          name: "",
+                                      },
+                                      TA1Entity
+                                  )
+                                  .render()}
+                    </ReactFlowProvider>
 
                     <select
                         value={value}
@@ -423,7 +432,8 @@ const TA1Legend = () => {
                 </div>
             ))}
             <h3>Edges</h3>
-                {["or", "and", "xor", "outlink", "participant", "relation"].map((childrenGate, index) => (
+            {["or", "and", "xor", "outlink", "participant", "relation"].map(
+                (childrenGate, index) => (
                     <div key={index}>
                         <h4>{childrenGate}</h4>
                         <div>
@@ -621,7 +631,8 @@ const TA1Legend = () => {
                             </table>
                         </div>
                     </div>
-                ))}
+                )
+            )}
         </div>
     );
 };
@@ -710,11 +721,9 @@ const TA2Legend = () => {
                                 ? "Chapter Event"
                                 : "Primitive Event"}
                         </h4>
-                        {key === "parentNode" ? (
-                            parentNode.render()
-                        ) : (
-                            new EventNode("aa", null, " ").render()
-                        )}
+                        {key === "parentNode"
+                            ? parentNode.render()
+                            : new EventNode("aa", null, " ").render()}
                         <select
                             value={value}
                             // onChange={(e) => handleShapeChange(e, key)}

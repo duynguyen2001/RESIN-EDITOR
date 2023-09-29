@@ -1,13 +1,12 @@
 import dagre from "dagre";
-import { First } from "react-bootstrap/esm/PageItem";
 const nodeWidth = 200;
 const nodeHeight = 200;
+
 export const getLayoutedElements = (
     nodes,
     edges,
     direction = "TB",
-    getGraph = false,
-
+    getGraph = false
 ) => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -94,147 +93,163 @@ const getLayoutedElementsNested = (
             const currentNode = mapNodes.get(node);
             const graphLists = [];
             if (currentNode.children && currentNode.children.length > 0) {
-            const subGraphNodes = currentNode.children?.map((subNode) => {
-                const subNodeData = mapNodes.get(subNode);
-                // console.log("subNodeData", subNodeData);
-                return {
-                    id: subNode,
-                    data: {
-                        isGate: false,
-                        isEntity: false,
-                        isTopLevel:
-                            currentNode.id === firstNode.id ? true : undefined,
-                        parent: node,
-                        confidence:
-                            subNodeData.importance &&
-                            subNodeData.importance.length > 0
-                                ? subNodeData.importance[0]
-                                : 1,
-                        color: subNodeData.renderStrategy.color,
-                    },
-                    position: { x: 0, y: 0 },
-                };
-            });
-
-            const subGraphEdges =
-                currentNode.children?.flatMap((subNode) =>
-                    mapNodes.get(subNode)?.outlinks.map((outlinkNode) => ({
-                        id: `outlink-${subNode}-${outlinkNode}`,
-                        source: subNode,
-                        target: outlinkNode,
-                    }))
-                ) || [];
-
-            const graph = getLayoutedElements(
-                subGraphNodes,
-                subGraphEdges,
-                "LR",
-                true
-            );
-            graphLists.push({
-                id: `subgraph-${node}`,
-                width: graph.width,
-                height: graph.height,
-                position: { x: 0, y: 0 },
-                data: {
-                    nodes: [
-                        {
-                            id: `gate-${node}`,
-                            data: {
-                                gate: currentNode.childrenGate,
-                                name: currentNode.name,
-                                isGate: true,
-                                referredNode: currentNode.id,
-                                confidence:
-                                    currentNode.importance &&
-                                    currentNode.importance.length > 0
-                                        ? currentNode.importance[0]
-                                        : 1,
-                            },
-                            style: {
-                                width: graph.width + 100,
-                                height: graph.height + 100,
-                                zIndex: -10,
-                            },
+                const subGraphNodes = currentNode.children?.map((subNode) => {
+                    const subNodeData = mapNodes.get(subNode);
+                    // console.log("subNodeData", subNodeData);
+                    return {
+                        id: subNode,
+                        data: {
+                            isGate: false,
+                            isEntity: false,
+                            isTopLevel:
+                                currentNode.id === firstNode.id
+                                    ? true
+                                    : undefined,
+                            parent: node,
+                            confidence:
+                                subNodeData.importance &&
+                                subNodeData.importance.length > 0
+                                    ? subNodeData.importance[0]
+                                    : 1,
+                            color: subNodeData.renderStrategy.color,
                         },
-                        ...graph.nodes,
-                    ],
-                    edges: graph.edges,
-                },
-            });
+                        position: { x: 0, y: 0 },
+                    };
+                });
+
+                const subGraphEdges =
+                    currentNode.children?.flatMap((subNode) =>
+                        mapNodes.get(subNode)?.outlinks.map((outlinkNode) => ({
+                            id: `outlink-${subNode}-${outlinkNode}`,
+                            source: subNode,
+                            target: outlinkNode,
+                        }))
+                    ) || [];
+
+                const graph = getLayoutedElements(
+                    subGraphNodes,
+                    subGraphEdges,
+                    "LR",
+                    true
+                );
+                graphLists.push({
+                    id: `subgraph-${node}`,
+                    width: graph.width,
+                    height: graph.height,
+                    position: { x: 0, y: 0 },
+                    data: {
+                        nodes: [
+                            {
+                                id: `gate-${node}`,
+                                data: {
+                                    gate: currentNode.childrenGate,
+                                    name: currentNode.name,
+                                    isGate: true,
+                                    referredNode: currentNode.id,
+                                    confidence:
+                                        currentNode.importance &&
+                                        currentNode.importance.length > 0
+                                            ? currentNode.importance[0]
+                                            : 1,
+                                },
+                                style: {
+                                    width: graph.width + 100,
+                                    height: graph.height + 100,
+                                    zIndex: -10,
+                                },
+                            },
+                            ...graph.nodes,
+                        ],
+                        edges: graph.edges,
+                    },
+                });
             }
             // ENTITY NODES AND EDGES HANDLING
-            if (currentNode.participants && currentNode.participants.length > 0) {
-            const participantsEntities = [];
-            const entityNodes = currentNode.participants?.map((participant) => {
-                const entity = mapEntities.get(participant.entity);
-                participantsEntities.push(participant.entity);
-                return {
-                    id: `${entity.id}-${node}`,
-                    data: {
-                        isGate: false,
-                        isEntity: true,
-                        isTopLevel: false,
-                        parent: node,
-                        confidence: 1,
-                        roleName: participant.roleName,
-                        color: entity.renderStrategy.color,
-                    },
-                    position: { x: 0, y: 0 },
-                };
-            });
-            const entityEdges = currentNode.relations?.map((relation) => {
-                if (
-                    !participantsEntities.includes(relation.relationSubject) ||
-                    !participantsEntities.includes(relation.relationObject)
-                ) {
-                    return null;
-                }
-                return {
-                    id: `edge-relation-${relation.id}-${node}`,
-                    source: `${relation.relationSubject}-${node}`,
-                    target: `${relation.relationObject}-${node}`,
-                    label: relation.name,
-                };
-            }).filter((edge) => edge !== null) || [];
-            const entityGraph = getLayoutedElements(
-                entityNodes,
-                entityEdges,
-                "TB",
-                true
-            );
-            graphLists.push({
-                id: `entityGraph-${node}`,
-                width: entityGraph.width,
-                height: entityGraph.height,
-                position: { x: 0, y: 0 },
-                data: {
-                    nodes: [{
-                        id: `entity-gate-${node}`,
+            if (
+                currentNode.participants &&
+                currentNode.participants.length > 0
+            ) {
+                const participantsEntities = [];
+                const entityNodes = currentNode.participants?.map(
+                    (participant) => {
+                        const entity = mapEntities.get(participant.entity);
+                        participantsEntities.push(participant.entity);
+                        return {
+                            id: `${entity.id}-${node}`,
                             data: {
-                                name: currentNode.name,
-                                isGate: true,
+                                isGate: false,
                                 isEntity: true,
-                                gate: "relation",
-                                referredNode: currentNode.id,
-                                confidence:
-                                    currentNode.importance &&
-                                    currentNode.importance.length > 0
-                                        ? currentNode.importance[0]
-                                        : 1,
+                                isTopLevel: false,
+                                parent: node,
+                                confidence: 1,
+                                roleName: participant.roleName,
+                                color: entity.renderStrategy.color,
                             },
-                            style: {
-                                width: entityGraph.width,
-                                height: entityGraph.height,
-                                zIndex: -10,
-                                color: "transparent",
-                                border: "none",
+                            position: { x: 0, y: 0 },
+                        };
+                    }
+                );
+                const entityEdges =
+                    currentNode.relations
+                        ?.map((relation) => {
+                            if (
+                                !participantsEntities.includes(
+                                    relation.relationSubject
+                                ) ||
+                                !participantsEntities.includes(
+                                    relation.relationObject
+                                )
+                            ) {
+                                return null;
+                            }
+                            return {
+                                id: `edge-relation-${relation.id}-${node}`,
+                                source: `${relation.relationSubject}-${node}`,
+                                target: `${relation.relationObject}-${node}`,
+                                label: relation.name,
+                            };
+                        })
+                        .filter((edge) => edge !== null) || [];
+                const entityGraph = getLayoutedElements(
+                    entityNodes,
+                    entityEdges,
+                    "TB",
+                    true
+                );
+                graphLists.push({
+                    id: `entityGraph-${node}`,
+                    width: entityGraph.width,
+                    height: entityGraph.height,
+                    position: { x: 0, y: 0 },
+                    data: {
+                        nodes: [
+                            {
+                                id: `entity-gate-${node}`,
+                                data: {
+                                    name: currentNode.name,
+                                    isGate: true,
+                                    isEntity: true,
+                                    gate: "relation",
+                                    referredNode: currentNode.id,
+                                    confidence:
+                                        currentNode.importance &&
+                                        currentNode.importance.length > 0
+                                            ? currentNode.importance[0]
+                                            : 1,
+                                },
+                                style: {
+                                    width: entityGraph.width,
+                                    height: entityGraph.height,
+                                    zIndex: -10,
+                                    color: "transparent",
+                                    border: "none",
+                                },
                             },
-                        },
-                        ...entityGraph.nodes],
-                    edges: entityGraph.edges,
-                },
-            });
+                            ...entityGraph.nodes,
+                        ],
+                        edges: entityGraph.edges,
+                    },
+                });
             }
 
             return graphLists;
@@ -299,12 +314,14 @@ const getLayoutedElementsNested = (
                 parentNode.data.nodes.map((node) => ({
                     ...node,
                     position: {
-                        x: node.data.isGate || node.data.isTopLevel
-                            ? parentNode.position.x
-                            : node.position.x + 25,
-                        y: node.data.isGate || node.data.isTopLevel
-                            ? parentNode.position.y
-                            : node.position.y + 80,
+                        x:
+                            node.data.isGate || node.data.isTopLevel
+                                ? parentNode.position.x
+                                : node.position.x + 25,
+                        y:
+                            node.data.isGate || node.data.isTopLevel
+                                ? parentNode.position.y
+                                : node.position.y + 80,
                     },
                 }))
             )

@@ -5,31 +5,101 @@ import {
     faExpand,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Slider } from "@mui/material";
+import axios from "axios";
 import { JsonConvert } from "json2typescript";
 import React, { useContext, useEffect, useState } from "react";
+import AsyncSelect from "react-select/async";
 import { Entity, EventNode, Participant } from "../components/Library";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import { UniqueString } from "../components/TypeScriptUtils";
 import { EntitiesContext, SchemaTypeContext } from "./DataReader";
-import Select from "react-select";
 import EditableText from "./EditableText.jsx";
 import "./panel.css";
 import useStore from "./store";
-import { Slider } from "@mui/material";
 import useStoreTA1 from "./storeTA1";
-function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1" }) {
+function TA1TableInfoPanel({
+    data,
+    parentId,
+    editMode = false,
+    schemaType = "ta1",
+}) {
     const [showProvenance, setShowProvenance] = useState(false);
     const [tableChange, setTableChange] = useState(false);
-    const [showAllEntities, setShowAllEntities] = useState(schemaType === "ta1");
-    const [editMapNode, mapNodes, entitiesRelatedEventMap, mapEntities] = useStoreTA1(
-        (state) => [
+    const [showAllEntities, setShowAllEntities] = useState(
+        schemaType === "ta1"
+    );
+    const [editMapNode, mapNodes, entitiesRelatedEventMap, mapEntities] =
+        useStoreTA1((state) => [
             state.editMapNode,
             state.mapNodes,
             state.entitiesRelatedEventMap,
-            state.mapEntities
-        ]
-    )
+            state.mapEntities,
+        ]);
     const [editNode, setEditNode] = useState(null);
+    const loadOptions = async (inputValue, callback) => {
+        // if (!inputValue) return callback([]);
+        const options = [];
+        entitiesRelatedEventMap.forEach((entity, key) => {
+            options.push({
+                value: key,
+                label: mapEntities.get(key).name,
+            });
+        });
+        if (!inputValue) {
+            setTimeout(
+                () =>
+                    callback([
+                        {
+                            label: "Existing Entities",
+                            options: options,
+                        },
+                        {
+                            label: "New Entities",
+                            options: [],
+                        },
+                    ]),
+                1000
+            );
+        }
+
+        // fetch Wikidata entities
+        const response = await axios.get("https://www.wikidata.org/w/api.php", {
+            params: {
+                action: "wbsearchentities",
+                search: inputValue,
+                language: "en",
+                format: "json",
+                origin: "*", // Necessary for CORS
+            },
+        });
+        console.log("response", response);
+        const listNewOptions = response.data.search.map((entity) => ({
+            value: entity.id,
+            label: entity.label,
+            data: {
+                name: entity.label,
+                wd_node: "wd:" + entity.id,
+                wd_label: entity.label,
+                wd_description: entity.description,
+            },
+        }));
+        const totalOptions = [
+            {
+                label: "Existing Entities",
+                options: options.filter((option) =>
+                    option.label
+                        .toLowerCase()
+                        .includes(inputValue.toLowerCase())
+                ),
+            },
+            {
+                label: "New Entities",
+                options: listNewOptions,
+            },
+        ];
+        return callback(totalOptions);
+    };
     const getDisplayParticipantArray = (data, parentId, showAllEntities) => {
         console.log("dataoverhere", data);
         console.log("parentId", parentId);
@@ -38,8 +108,80 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
             const entityObject = mapEntities.get(participant.entity);
             return {
                 id: participant.id,
-                entities:
-                <EditableText
+                entities: (
+
+                    <React.Fragment>
+                    {editNode !== null && participant.id === editNode.id ? (
+                        <AsyncSelect
+                            loadOptions={loadOptions}
+                            defaultOptions
+                            onInputChange={(value) => {
+                                console.log("value", value);
+                            }}
+                            value={{
+                                value: participant.entity,
+                                label: entityObject.name,
+                            }}
+                            onChange={(object) => {
+                                console.log("object", object);
+                                if (mapEntities.has(object.value)) {
+                                    participant.entity = object.value;
+                                    editMapNode(
+                                        parentId,
+                                        "participants",
+                                        mapNodes
+                                            .get(parentId)
+                                            .participants.map((part) => {
+                                                if (
+                                                    part.id === participant.id
+                                                ) {
+                                                    return participant;
+                                                } else {
+                                                    return part;
+                                                }
+                                            })
+                                    );
+                                }
+                                else {
+                                    const JsonConverter = new JsonConvert();
+                                    const newEntity = {
+                                        "@id": UniqueString.getUniqueStringWithForm(
+                                            "resin:Entity/",
+                                            "/"
+                                        ),
+                                        name: object.data.name,
+                                        wd_node: object.data.wd_node,
+                                        wd_label: object.data.wd_label,
+                                        wd_description:
+                                            object.data.wd_description,
+                                    };
+                                    mapEntities.set(
+                                        newEntity["@id"],
+                                        JsonConverter.deserializeObject(
+                                            newEntity,
+                                            Entity
+                                        )
+                                    );
+                                    participant.entity = newEntity["@id"];
+                                    editMapNode(
+                                        parentId,
+                                        "participants",
+                                        mapNodes
+                                            .get(parentId)
+                                            .participants.map((part) => {
+                                                if (
+                                                    part.id === participant.id
+                                                ) {
+                                                    return participant;
+                                                } else {
+                                                    return part;
+                                                }
+                                            })
+                                    );
+                                }
+                            }}
+                        />
+                    ) : (<EditableText
                         values={entityObject.name}
                         onSave={(value, field) => {
                             entityObject.name = value;
@@ -48,31 +190,38 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
                         }}
                         variant="none"
                         onTable={true}
-                    />,
+                    />
+                    )}
+                    </React.Fragment>
+                ),
                 roleName: (
                     <React.Fragment>
-                        <EditableText
-                            values={participant.roleName}
-                            onSave={(value, field) => {
-                                participant.roleName = value;
-                                editMapNode(
-                                    parentId,
-                                    "participants",
-                                    mapNodes
-                                        .get(parentId)
-                                        .participants.map((part) => {
-                                            if (part.id === participant.id) {
-                                                return participant;
-                                            } else {
-                                                return part;
-                                            }
-                                        })
-                                );
-                                setTableChange(!tableChange);
-                            }}
-                            variant="none"
-                            onTable={true}
-                        />
+                        
+                            <EditableText
+                                values={participant.roleName}
+                                onSave={(value, field) => {
+                                    participant.roleName = value;
+                                    editMapNode(
+                                        parentId,
+                                        "participants",
+                                        mapNodes
+                                            .get(parentId)
+                                            .participants.map((part) => {
+                                                if (
+                                                    part.id === participant.id
+                                                ) {
+                                                    return participant;
+                                                } else {
+                                                    return part;
+                                                }
+                                            })
+                                    );
+                                    setTableChange(!tableChange);
+                                }}
+                                variant="none"
+                                onTable={true}
+                            />
+                        
                     </React.Fragment>
                 ),
             };
@@ -225,21 +374,30 @@ function TA1TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta1
             </table>
         </div>
     );
-            }
-function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2" }) {
+}
+function TA2TableInfoPanel({
+    data,
+    parentId,
+    editMode = false,
+    schemaType = "ta2",
+}) {
     const [entitiesMap] = useContext(EntitiesContext);
     const [showProvenance, setShowProvenance] = useState(false);
     const [keyProvenance, setKeyProvenance] = useState(null);
     const [currentProvenance, setCurrentProvenance] = useState(null);
     const [tableChange, setTableChange] = useState(false);
-    const [showAllEntities, setShowAllEntities] = useState(schemaType === "ta1");
+    const [showAllEntities, setShowAllEntities] = useState(
+        schemaType === "ta1"
+    );
+    const [query, setQuery] = useState("");
     const [editMapNode, mapNodes, entitiesRelatedEventMap] = useStore(
         (state) => [
             state.editMapNode,
             state.mapNodes,
             state.entitiesRelatedEventMap,
         ]
-    )
+    );
+
     const [editNode, setEditNode] = useState(null);
     const closeProvenance = () => {
         setShowProvenance(false);
@@ -256,6 +414,69 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
             setKeyProvenance(key);
             setShowProvenance(true);
         }
+    };
+    const loadOptions = async (inputValue, callback) => {
+        // if (!inputValue) return callback([]);
+        const options = [];
+        entitiesRelatedEventMap.forEach((entity, key) => {
+            options.push({
+                value: key,
+                label: entitiesMap.get(key).name,
+            });
+        });
+        if (!inputValue) {
+            setTimeout(
+                () =>
+                    callback([
+                        {
+                            label: "Existing Entities",
+                            options: options,
+                        },
+                        {
+                            label: "New Entities",
+                            options: [],
+                        },
+                    ]),
+                1000
+            );
+        }
+
+        // fetch Wikidata entities
+        const response = await axios.get("https://www.wikidata.org/w/api.php", {
+            params: {
+                action: "wbsearchentities",
+                search: inputValue,
+                language: "en",
+                format: "json",
+                origin: "*", // Necessary for CORS
+            },
+        });
+        console.log("response", response);
+        const listNewOptions = response.data.search.map((entity) => ({
+            value: entity.id,
+            label: entity.label,
+            data: {
+                name: entity.label,
+                wd_node: "wd:" + entity.id,
+                wd_label: entity.label,
+                wd_description: entity.description,
+            },
+        }));
+        const totalOptions = [
+            {
+                label: "Existing Entities",
+                options: options.filter((option) =>
+                    option.label
+                        .toLowerCase()
+                        .includes(inputValue.toLowerCase())
+                ),
+            },
+            {
+                label: "New Entities",
+                options: listNewOptions,
+            },
+        ];
+        return callback(totalOptions);
     };
 
     const getDisplayParticipantArray = (data, parentId, showAllEntities) => {
@@ -278,19 +499,17 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                         })
                     );
                 }
-                const options = [];
-                entitiesRelatedEventMap.forEach((value, key) => {
-                    options.push({
-                        value: key,
-                        label: entitiesMap.get(key).name,
-                    });
-                });
                 return {
                     id: participant.id,
                     entities: (
-                        <Select
-                            options={options}
+                        <AsyncSelect
+                            loadOptions={loadOptions}
                             value={values}
+                            defaultOptions
+                            onInputChange={(value) => {
+                                console.log("value", value);
+                                setQuery(value);
+                            }}
                             isMulti
                             onChange={(valueList) => {
                                 const values = [];
@@ -306,17 +525,49 @@ function TA2TableInfoPanel({ data, parentId, editMode = false, schemaType = "ta2
                                         }
                                     });
                                     if (foundInOldArray === false) {
-                                        const newEntity = entitiesMap.get(
-                                            value.value
-                                        );
-                                        const newValue = {
-                                            "@id": UniqueString.getUniqueStringWithForm(
-                                                "resin:Value/",
-                                                "/"
-                                            ),
-                                            ta2entity: newEntity.id,
-                                        };
-                                        values.push(newValue);
+                                        console.log("value", value);
+                                        if (value.data) {
+                                            const JsonConverter =
+                                                new JsonConvert();
+                                            const newEntity = {
+                                                "@id": UniqueString.getUniqueStringWithForm(
+                                                    "resin:Entity/",
+                                                    "/"
+                                                ),
+                                                name: value.data.name,
+                                                wd_node: value.data.wd_node,
+                                                wd_label: value.data.wd_label,
+                                                wd_description:
+                                                    value.data.wd_description,
+                                            };
+                                            entitiesMap.set(
+                                                newEntity["@id"],
+                                                JsonConverter.deserializeObject(
+                                                    newEntity,
+                                                    Entity
+                                                )
+                                            );
+                                            const newValue = {
+                                                "@id": UniqueString.getUniqueStringWithForm(
+                                                    "resin:Value/",
+                                                    "/"
+                                                ),
+                                                ta2entity: newEntity["@id"],
+                                            };
+                                            values.push(newValue);
+                                        } else {
+                                            const newEntity = entitiesMap.get(
+                                                value.value
+                                            );
+                                            const newValue = {
+                                                "@id": UniqueString.getUniqueStringWithForm(
+                                                    "resin:Value/",
+                                                    "/"
+                                                ),
+                                                ta2entity: newEntity.id,
+                                            };
+                                            values.push(newValue);
+                                        }
                                     }
                                     // console.log("newvalues", values);
                                 });
@@ -720,37 +971,36 @@ function TA1EventNodeInfoPanel({ data, onClose }) {
                     parentId={data.id}
                 />
             )}
-            {data.wdNode &&
-                data.wdNode !== null &&
-                data.wdNode !== "null" && (
-                    <details open>
-                        <summary
-                            style={{
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                            }}
-                        >
-                            Event Type
-                        </summary>
-                        {data.wdNode.map((node, index) => (
-                            <div key={node}>
-                        <EditableText
-                            values={data.wdLabel[index]}
-                            variant="h3"
-                            index={index}
-                            onSave={handleOnSave}
-                            field="wdLabel"
-                        />
-                        <EditableText
-                            values={data.wdDescription[index]}
-                            variant="p"
-                            index={index}
-                            onSave={handleOnSave}
-                            field="wdDescription"
-                        />
-                            </div>))}
-                    </details>
-                )}
+            {data.wdNode && data.wdNode !== null && data.wdNode !== "null" && (
+                <details open>
+                    <summary
+                        style={{
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                        }}
+                    >
+                        Event Type
+                    </summary>
+                    {data.wdNode.map((node, index) => (
+                        <div key={node}>
+                            <EditableText
+                                values={data.wdLabel[index]}
+                                variant="h3"
+                                index={index}
+                                onSave={handleOnSave}
+                                field="wdLabel"
+                            />
+                            <EditableText
+                                values={data.wdDescription[index]}
+                                variant="p"
+                                index={index}
+                                onSave={handleOnSave}
+                                field="wdDescription"
+                            />
+                        </div>
+                    ))}
+                </details>
+            )}
 
             {data.participants && data.participants.length > 0 && (
                 <details open>
@@ -859,7 +1109,7 @@ function TA1EventNodeInfoPanel({ data, onClose }) {
             )}
         </div>
     );
-                }
+}
 function TA2EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
     const [showProvenance, setShowProvenance] = useState(false);
@@ -928,37 +1178,36 @@ function TA2EventNodeInfoPanel({ data, onClose }) {
                     parentId={data.id}
                 />
             )}
-            {data.wdNode &&
-                data.wdNode !== null &&
-                data.wdNode !== "null" && (
-                    <details open>
-                        <summary
-                            style={{
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                            }}
-                        >
-                            Event Type
-                        </summary>
-                        {data.wdNode.map((node, index) => (
-                            <div key={node}>
-                        <EditableText
-                            values={data.wdLabel[index]}
-                            variant="h3"
-                            index={index}
-                            onSave={handleOnSave}
-                            field="wdLabel"
-                        />
-                        <EditableText
-                            values={data.wdDescription[index]}
-                            variant="p"
-                            index={index}
-                            onSave={handleOnSave}
-                            field="wdDescription"
-                        />
-                            </div>))}
-                    </details>
-                )}
+            {data.wdNode && data.wdNode !== null && data.wdNode !== "null" && (
+                <details open>
+                    <summary
+                        style={{
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                        }}
+                    >
+                        Event Type
+                    </summary>
+                    {data.wdNode.map((node, index) => (
+                        <div key={node}>
+                            <EditableText
+                                values={data.wdLabel[index]}
+                                variant="h3"
+                                index={index}
+                                onSave={handleOnSave}
+                                field="wdLabel"
+                            />
+                            <EditableText
+                                values={data.wdDescription[index]}
+                                variant="p"
+                                index={index}
+                                onSave={handleOnSave}
+                                field="wdDescription"
+                            />
+                        </div>
+                    ))}
+                </details>
+            )}
 
             {data.participants && data.participants.length > 0 && (
                 <details open>
@@ -1073,8 +1322,11 @@ export function InfoPanel({ data, onClose }) {
     if (data === undefined) {
         return <></>;
     }
-    return (schemaType === 'ta2'? <TA2EventNodeInfoPanel data={data} onClose={onClose} />: <TA1EventNodeInfoPanel data={data} onClose={onClose} />);
-    
+    return schemaType === "ta2" ? (
+        <TA2EventNodeInfoPanel data={data} onClose={onClose} />
+    ) : (
+        <TA1EventNodeInfoPanel data={data} onClose={onClose} />
+    );
 }
 
 export const TA2EditEventPanel = ({
@@ -1087,11 +1339,13 @@ export const TA2EditEventPanel = ({
     grouping = false,
 }) => {
     const jsonConvert = new JsonConvert();
-    const [getNewIdInEventMap, addEventNode, addNodeOnPanel] = useStore((state) => [
-        state.getNewIdInEventMap,
-        state.addEventNode,
-        state.addNodeOnPanel
-    ]);
+    const [getNewIdInEventMap, addEventNode, addNodeOnPanel] = useStore(
+        (state) => [
+            state.getNewIdInEventMap,
+            state.addEventNode,
+            state.addNodeOnPanel,
+        ]
+    );
 
     const [data, setData] = useState(
         existingData
@@ -1102,9 +1356,9 @@ export const TA2EditEventPanel = ({
                   name: "",
                   description: "",
                   parent: parentId,
-                  children_gate: grouping? "or": undefined,
+                  children_gate: grouping ? "or" : undefined,
                   isTopLevel: parentId === "null",
-                  subgroup_events: grouping? subgroupEvents : [],
+                  subgroup_events: grouping ? subgroupEvents : [],
                   outlinks: [],
                   predictionProvenance: [],
                   confidence: 1.0,
@@ -1145,7 +1399,7 @@ export const TA2EditEventPanel = ({
             addNodeOnPanel(jsonConvert.deserializeObject(data, EventNode));
             onClose();
             return;
-        } 
+        }
         addEventNode(jsonConvert.deserializeObject(data, EventNode), grouping);
         onClose();
     };
@@ -1156,7 +1410,13 @@ export const TA2EditEventPanel = ({
                 toggleEnlarged={toggleEnlarged}
                 handleClick={onClose}
             />
-            {grouping? <h2>New Grouping Node</h2> :existingData ? <h2>Edit Event</h2> : <h2>Add A New Event</h2>}
+            {grouping ? (
+                <h2>New Grouping Node</h2>
+            ) : existingData ? (
+                <h2>Edit Event</h2>
+            ) : (
+                <h2>Add A New Event</h2>
+            )}
             <form onSubmit={handleSubmit} className="form-container">
                 <div className="form-group">
                     <label>Id:</label>
@@ -1200,7 +1460,6 @@ export const TA2EditEventPanel = ({
                         name="childrenGate"
                         value={data.childrenGate}
                         onChange={handleChange}
-
                     >
                         <option value="or">OR</option>
                         <option value="and">AND</option>
@@ -1271,7 +1530,11 @@ export const TA2EditEventPanel = ({
                 </div>
                 <div className="form-group">
                     <label>WikiData Node:</label>
-                    <input type="text" name="wdNode" onChange={handleArrayChange} />
+                    <input
+                        type="text"
+                        name="wdNode"
+                        onChange={handleArrayChange}
+                    />
                 </div>
                 <div className="form-group">
                     <label>WikiData Label:</label>
@@ -1357,11 +1620,13 @@ export const TA1EditEventPanel = ({
     grouping = false,
 }) => {
     const jsonConvert = new JsonConvert();
-    const [getNewIdInEventMap, addEventNode, addNodeOnPanel] = useStoreTA1((state) => [
-        state.getNewIdInEventMap,
-        state.addEventNode,
-        state.addNodeOnPanel
-    ]);
+    const [getNewIdInEventMap, addEventNode, addNodeOnPanel] = useStoreTA1(
+        (state) => [
+            state.getNewIdInEventMap,
+            state.addEventNode,
+            state.addNodeOnPanel,
+        ]
+    );
 
     const [data, setData] = useState(
         existingData
@@ -1410,7 +1675,7 @@ export const TA1EditEventPanel = ({
             addNodeOnPanel(jsonConvert.deserializeObject(data, EventNode));
             onClose();
             return;
-        } 
+        }
         addEventNode(jsonConvert.deserializeObject(data, EventNode), grouping);
         onClose();
     };
@@ -1421,7 +1686,13 @@ export const TA1EditEventPanel = ({
                 toggleEnlarged={toggleEnlarged}
                 handleClick={onClose}
             />
-            {grouping? <h2>New Grouping Node</h2> :existingData ? <h2>Edit Event</h2> : <h2>Add A New Event</h2>}
+            {grouping ? (
+                <h2>New Grouping Node</h2>
+            ) : existingData ? (
+                <h2>Edit Event</h2>
+            ) : (
+                <h2>Add A New Event</h2>
+            )}
             <form onSubmit={handleSubmit} className="form-container">
                 <div className="form-group">
                     <label>Id:</label>
@@ -1456,7 +1727,6 @@ export const TA1EditEventPanel = ({
                         name="childrenGate"
                         value={data.childrenGate}
                         onChange={handleChange}
-
                     >
                         <option value="or">OR</option>
                         <option value="and">AND</option>
@@ -1533,7 +1803,11 @@ export const TA1EditEventPanel = ({
                 </div>
                 <div className="form-group">
                     <label>WikiData Node:</label>
-                    <input type="text" name="wdNode" onChange={handleArrayChange} />
+                    <input
+                        type="text"
+                        name="wdNode"
+                        onChange={handleArrayChange}
+                    />
                 </div>
                 <div className="form-group">
                     <label>WikiData Label:</label>

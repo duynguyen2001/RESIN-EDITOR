@@ -1,4 +1,7 @@
 
+//********** */
+// * Deprecated due to handling TA1 and TA2 differently
+// ********** */
 // *********
 // * TA1 to TA2
 // *********
