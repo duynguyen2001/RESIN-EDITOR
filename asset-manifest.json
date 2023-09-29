@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/RESIN-EDITOR/static/css/main.e4fa5a78.css",
-    "main.js": "/RESIN-EDITOR/static/js/main.48875924.js",
+    "main.css": "/RESIN-EDITOR/static/css/main.7bda5966.css",
+    "main.js": "/RESIN-EDITOR/static/js/main.745eda9b.js",
     "static/js/787.745c57d2.chunk.js": "/RESIN-EDITOR/static/js/787.745c57d2.chunk.js",
     "static/media/fontawesome-webfont.svg?v=4.7.0": "/RESIN-EDITOR/static/media/fontawesome-webfont.c1e38fd9e0e74ba58f7a.svg",
     "static/media/fontawesome-webfont.eot": "/RESIN-EDITOR/static/media/fontawesome-webfont.8b43027f47b20503057d.eot",
@@ -9,12 +9,12 @@
     "static/media/fontawesome-webfont.woff?v=4.7.0": "/RESIN-EDITOR/static/media/fontawesome-webfont.f691f37e57f04c152e23.woff",
     "static/media/fontawesome-webfont.woff2?v=4.7.0": "/RESIN-EDITOR/static/media/fontawesome-webfont.20fd1704ea223900efa9.woff2",
     "index.html": "/RESIN-EDITOR/index.html",
-    "main.e4fa5a78.css.map": "/RESIN-EDITOR/static/css/main.e4fa5a78.css.map",
-    "main.48875924.js.map": "/RESIN-EDITOR/static/js/main.48875924.js.map",
+    "main.7bda5966.css.map": "/RESIN-EDITOR/static/css/main.7bda5966.css.map",
+    "main.745eda9b.js.map": "/RESIN-EDITOR/static/js/main.745eda9b.js.map",
     "787.745c57d2.chunk.js.map": "/RESIN-EDITOR/static/js/787.745c57d2.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e4fa5a78.css",
-    "static/js/main.48875924.js"
+    "static/css/main.7bda5966.css",
+    "static/js/main.745eda9b.js"
   ]
 }
