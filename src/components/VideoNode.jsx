@@ -242,182 +242,187 @@ function VideoWithBox({ data, containerWidth = 500 }) {
 
                 <>
                     {ready && (
-                        <div
-                            className="control-bar"
-                            style={{
-                                width: containerWidth,
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                margin: "10px",
-                                padding: "10px",
-                            }}
-                        >
-                            <Stack
+                        <>
+                            <div
+                                className="control-bar"
                                 style={{
+                                    width: containerWidth,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    margin: "10px",
+                                    padding: "10px",
+                                }}
+                            >
+                                <Stack
+                                    style={{
+                                        width: "100%",
+                                    }}
+                                    spacing={2}
+                                    direction="row"
+                                    sx={{ mb: 1 }}
+                                    alignItems="center"
+                                >
+                                    <text>
+                                        {Math.floor(startTime / 60)}:
+                                        {Math.floor(startTime % 60)
+                                            .toString()
+                                            .padStart(2, "0")}
+                                    </text>
+                                    {editing ? (
+                                        <CustomStartEndSlider
+                                            value={[startTime, endTime]}
+                                            aria-label="Custom marks"
+                                            min={0}
+                                            max={duration}
+                                            // valueLabelDisplay="on"
+                                            onChange={(e, value) => {
+                                                setStartTime(value[0]);
+                                                setEndTime(value[1]);
+
+                                                if (playerRef.current) {
+                                                    playerRef.current.seekTo(
+                                                        value[0],
+                                                        "seconds"
+                                                    );
+                                                }
+                                                data.startTime = value[0];
+                                                data.endTime = value[1];
+                                                onProvenanceUpdate(data);
+                                            }}
+                                        />
+                                    ) : (
+                                        <Slider
+                                            value={played}
+                                            aria-label="Custom marks"
+                                            min={0}
+                                            max={duration}
+                                            // valueLabelDisplay="on"
+                                            marks={[
+                                                {
+                                                    value: startTime,
+                                                    label: `${Math.floor(
+                                                        startTime / 60
+                                                    )}:${Math.floor(
+                                                        startTime % 60
+                                                    )
+                                                        .toString()
+                                                        .padStart(2, "0")}`,
+                                                    className: "special",
+                                                },
+                                                {
+                                                    value: endTime,
+                                                    label: `${Math.floor(
+                                                        endTime / 60
+                                                    )}:${Math.floor(
+                                                        endTime % 60
+                                                    )
+                                                        .toString()
+                                                        .padStart(2, "0")}`,
+                                                },
+                                            ]}
+                                            onChange={(e, value) => {
+                                                if (playerRef.current) {
+                                                    playerRef.current.seekTo(
+                                                        value,
+                                                        "seconds"
+                                                    );
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                    <text>
+                                        {Math.floor(duration / 60)}:
+                                        {Math.floor(duration % 60)
+                                            .toString()
+                                            .padStart(2, "0")}
+                                    </text>
+                                </Stack>
+                            </div>
+
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
                                     width: "100%",
+                                    flexDirection: "row",
                                 }}
-                                spacing={2}
-                                direction="row"
-                                sx={{ mb: 1 }}
-                                alignItems="center"
                             >
-                                <text>
-                                    {Math.floor(startTime / 60)}:
-                                    {Math.floor(startTime % 60)
-                                        .toString()
-                                        .padStart(2, "0")}
-                                </text>
-                                {editing ? (
-                                    <CustomStartEndSlider
-                                        value={[startTime, endTime]}
-                                        aria-label="Custom marks"
-                                        min={0}
-                                        max={duration}
-                                        // valueLabelDisplay="on"
-                                        onChange={(e, value) => {
-                                            setStartTime(value[0]);
-                                            setEndTime(value[1]);
+                                <button
+                                    onClick={() => {
+                                        if (playerRef.current) {
+                                            playerRef.current.seekTo(
+                                                played - 5 > startTime
+                                                    ? played - 5
+                                                    : 0,
+                                                "seconds"
+                                            );
+                                        }
+                                    }}
+                                    style={{
+                                        marginRight: "5px",
+                                        backgroundColor: "transparent",
+                                        border: "none",
+                                        cursor: "pointer",
+                                        outline: "none",
+                                        color: "black",
+                                    }}
+                                >
+                                    <i className="fa fa-backward"></i>
+                                </button>
 
-                                            if (playerRef.current) {
-                                                playerRef.current.seekTo(
-                                                    value[0],
-                                                    "seconds"
-                                                );
-                                            }
-                                            data.startTime = value[0];
-                                            data.endTime = value[1];
-                                            onProvenanceUpdate(data);
-                                        }}
-                                    />
-                                ) : (
-                                    <Slider
-                                        value={played}
-                                        aria-label="Custom marks"
-                                        min={0}
-                                        max={duration}
-                                        // valueLabelDisplay="on"
-                                        marks={[
-                                            {
-                                                value: startTime,
-                                                label: `${Math.floor(
-                                                    startTime / 60
-                                                )}:${Math.floor(startTime % 60)
-                                                    .toString()
-                                                    .padStart(2, "0")}`,
-                                                className: "special",
-                                            },
-                                            {
-                                                value: endTime,
-                                                label: `${Math.floor(
-                                                    endTime / 60
-                                                )}:${Math.floor(endTime % 60)
-                                                    .toString()
-                                                    .padStart(2, "0")}`,
-                                            },
-                                        ]}
-                                        onChange={(e, value) => {
-                                            if (playerRef.current) {
-                                                playerRef.current.seekTo(
-                                                    value,
-                                                    "seconds"
-                                                );
-                                            }
-                                        }}
-                                    />
-                                )}
-                                <text>
-                                    {Math.floor(duration / 60)}:
-                                    {Math.floor(duration % 60)
-                                        .toString()
-                                        .padStart(2, "0")}
-                                </text>
-                            </Stack>
-                        </div>
+                                <button
+                                    onClick={() => {
+                                        setPlaying(!playing);
+                                        if (playerRef.current) {
+                                            playerRef.current.seekTo(
+                                                startTime,
+                                                "seconds"
+                                            );
+                                        }
+                                    }}
+                                    style={{
+                                        marginRight: "5px",
+                                        backgroundColor: "transparent",
+                                        border: "none",
+                                        cursor: "pointer",
+                                        outline: "none",
+                                        color: "black",
+                                    }}
+                                >
+                                    {playing ? (
+                                        <i className="fa fa-pause"></i>
+                                    ) : (
+                                        <i className="fa fa-play"></i>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (playerRef.current) {
+                                            playerRef.current.seekTo(
+                                                played + 5 > endTime
+                                                    ? endTime
+                                                    : played + 5,
+                                                "seconds"
+                                            );
+                                        }
+                                    }}
+                                    style={{
+                                        marginRight: "5px",
+                                        backgroundColor: "transparent",
+                                        border: "none",
+                                        cursor: "pointer",
+                                        outline: "none",
+                                        color: "black",
+                                    }}
+                                >
+                                    <i className="fa fa-forward"></i>
+                                </button>
+                            </div>
+                        </>
                     )}
-                    <>
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                width: "100%",
-                                flexDirection: "row",
-                            }}
-                        >
-                            <button
-                                onClick={() => {
-                                    if (playerRef.current) {
-                                        playerRef.current.seekTo(
-                                            played - 5 > startTime
-                                                ? played - 5
-                                                : 0,
-                                            "seconds"
-                                        );
-                                    }
-                                }}
-                                style={{
-                                    marginRight: "5px",
-                                    backgroundColor: "transparent",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    outline: "none",
-                                    color: "black",
-                                }}
-                            >
-                                <i className="fa fa-backward"></i>
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    setPlaying(!playing);
-                                    if (playerRef.current) {
-                                        playerRef.current.seekTo(
-                                            startTime,
-                                            "seconds"
-                                        );
-                                    }
-                                }}
-                                style={{
-                                    marginRight: "5px",
-                                    backgroundColor: "transparent",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    outline: "none",
-                                    color: "black",
-                                }}
-                            >
-                                {playing ? (
-                                    <i className="fa fa-pause"></i>
-                                ) : (
-                                    <i className="fa fa-play"></i>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (playerRef.current) {
-                                        playerRef.current.seekTo(
-                                            played + 5 > endTime
-                                                ? endTime
-                                                : played + 5,
-                                            "seconds"
-                                        );
-                                    }
-                                }}
-                                style={{
-                                    marginRight: "5px",
-                                    backgroundColor: "transparent",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    outline: "none",
-                                    color: "black",
-                                }}
-                            >
-                                <i className="fa fa-forward"></i>
-                            </button>
-                        </div>
-                    </>
 
                     <div
                         style={{

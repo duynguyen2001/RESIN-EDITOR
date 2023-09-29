@@ -1070,8 +1070,6 @@ function TA1EventNodeInfoPanel({ data, onClose }) {
                                 "participants",
                                 data.participants
                             );
-                            console.log("data", data);
-
                             setTimeFrame(Date.now());
                         }}
                     >
