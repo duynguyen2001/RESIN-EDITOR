@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal } from "../pages/Panel";
+import { Modal } from "../pages/Modal";
 import ProvenanceMap from "../pages/ProvenanceMap";
 
 const ProvenancePopup = ({ ids, onClose, parentId }) => {

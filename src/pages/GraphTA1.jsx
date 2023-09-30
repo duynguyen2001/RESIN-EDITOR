@@ -10,7 +10,8 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import Menu from "../components/Menu";
 import { RangeSlider } from "../components/RangeSlider";
-import { TA1EditEventPanel, InfoPanel } from "./Panel";
+import { InfoPanel } from "./Panel";
+import { TA1EditEventPanel } from "./TA1EditEventPanel";
 import "./graph.css";
 import useStore from "./storeTA1";
 import { useReactFlow } from "reactflow";

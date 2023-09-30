@@ -17,7 +17,7 @@ import {
     ProvenanceContext,
     SchemaTypeContext,
 } from "../pages/DataReader";
-import { Modal } from "../pages/Panel";
+import { Modal } from "../pages/Modal";
 import useStore from "../pages/store";
 import {
     DetectedNodeStrategy,
