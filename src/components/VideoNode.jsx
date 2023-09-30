@@ -3,7 +3,7 @@ import { ProvenanceContext } from "../pages/DataReader";
 import ReactPlayer from "react-player";
 import { Rnd } from "react-rnd";
 import "./VideoNode.css";
-import EditableText from "../pages/EditableText";
+import EditableText from "./EditableText";
 import { set } from "idb-keyval";
 import { Slider, Stack, styled } from "@mui/material";
 

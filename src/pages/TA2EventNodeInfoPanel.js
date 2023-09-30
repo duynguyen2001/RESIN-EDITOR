@@ -4,7 +4,7 @@ import { Entity, Participant } from "../components/Library";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import { UniqueString } from "../components/TypeScriptUtils";
 import { EntitiesContext } from "./DataReader";
-import EditableText from "./EditableText.jsx";
+import EditableText from "../components/EditableText.jsx";
 import useStore from "./store";
 import { TA2TableInfoPanel } from "./TA2TableInfoPanel";
 import { Modal } from "./Modal";

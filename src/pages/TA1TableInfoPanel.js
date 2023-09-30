@@ -3,7 +3,7 @@ import { JsonConvert } from "json2typescript";
 import React, { useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 import { UniqueString } from "../components/TypeScriptUtils";
-import EditableText from "./EditableText.jsx";
+import EditableText from "../components/EditableText.jsx";
 import useStoreTA1 from "./storeTA1";
 import { TA1Entity } from "../components/LibraryTA1";
 

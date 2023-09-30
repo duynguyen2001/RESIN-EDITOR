@@ -6,7 +6,7 @@ import { Entity } from "../components/Library";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import { UniqueString } from "../components/TypeScriptUtils";
 import { EntitiesContext } from "./DataReader";
-import EditableText from "./EditableText.jsx";
+import EditableText from "../components/EditableText.jsx";
 import useStore from "./store";
 
 export function TA2TableInfoPanel({

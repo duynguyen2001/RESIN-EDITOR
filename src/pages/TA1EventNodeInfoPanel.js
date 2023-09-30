@@ -2,7 +2,7 @@ import { JsonConvert } from "json2typescript";
 import React, { useState } from "react";
 import ProvenancePopup from "../components/ProvenancePopup.jsx";
 import { UniqueString } from "../components/TypeScriptUtils";
-import EditableText from "./EditableText.jsx";
+import EditableText from "../components/EditableText.jsx";
 import useStoreTA1 from "./storeTA1";
 import { TA1Entity, TA1Participant } from "../components/LibraryTA1";
 import { TA1TableInfoPanel } from "./TA1TableInfoPanel";
