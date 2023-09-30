@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { ReactFlow, ReactFlowProvider } from "reactflow";
-import { getLayoutedElements } from "../../../pages/layoutTA1";
+import { getLayoutedElements } from "../../../pages/TA1/layoutTA1";
 import {
     RelationsContext,
     nodeTypes,

@@ -9,12 +9,13 @@ import {
     OnConnect,
     OnEdgesChange,
     OnNodesChange,
+    OnSelectionChangeParams,
     Position,
     applyEdgeChanges,
     applyNodeChanges,
-    OnSelectionChangeParams
 } from "reactflow";
 import { create } from "zustand";
+import getLayoutedElementsNested from "../../pages/TA2/layout";
 import {
     DetectedNodeStrategy,
     EventNode,
@@ -23,9 +24,6 @@ import {
     PredictedNodeStrategy,
     SourceOnlyNodeStrategy,
 } from "./Library";
-import getLayoutedElementsNested from "../../pages/layout";
-import { JsonConvert } from "json2typescript";
-import context from "react-bootstrap/esm/AccordionContext";
 
 enum GraphEdgeType {
     or = "or",
@@ -83,7 +81,12 @@ type RFState = {
     setConfidenceInterval: (confidenceInterval: [number, number]) => void;
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
-    editMapNode: (nodeId: string, field: string, value: any, index:number) => void;
+    editMapNode: (
+        nodeId: string,
+        field: string,
+        value: any,
+        index: number
+    ) => void;
     nodeRerender: (typeNode: string) => void;
     setChosenEntities: (chosenEntities: string[]) => void;
     setChosenNodes: (chosenNodes: string[]) => void;
@@ -95,7 +98,7 @@ type RFState = {
     setClickedNode: (clickedNode: Node | null) => void;
     setFirstNode: (firstNode: string | null) => void;
     setEntityChosenEvents: (entityChosenEvents: []) => void;
-    addNodeOnPanel: (node: EventNode)=> void;
+    addNodeOnPanel: (node: EventNode) => void;
     addEventNode: (node: EventNode, grouping: boolean) => void;
     getNewIdInEventMap: () => string;
     onNodesChange: OnNodesChange;
@@ -145,7 +148,7 @@ const useStore = create<RFState>((set, get) => ({
     key: 0,
     deltaX: 0,
     deltaY: 0,
-    selectionNodes:[],
+    selectionNodes: [],
     edgeStyle: {
         or: {
             data: {
@@ -234,11 +237,16 @@ const useStore = create<RFState>((set, get) => ({
         const entityChosenEventsSet = new Set(entityChosenEvents);
         set({ entityChosenEvents: entityChosenEventsSet });
     },
-    editMapNode: (nodeId: string, field: string, value: any, index:number = -1) => {
+    editMapNode: (
+        nodeId: string,
+        field: string,
+        value: any,
+        index: number = -1
+    ) => {
         const { mapNodes, nodeRerender } = get();
-        if(index === -1){
+        if (index === -1) {
             mapNodes.get(nodeId)[field] = value;
-        }else{
+        } else {
             mapNodes.get(nodeId)[field][index] = value;
         }
         nodeRerender("eventNode");
@@ -262,7 +270,7 @@ const useStore = create<RFState>((set, get) => ({
         nodeRerender("eventNode");
     },
 
-    addEventNode: (node: EventNode, grouping : Boolean = false) => {
+    addEventNode: (node: EventNode, grouping: Boolean = false) => {
         const { mapNodes, updateLayout } = get();
         console.log("subgroupEvent here here", node);
         mapNodes.set(node.id, node);
@@ -272,15 +280,20 @@ const useStore = create<RFState>((set, get) => ({
         }
         if (grouping) {
             const subgroupEvents = node.subgroupEvents;
-            const outlinks: string[] =[]
+            const outlinks: string[] = [];
             console.log("node.subgroupEvents", node.subgroupEvents);
 
             subgroupEvents.forEach((subgroupEvent: string) => {
                 const subgroupEventNode = mapNodes.get(subgroupEvent);
                 console.log("subgroupEventNode", subgroupEventNode);
                 subgroupEventNode.parent = node.id;
-                outlinks.push(...subgroupEventNode.outlinks.filter((outlink: string) => !node.subgroupEvents.includes(outlink)));
-                
+                outlinks.push(
+                    ...subgroupEventNode.outlinks.filter(
+                        (outlink: string) =>
+                            !node.subgroupEvents.includes(outlink)
+                    )
+                );
+
                 subgroupEventNode.outlinks = subgroupEventNode.outlinks.filter(
                     (outlink: string) => node.subgroupEvents.includes(outlink)
                 );
@@ -300,18 +313,21 @@ const useStore = create<RFState>((set, get) => ({
                     if (subgroupEventNode.outlinks === undefined) {
                         return;
                     }
-                    if (subgroupEventNode.outlinks.filter((outlink: string) => subgroupEvents.includes(outlink)).length === 0) {
+                    if (
+                        subgroupEventNode.outlinks.filter((outlink: string) =>
+                            subgroupEvents.includes(outlink)
+                        ).length === 0
+                    ) {
                         return;
                     }
-                    subgroupEventNode.outlinks = subgroupEventNode.outlinks.filter(
-                        (outlink: string) => !subgroupEvents.includes(outlink)
-                    );
+                    subgroupEventNode.outlinks =
+                        subgroupEventNode.outlinks.filter(
+                            (outlink: string) =>
+                                !subgroupEvents.includes(outlink)
+                        );
                     subgroupEventNode.outlinks.push(node.id);
-                    
-                })
+                });
             }
-            
-
         }
         const parentNode = mapNodes.get(parentId);
         if (parentNode) {
@@ -331,10 +347,11 @@ const useStore = create<RFState>((set, get) => ({
     },
     setShowAddPanel: (showAddPanel) => set({ showAddPanel }),
     setClickedNode: (clickedNode) => set({ clickedNode }),
-    setSelectionContextMenu: (selectionContextMenu) => set({ selectionContextMenu }),
+    setSelectionContextMenu: (selectionContextMenu) =>
+        set({ selectionContextMenu }),
     setContextMenu: (contextMenu) => set({ contextMenu }),
     setFirstNode: (firstNode) => set({ firstNode }),
-    setPaneContextMenu  : (paneContextMenu) => set({ paneContextMenu }),    
+    setPaneContextMenu: (paneContextMenu) => set({ paneContextMenu }),
     setChosenEntities(chosenEntities) {
         const { nodes, confidenceInterval, nodeRerender } = get();
         const chosenEvents = new Set<string>();
@@ -367,9 +384,7 @@ const useStore = create<RFState>((set, get) => ({
     getNodeById: (id: string) => {
         return get().mapNodes.get(id);
     },
-    groupingNodes(nodes: string[]) {
-
-    },
+    groupingNodes(nodes: string[]) {},
     onNodesChange: (changes: NodeChange[]) => {
         set({
             nodes: applyNodeChanges(changes, get().nodes),
@@ -378,7 +393,11 @@ const useStore = create<RFState>((set, get) => ({
     onPaneContextMenu: (event) => {
         event.preventDefault();
         console.log("event", event);
-        set({paneContextMenu: event, contextMenu: null, selectionContextMenu: false});
+        set({
+            paneContextMenu: event,
+            contextMenu: null,
+            selectionContextMenu: false,
+        });
     },
     onEdgesChange: (changes: EdgeChange[]) => {
         changes.forEach((change) => {
@@ -451,11 +470,11 @@ const useStore = create<RFState>((set, get) => ({
     },
     onSelectionChange: (params: OnSelectionChangeParams) => {
         const { nodes } = params;
-        const newNodes = nodes.filter(q => q.type === "eventNode")
+        const newNodes = nodes.filter((q) => q.type === "eventNode");
         set({
             selectionNodes: newNodes,
-            selectionContextMenu: false
-        })
+            selectionContextMenu: false,
+        });
     },
     updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => {
         const { edgeStyle } = get();
@@ -520,19 +539,24 @@ const useStore = create<RFState>((set, get) => ({
         return sortedEntitiesRelatedEventMap;
     },
     onSelectionContextMenu: (event, nodes) => {
-
         console.log("nodes multiselect", nodes);
         event.preventDefault();
         set({
             selectionNodes: nodes,
             selectionContextMenu: true,
             paneContextMenu: null,
-            contextMenu: null
-        })
+            contextMenu: null,
+        });
     },
     addNodeOnPanel(node: EventNode) {
         // we add a new parent node to the root node of the graph, and change istoplevel of that node to false, then we add the new node and the old subnode as subgroupEvents of the new parent node
-        const { mapNodes, firstNode, chosenNodes, updateLayout, getNewIdInEventMap } = get();
+        const {
+            mapNodes,
+            firstNode,
+            chosenNodes,
+            updateLayout,
+            getNewIdInEventMap,
+        } = get();
         const newMapNodes = new Map(mapNodes);
         const newFirstNode = getNewIdInEventMap();
         if (firstNode === null) {
@@ -546,7 +570,7 @@ const useStore = create<RFState>((set, get) => ({
         newFirstNodeObject.childrenGate = "or";
         newFirstNodeObject.confidence = [1.0];
         console.log("newFirstNodeObject", newFirstNodeObject);
-        
+
         // set up the old firstnode
         FirstNodeObject.isTopLevel = false;
         FirstNodeObject.parent = newFirstNode;
@@ -560,7 +584,11 @@ const useStore = create<RFState>((set, get) => ({
         newMapNodes.set(node.id, node);
         newMapNodes.set(firstNode, FirstNodeObject);
         newMapNodes.set(newFirstNode, newFirstNodeObject);
-        set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
+        set({
+            mapNodes: newMapNodes,
+            firstNode: newFirstNode,
+            chosenNodes: [newFirstNode, ...chosenNodes],
+        });
 
         console.log("newMapNodes", newMapNodes);
         console.log("chosenNodes", chosenNodes);
@@ -653,7 +681,7 @@ const useStore = create<RFState>((set, get) => ({
             const oldNodePosition = get().nodes.find(
                 (n) => n.id === parentId
             )?.position;
-            
+
             set({ chosenNodes: newChosenNodes, clickedNode: node });
             get().updateLayout();
 

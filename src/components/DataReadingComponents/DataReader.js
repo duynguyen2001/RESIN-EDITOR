@@ -13,8 +13,8 @@ import {
 
 import defaultData from "../../data/resin-resin-task1-ce2013.json";
 import defaultText from "../../data/triggers.json";
-import Graph from "../../pages/Graph.js";
-import GraphTA1 from "../../pages/GraphTA1.jsx";
+import Graph from "../../pages/TA2/Graph.js";
+import GraphTA1 from "../../pages/TA1/GraphTA1.jsx";
 import { EventGraphNode } from "../CustomizedNodes/EventGraphNode/EventGraphNode.js";
 import Gate from "../CustomizedComponents/Gates/Gate.jsx";
 import { CustomNode } from "../CustomizedNodes/CustomNode/CustomNode.js";

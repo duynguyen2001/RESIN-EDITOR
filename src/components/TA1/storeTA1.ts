@@ -22,7 +22,7 @@ import {
     TA1EventStrategy,
     TA1NodeRenderingStrategy,
 } from "./LibraryTA1";
-import getLayoutedElementsNested from "../../pages/layoutTA1";
+import getLayoutedElementsNested from "../../pages/TA1/layoutTA1";
 import { Entity, Participant } from "../TA2/Library";
 import { UniqueString } from "../utils/TypeScriptUtils";
 

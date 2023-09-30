@@ -5,24 +5,20 @@ import ReactFlow, {
     NodeToolbar,
     Position,
     ReactFlowProvider,
-    useOnSelectionChange,
+    useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import Menu from "../components/PageComponents/Menu/Menu";
-import { RangeSlider } from "../components/CustomizedComponents/RangeSlider/RangeSlider";
-import { InfoPanel } from "../components/PageComponents/Panel/Panel";
-import { TA2EditEventPanel } from "../components/TA2/TA2EditEventPanel";
+import { RangeSlider } from "../../components/CustomizedComponents/RangeSlider/RangeSlider";
+import Menu from "../../components/PageComponents/Menu/Menu";
+import { InfoPanel } from "../../components/PageComponents/Panel/Panel";
+import { TA1Event } from "../../components/TA1/LibraryTA1";
+import { TA1EditEventPanel } from "../../components/TA1/TA1EditEventPanel";
+import useStore from "../../components/TA1/storeTA1";
+import { EventsContext, SchemaTypeContext, nodeTypes } from "../../components/DataReadingComponents/DataReader";
 import "./graph.css";
-import useStore from "../components/TA2/store";
-import { useReactFlow } from "reactflow";
-import { SchemaTypeContext, nodeTypes } from "../components/DataReadingComponents/DataReader";
-import { set } from "idb-keyval";
-import { EventsContext } from "../components/DataReadingComponents/DataReader";
-import { EventNode } from "../components/TA2/Library";
-
-export const Graph = () => {
-    const [eventNodes]  = useContext(EventsContext);
-    const [schemaType] = useContext(SchemaTypeContext);
+export const GraphTA1 = () => {
+    const [eventNodes] = useContext(EventsContext);
+    const [schemaType, setSchemaType] = useContext(SchemaTypeContext);
     const {
         nodes,
         edges,
@@ -43,7 +39,7 @@ export const Graph = () => {
         setPaneContextMenu,
         onNodesChange,
         onEdgesChange,
-        updateGraphByEventNodes,
+        updateGraphByTA1Events,
         onNodeClick,
         onConnect,
         onEdgeUpdate,
@@ -63,8 +59,14 @@ export const Graph = () => {
 
     // layout related functions
     useEffect(() => {
-        if (schemaType !== "ta2" || !eventNodes || eventNodes.length === 0 || !(eventNodes[0] instanceof EventNode)) return;
-        updateGraphByEventNodes(eventNodes);
+        if (
+            schemaType !== "ta1" ||
+            !eventNodes ||
+            eventNodes.length === 0 ||
+            !(eventNodes[0] instanceof TA1Event)
+        )
+            return;
+        updateGraphByTA1Events(eventNodes);
     }, [eventNodes]);
 
     const [grouping, setGrouping] = useState(false);
@@ -179,23 +181,27 @@ export const Graph = () => {
                         >
                             <span className="fa fa-plus" />
                         </button>
-                        {contextMenu.id !== firstNode && !contextMenu.id.startsWith("gate-")&&<button
-                            className="selection-button"
-                            onClick={() => {
-                                setClickedNode(contextMenu);
-                                setGrouping(true);
-                                const parentId = contextMenu.parentNode;
-                                setShowAddPanel(
-                                    parentId === null || parentId === undefined
-                                        ? "null"
-                                        : parentId.startsWith("gate-")
-                                        ? parentId.replace("gate-", "")
-                                        : parentId
-                                );
-                            }}
-                        >
-                            <span className="fa fa-object-group" />
-                        </button>}
+                        {contextMenu.id !== firstNode &&
+                            !contextMenu.id.startsWith("gate-") && (
+                                <button
+                                    className="selection-button"
+                                    onClick={() => {
+                                        setClickedNode(contextMenu);
+                                        setGrouping(true);
+                                        const parentId = contextMenu.parentNode;
+                                        setShowAddPanel(
+                                            parentId === null ||
+                                                parentId === undefined
+                                                ? "null"
+                                                : parentId.startsWith("gate-")
+                                                ? parentId.replace("gate-", "")
+                                                : parentId
+                                        );
+                                    }}
+                                >
+                                    <span className="fa fa-object-group" />
+                                </button>
+                            )}
                     </NodeToolbar>
                 )}
                 {selectionContextMenu && selectionNodes.length > 0 && (
@@ -265,15 +271,15 @@ export const Graph = () => {
                                 setClickedNode(null);
                                 setContextMenu(null);
                                 setPaneContextMenu(null);
-                                setShowAddPanel('null');
+                                setShowAddPanel("null");
                             }}
-                            >
+                        >
                             <span className="fa fa-plus" />
-                            </button>
+                        </button>
                     </div>
                 )}
                 {showAddPanel && (
-                    <TA2EditEventPanel
+                    <TA1EditEventPanel
                         parentId={showAddPanel}
                         onClose={() => {
                             setGrouping(false);
@@ -284,8 +290,9 @@ export const Graph = () => {
                         subgroupEvents={
                             selectionNodes.length > 0
                                 ? selectionNodes.map((node) => node.id) || []
-                                : clickedNode?
-                                [clickedNode.id]: []
+                                : clickedNode
+                                ? [clickedNode.id]
+                                : []
                         }
                         grouping={grouping}
                         addInPanel={addInPanel}
@@ -309,4 +316,4 @@ const NewPanel = ({ deltaX, deltaY }) => {
     return null;
 };
 
-export default Graph;
+export default GraphTA1;
