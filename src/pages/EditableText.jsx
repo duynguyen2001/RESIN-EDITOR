@@ -1,6 +1,7 @@
 // EditableText.js
 import React, { useEffect, useState } from "react";
 import "./EditableText.css";
+import { set } from "idb-keyval";
 
 const EditableText = ({
     values,
@@ -11,14 +12,20 @@ const EditableText = ({
     id,
     index = -1,
     onTable = false,
+    wdData,
     ...props
 }) => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [value, setValue] = useState(values);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         setValue(values);
     }, [values]);
+
+    useEffect(() => {
+        console.log("wdData", wdData);
+    }, [wdData]);
 
     const handleEditClick = () => {
         setIsEditMode(true);
@@ -34,7 +41,15 @@ const EditableText = ({
     };
 
     return (
-        <div className={onTable ? "editable-text-on-table" : "editable-text"}>
+        <div
+            className={onTable ? "editable-text-on-table" : "editable-text"}
+            onMouseEnter={() => {
+                setIsHovered(true);
+            }}
+            onMouseLeave={() => {
+                setIsHovered(false);
+            }}
+        >
             {!isEditMode && (
                 <>
                     {variant === "h2" && <h2>{values}</h2>}
@@ -68,6 +83,12 @@ const EditableText = ({
                         <i className="fa fa-check" />
                     </button>
                 </>
+            )}
+            {wdData && wdData.wd_node && isHovered && (
+                <div className="wd-data">
+                    <h4>{wdData.wd_label}</h4>
+                    <p>{wdData.wd_description}</p>
+                </div>
             )}
         </div>
     );

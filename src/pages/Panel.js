@@ -160,7 +160,7 @@ function TA1TableInfoPanel({
                                         newEntity["@id"],
                                         JsonConverter.deserializeObject(
                                             newEntity,
-                                            Entity
+                                            TA1Entity
                                         )
                                     );
                                     participant.entity = newEntity["@id"];
@@ -188,6 +188,13 @@ function TA1TableInfoPanel({
                             entityObject.name = value;
                             mapEntities.set(entityObject.id, entityObject);
                             setTableChange(!tableChange);
+                        }}
+                        wdData={{
+                            wd_node: entityObject.wd_node,
+                            wd_label: entityObject.wd_label
+                            ,
+                            wd_description:
+                            entityObject.wd_description,
                         }}
                         variant="none"
                         onTable={true}
@@ -630,6 +637,13 @@ function TA2TableInfoPanel({
                             entitiesMap.set(entityObject.id, entityObject);
                             setTableChange(!tableChange);
                         }}
+                        wdData={{
+                            wd_node: entityObject.wd_node,
+                            wd_label: entityObject.wd_label
+                            ,
+                            wd_description:
+                            entityObject.wd_description,
+                        }}
                         variant="none"
                         onTable={true}
                     />
@@ -659,6 +673,13 @@ function TA2TableInfoPanel({
                                 }}
                                 variant="span"
                                 id={value.ta2entity}
+                                // wdData={{
+                                //     wd_node: valueEntity.ta2wd_node,
+                                //     wd_label: valueEntity.ta2wd_label
+                                //     ,
+                                //     wd_description:
+                                //         valueEntity.ta2wd_description,
+                                // }}
                                 className="clickable-text"
                                 onClick={() =>
                                     openProvenanceMap(value.provenance, [
@@ -681,6 +702,12 @@ function TA2TableInfoPanel({
                                         valueEntity
                                     );
                                     setTableChange(!tableChange);
+                                }}
+                                wdData={{
+                                    wdNode: valueEntity.wd_node,
+                                    wdLabel: valueEntity.wd_label,
+                                    wdDescription:
+                                        valueEntity.wd_description,
                                 }}
                                 variant="none"
                                 onTable={true}
