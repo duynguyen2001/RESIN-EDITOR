@@ -1,23 +1,21 @@
-import React, { useContext, useEffect, useState, useMemo } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import ReactFlow, {
     Controls,
     MiniMap,
     NodeToolbar,
     Position,
     ReactFlowProvider,
-    useOnSelectionChange,
+    useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import Menu from "../components/Menu";
-import { RangeSlider } from "../components/RangeSlider";
-import { InfoPanel } from "../components/Panel";
-import { TA1EditEventPanel } from "./TA1EditEventPanel";
+import { RangeSlider } from "../components/CustomizedComponents/RangeSlider/RangeSlider";
+import Menu from "../components/PageComponents/Menu/Menu";
+import { InfoPanel } from "../components/PageComponents/Panel/Panel";
+import { TA1Event } from "../components/TA1/LibraryTA1";
+import { TA1EditEventPanel } from "../components/TA1/TA1EditEventPanel";
+import useStore from "../components/TA1/storeTA1";
+import { EventsContext, SchemaTypeContext, nodeTypes } from "../components/DataReadingComponents/DataReader";
 import "./graph.css";
-import useStore from "./storeTA1";
-import { useReactFlow } from "reactflow";
-import { EventsContext, SchemaTypeContext } from "./DataReader";
-import { nodeTypes } from "./DataReader";
-import { TA1Event } from "../components/LibraryTA1";
 export const GraphTA1 = () => {
     const [eventNodes] = useContext(EventsContext);
     const [schemaType, setSchemaType] = useContext(SchemaTypeContext);
@@ -61,7 +59,13 @@ export const GraphTA1 = () => {
 
     // layout related functions
     useEffect(() => {
-        if (schemaType !== "ta1" || !eventNodes || eventNodes.length === 0 || !(eventNodes[0] instanceof TA1Event)) return;
+        if (
+            schemaType !== "ta1" ||
+            !eventNodes ||
+            eventNodes.length === 0 ||
+            !(eventNodes[0] instanceof TA1Event)
+        )
+            return;
         updateGraphByTA1Events(eventNodes);
     }, [eventNodes]);
 

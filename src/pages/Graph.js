@@ -8,17 +8,17 @@ import ReactFlow, {
     useOnSelectionChange,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import Menu from "../components/Menu";
-import { RangeSlider } from "../components/RangeSlider";
-import { InfoPanel } from "../components/Panel";
-import { TA2EditEventPanel } from "./TA2EditEventPanel";
+import Menu from "../components/PageComponents/Menu/Menu";
+import { RangeSlider } from "../components/CustomizedComponents/RangeSlider/RangeSlider";
+import { InfoPanel } from "../components/PageComponents/Panel/Panel";
+import { TA2EditEventPanel } from "../components/TA2/TA2EditEventPanel";
 import "./graph.css";
-import useStore from "./store";
+import useStore from "../components/TA2/store";
 import { useReactFlow } from "reactflow";
-import { SchemaTypeContext, nodeTypes } from "./DataReader";
+import { SchemaTypeContext, nodeTypes } from "../components/DataReadingComponents/DataReader";
 import { set } from "idb-keyval";
-import { EventsContext } from "./DataReader";
-import { EventNode } from "../components/Library";
+import { EventsContext } from "../components/DataReadingComponents/DataReader";
+import { EventNode } from "../components/TA2/Library";
 
 export const Graph = () => {
     const [eventNodes]  = useContext(EventsContext);

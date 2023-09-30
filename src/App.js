@@ -1,5 +1,5 @@
 import React from "react";
-import DataReader from "./pages/DataReader";
+import DataReader from "./components/DataReadingComponents/DataReader";
 function App() {
     return (
         <div>
