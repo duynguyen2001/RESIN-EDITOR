@@ -10,7 +10,6 @@ import { TA1Entity } from "./LibraryTA1";
 export function TA1TableInfoPanel({
     data, parentId, editMode = false, schemaType = "ta1",
 }) {
-    const [showProvenance, setShowProvenance] = useState(false);
     const [tableChange, setTableChange] = useState(false);
     const [showAllEntities, setShowAllEntities] = useState(
         schemaType === "ta1"
@@ -102,9 +101,6 @@ export function TA1TableInfoPanel({
                             <AsyncSelect
                                 loadOptions={loadOptions}
                                 defaultOptions
-                                onInputChange={(value) => {
-                                    console.log("value", value);
-                                }}
                                 value={{
                                     value: participant.entity,
                                     label: entityObject.name,
