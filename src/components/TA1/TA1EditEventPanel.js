@@ -24,33 +24,25 @@ export const TA1EditEventPanel = ({
         addEventNode,
         addNodeOnPanel,
         entitiesRelatedEventMap,
-        mapEntities,
+        mapEntities,mapNodes
     ] = useStoreTA1((state) => [
         state.getNewIdInEventMap,
         state.addEventNode,
         state.addNodeOnPanel,
         state.entitiesRelatedEventMap,
         state.mapEntities,
+        state.mapNodes
     ]);
     const [Events, _] = useContext(EventsContext);
-    const MapEvents = new Map();
-    useEffect(() => {
-        Events.forEach((event) => {
-            MapEvents.set(event.id, event);
-        });
-    }, [Events]);
-    useEffect(() => {
-        console.log("EventsMap", MapEvents);
-    }, [MapEvents]);
     const [data, setData] = useState(
         existingData
             ? jsonConvert.serializeObject(existingData)
             : {
                   "@id": getNewIdInEventMap(),
-                  name: "",
+                  name: "newNode",
                   description: "",
-                  children_gate: subgroupEvents.length > 0 ? "or" : undefined,
-                  subgroup_events: subgroupEvents,
+                  childrenGate: subgroupEvents.length > 0 ? "or" : undefined,
+                  children: subgroupEvents,
                   outlinks: [],
                   wd_node: [],
                   wd_label: [],
@@ -243,11 +235,9 @@ export const TA1EditEventPanel = ({
                     <label>Children:</label>
                     <Select
                         name="children"
-                        value={data.children.map((child) => ({
+                        value={data.children?.map((child) => ({
                             value: child,
-                            label: Events.filter(
-                                (event) => event.id === child
-                            )[0].name,
+                            label: mapNodes.get(child).name,
                         }))}
                         onChange={(options) => {
                             const childrenEvents = options.map(
@@ -258,7 +248,7 @@ export const TA1EditEventPanel = ({
                                 children: childrenEvents,
                             });
                         }}
-                        options={Events.map((event) => ({
+                        options={Array.from(mapNodes.values()).map((event) => ({
                             value: event.id,
                             label: event.name,
                         }))}
@@ -285,12 +275,12 @@ export const TA1EditEventPanel = ({
                     <label>Outlinks:</label>
                     <Select
                         name="outlinks"
-                        value={data.outlinks.map((outlink) => ({
+                        value={data.outlinks? data.outlinks.map((outlink) => ({
                             value: outlink,
                             label: Events.filter(
                                 (event) => event.id === outlink
                             )[0].name,
-                        }))}
+                        })): []}
                         onChange={(options) => {
                             const outlinksEvents = options.map(
                                 (option) => option.value

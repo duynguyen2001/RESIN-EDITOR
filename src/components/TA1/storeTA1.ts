@@ -25,6 +25,7 @@ import {
 import getLayoutedElementsNested from "../../pages/TA1/layoutTA1";
 import { Entity, Participant } from "../TA2/Library";
 import { UniqueString } from "../utils/TypeScriptUtils";
+import { JsonConvert } from "json2typescript";
 
 enum GraphEdgeType {
     or = "or",
@@ -589,30 +590,40 @@ const useStoreTA1 = create<RFState>((set, get) => ({
             updateLayout,
             getNewIdInEventMap,
         } = get();
-        // const newMapNodes = new Map(mapNodes);
-        // const newFirstNode = getNewIdInEventMap();
-        // if (firstNode === null) {
-        //     return;
-        // }
-        // const FirstNodeObject = mapNodes.get(firstNode);
-        // // const newFirstNodeObject = new TA1Event(newFirstNode, "none", "");
-        // newFirstNodeObject.children = [firstNode, node.id];
-        // newFirstNodeObject.childrenGate = "or";
-        // console.log("newFirstNodeObject", newFirstNodeObject);
-        // // set up the old firstnode
-        // FirstNodeObject.isTopLevel = false;
-        // FirstNodeObject.parent = newFirstNode;
-        // console.log("FirstNodeObject", FirstNodeObject);
+        const newMapNodes = new Map(mapNodes);
+        const newFirstNode = getNewIdInEventMap();
+        console.log('firstNode', firstNode);
+        if (firstNode === null) {
+            return;
+        }
+        const jsonConverter = new JsonConvert();
+        const newFirstNodeObject = jsonConverter.deserializeObject(
+            {
+                "@id": newFirstNode,
+                "name": "New Grouping Node",
+                "children": [firstNode, node.id],
+                "children_gate": "or",
+                wd_node: [],
+                wd_label: [],
+                wd_description: [],
+                participants: [],
+                relations: [],
+                importance: 1,
+                likelihood: 1,
+                optional: false,
+            }, TA1Event);
+        console.log("newFirstNodeObject", newFirstNodeObject);
         // //set up the new node
         // console.log("node", node);
-        // newMapNodes.set(node.id, node);
-        // newMapNodes.set(firstNode, FirstNodeObject);
-        // newMapNodes.set(newFirstNode, newFirstNodeObject);
-        // set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
-        // console.log("newMapNodes", newMapNodes);
-        // console.log("chosenNodes", chosenNodes);
-        // console.log("firstNode", firstNode);
-        // updateLayout();
+        if (node.id){
+            newMapNodes.set(node.id, node);
+        }
+        newMapNodes.set(newFirstNode, newFirstNodeObject);
+        set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
+        console.log("newMapNodes", newMapNodes);
+        console.log("chosenNodes", chosenNodes);
+        console.log("firstNode", firstNode);
+        updateLayout();
     },
     updateEdgeAttribute: (edgeType: GraphEdgeType, key: string, body: any) => {
         const { edgeStyle } = get();
