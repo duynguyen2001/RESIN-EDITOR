@@ -1,3 +1,4 @@
+import { JsonConvert } from "json2typescript";
 import React, { useContext, useEffect, useState } from "react";
 import ReactFlow, {
     Controls,
@@ -5,23 +6,26 @@ import ReactFlow, {
     NodeToolbar,
     Position,
     ReactFlowProvider,
-    useOnSelectionChange,
+    useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import Menu from "../../components/PageComponents/Menu/Menu";
 import { RangeSlider } from "../../components/CustomizedComponents/RangeSlider/RangeSlider";
+import {
+    DataContext,
+    EventsContext,
+    SchemaTypeContext,
+    nodeTypes,
+} from "../../components/DataReadingComponents/DataReader";
+import Menu from "../../components/PageComponents/Menu/Menu";
 import { InfoPanel } from "../../components/PageComponents/Panel/Panel";
-import { TA2EditEventPanel } from "../../components/TA2/TA2EditEventPanel";
-import "./graph.css";
-import useStore from "../../components/TA2/store";
-import { useReactFlow } from "reactflow";
-import { SchemaTypeContext, nodeTypes } from "../../components/DataReadingComponents/DataReader";
-import { set } from "idb-keyval";
-import { EventsContext } from "../../components/DataReadingComponents/DataReader";
 import { EventNode } from "../../components/TA2/Library";
+import { TA2EditEventPanel } from "../../components/TA2/TA2EditEventPanel";
+import useStore from "../../components/TA2/store";
+import TA2DownloadSubgraph from "../../components/TA2/TA2DownloadSubgraph";
+import "./graph.css";
 
 export const Graph = () => {
-    const [eventNodes]  = useContext(EventsContext);
+    const [eventNodes] = useContext(EventsContext);
     const [schemaType] = useContext(SchemaTypeContext);
     const {
         nodes,
@@ -61,9 +65,17 @@ export const Graph = () => {
         setPaneContextMenu(null);
     };
 
+    const [jsonData] = useContext(DataContext);
+
     // layout related functions
     useEffect(() => {
-        if (schemaType !== "ta2" || !eventNodes || eventNodes.length === 0 || !(eventNodes[0] instanceof EventNode)) return;
+        if (
+            schemaType !== "ta2" ||
+            !eventNodes ||
+            eventNodes.length === 0 ||
+            !(eventNodes[0] instanceof EventNode)
+        )
+            return;
         updateGraphByEventNodes(eventNodes);
     }, [eventNodes]);
 
@@ -179,23 +191,41 @@ export const Graph = () => {
                         >
                             <span className="fa fa-plus" />
                         </button>
-                        {contextMenu.id !== firstNode && !contextMenu.id.startsWith("gate-")&&<button
-                            className="selection-button"
-                            onClick={() => {
-                                setClickedNode(contextMenu);
-                                setGrouping(true);
-                                const parentId = contextMenu.parentNode;
-                                setShowAddPanel(
-                                    parentId === null || parentId === undefined
-                                        ? "null"
-                                        : parentId.startsWith("gate-")
-                                        ? parentId.replace("gate-", "")
-                                        : parentId
-                                );
-                            }}
-                        >
-                            <span className="fa fa-object-group" />
-                        </button>}
+                        {contextMenu.id !== firstNode &&
+                            !contextMenu.id.startsWith("gate-") && (
+                                <TA2DownloadSubgraph
+                                    nodeId={contextMenu.id}
+                                    onClick={() => {
+                                        setContextMenu(null);
+                                        setPaneContextMenu(null);
+                                        setClickedNode(null);
+                                        setShowAddPanel(null);
+                                        setGrouping(false);
+                                        setAddInPanel(false);
+                                    }}
+                                />
+                            )}
+                        {contextMenu.id !== firstNode &&
+                            !contextMenu.id.startsWith("gate-") && (
+                                <button
+                                    className="selection-button"
+                                    onClick={() => {
+                                        setClickedNode(contextMenu);
+                                        setGrouping(true);
+                                        const parentId = contextMenu.parentNode;
+                                        setShowAddPanel(
+                                            parentId === null ||
+                                                parentId === undefined
+                                                ? "null"
+                                                : parentId.startsWith("gate-")
+                                                ? parentId.replace("gate-", "")
+                                                : parentId
+                                        );
+                                    }}
+                                >
+                                    <span className="fa fa-object-group" />
+                                </button>
+                            )}
                     </NodeToolbar>
                 )}
                 {selectionContextMenu && selectionNodes.length > 0 && (
@@ -265,11 +295,11 @@ export const Graph = () => {
                                 setClickedNode(null);
                                 setContextMenu(null);
                                 setPaneContextMenu(null);
-                                setShowAddPanel('null');
+                                setShowAddPanel("null");
                             }}
-                            >
+                        >
                             <span className="fa fa-plus" />
-                            </button>
+                        </button>
                     </div>
                 )}
                 {showAddPanel && (
@@ -284,8 +314,9 @@ export const Graph = () => {
                         subgroupEvents={
                             selectionNodes.length > 0
                                 ? selectionNodes.map((node) => node.id) || []
-                                : clickedNode?
-                                [clickedNode.id]: []
+                                : clickedNode
+                                ? [clickedNode.id]
+                                : []
                         }
                         grouping={grouping}
                         addInPanel={addInPanel}

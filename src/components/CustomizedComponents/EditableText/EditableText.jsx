@@ -22,9 +22,6 @@ const EditableText = ({
         setValue(values);
     }, [values]);
 
-    useEffect(() => {
-        console.log("wdData", wdData);
-    }, [wdData]);
 
     const handleEditClick = () => {
         setIsEditMode(true);

@@ -41,11 +41,16 @@ import {
     EventNodeType,
     NodeRenderingStrategy,
     PredictedNodeStrategy,
-    SourceOnlyNodeStrategy
+    SourceOnlyNodeStrategy,
 } from "../../TA2/Library";
 import useStore from "../../TA2/store";
 import { UniqueString } from "../../utils/TypeScriptUtils";
 import "./Menu.css";
+import {
+    TA2dataMergeMultipleFiles,
+    TA2traverseAllEvents,
+} from "../../DataReadingComponents/MergeMultipleFiles";
+import { json } from "react-router-dom";
 
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -150,40 +155,128 @@ function AddJSONPanel() {
     };
 
     const handleJSONUpload = (event) => {
-        const fileReader = new FileReader();
-        fileReader.readAsText(event.target.files[0], "UTF-8");
         setChosenNodes([]);
         setChosenEntities([]);
         setClickedNode(null);
         UniqueString.reset();
-        fileReader.onload = (e) => {
-            let parsedJson = JSON.parse(e.target.result);
-            if (activeTab === "ta1") {
-                // parsedJson = convertTA1toTA2format(parsedJson);
-                setSchemaType("ta1");
-                setJsonData(parsedJson);
-            } else {
-                setSchemaType("ta2");
-                setJsonData(parsedJson);
-            }
-        };
+        if (event.target.files.length === 0) {
+            return;
+        } else if (event.target.files.length === 1) {
+            const fileReader = new FileReader();
+            fileReader.readAsText(event.target.files[0], "UTF-8");
+            fileReader.onload = (e) => {
+                let parsedJson = JSON.parse(e.target.result);
+                if (activeTab === "ta1") {
+                    // parsedJson = convertTA1toTA2format(parsedJson);
+                    setSchemaType("ta1");
+                    setJsonData(parsedJson);
+                } else {
+                    setSchemaType("ta2");
+                    setJsonData(parsedJson);
+                }
+            };
+        } else {
+            console.log("Multiple files uploaded");
+            const files = event.currentTarget.files;
+            const jsonList = [];
+
+            Object.keys(files).forEach((i) => {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    try {
+                        const jsonData = JSON.parse(e.target.result);
+                        jsonList.push(jsonData);
+                    } catch (error) {
+                        console.error(
+                            "Error parsing JSON from file:",
+                            file.name
+                        );
+                    }
+
+                    if (jsonList.length === files.length) {
+                        console.log("All files processed");
+                        console.log("jsonList", jsonList);
+                        if (activeTab === "ta2") {
+                            const mergedJson =
+                                TA2dataMergeMultipleFiles(jsonList);
+                            console.log("mergedJson", mergedJson);
+                            setSchemaType("ta2");
+                            setJsonData(mergedJson);
+                        }
+                    }
+                };
+
+                reader.readAsText(file, "UTF-8");
+            });
+        }
     };
 
     const handleParsedTextFile = (event) => {
-        const fileReader = new FileReader();
-        const extractedTexts = new Map();
-        fileReader.readAsText(event.target.files[0], "UTF-8");
-        fileReader.onload = (e) => {
-            const parsedJson = JSON.parse(e.target.result);
-            if (parsedJson !== undefined && parsedJson.rsd_data !== undefined) {
-                for (const [key, value] of Object.entries(
-                    parsedJson.rsd_data.en
-                )) {
-                    extractedTexts.set(key, value);
+        if (event.target.files.length === 0) {
+            return;
+        } else if (event.target.files.length === 1) {
+            const fileReader = new FileReader();
+            const extractedTexts = new Map();
+            fileReader.readAsText(event.target.files[0], "UTF-8");
+            fileReader.onload = (e) => {
+                const parsedJson = JSON.parse(e.target.result);
+                if (
+                    parsedJson !== undefined &&
+                    parsedJson.rsd_data !== undefined
+                ) {
+                    for (const [key, value] of Object.entries(
+                        parsedJson.rsd_data.en
+                    )) {
+                        extractedTexts.set(key, value);
+                    }
+                    setExtractedTexts(extractedTexts);
                 }
-                setExtractedTexts(extractedTexts);
-            }
-        };
+            };
+        } else {
+            console.log("Multiple files uploaded");
+            const files = event.currentTarget.files;
+            const jsonList = [];
+
+            Object.keys(files).forEach((i) => {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    try {
+                        const jsonData = JSON.parse(e.target.result);
+                        jsonList.push(jsonData);
+                    } catch (error) {
+                        console.error(
+                            "Error parsing JSON from file:",
+                            file.name
+                        );
+                    }
+
+                    if (jsonList.length === files.length) {
+                        console.log("All files processed");
+                        console.log("jsonList", jsonList);
+                        const extractedTexts = new Map();
+                        jsonList.forEach((parsedJson) => {
+                            if (
+                                parsedJson !== undefined &&
+                                parsedJson.rsd_data !== undefined
+                            ) {
+                                for (const [key, value] of Object.entries(
+                                    parsedJson.rsd_data.en
+                                )) {
+                                    extractedTexts.set(key, value);
+                                }
+                            }
+                        });
+                        setExtractedTexts(extractedTexts);
+                    }
+                };
+
+                reader.readAsText(file, "UTF-8");
+            });
+        }
     };
     useEffect(() => {
         console.log("schemaType", SchemaType);
@@ -229,6 +322,7 @@ function AddJSONPanel() {
                     <input
                         type="file"
                         accept=".json"
+                        multiple
                         onChange={handleJSONUpload}
                     />
                     <h3>Provenance Source Text File</h3>
@@ -238,6 +332,7 @@ function AddJSONPanel() {
                     <input
                         type="file"
                         accept=".json"
+                        multiple
                         onChange={handleParsedTextFile}
                     />
                     <h3>Image Zip File</h3>
@@ -284,20 +379,20 @@ const TA2DownloadPanel = () => {
     const [Provenances] = useContext(ProvenanceContext);
     const [Entities] = useContext(EntitiesContext);
     const jsonConverter = new JsonConvert();
-    const newData = { ...jsonData };
-    newData.instances[0].events = jsonConverter.serializeArray(
-        Array.from(mapNodes.values()),
-        EventNode
-    );
-    newData.instances[0].entities = jsonConverter.serializeArray(
-        Array.from(Entities.values()),
-        Entity
-    );
-    newData.provenanceData = jsonConverter.serializeArray(
-        Array.from(Provenances.values())
-    );
-    console.log("newData", newData);
     const downloadJSON = () => {
+        const newData = { ...jsonData };
+        newData.instances[0].events = jsonConverter.serializeArray(
+            Array.from(mapNodes.values()),
+            EventNode
+        );
+        newData.instances[0].entities = jsonConverter.serializeArray(
+            Array.from(Entities.values()),
+            Entity
+        );
+        newData.provenanceData = jsonConverter.serializeArray(
+            Array.from(Provenances.values())
+        );
+        console.log("newData", newData);
         const dataStr =
             "data:text/json;charset=utf-8," +
             encodeURIComponent(JSON.stringify(newData, null, "\t"));
@@ -309,10 +404,107 @@ const TA2DownloadPanel = () => {
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
     };
+
+    const downloadIndividualCE = (ceID) => {
+        // const mapEvents = jsonData.mapEvents;
+        // const mapEntities = jsonData.mapEntities;
+        // const mapProvenances = jsonData.mapProvenances;
+        // const mapRelations = jsonData.mapRelations;
+        // const mapValues = jsonData.mapValues;
+        const topLevelEvent = jsonData.isTopLevelEvents.get(ceID)["@id"];
+
+        const TA2traverseAllEventsData = TA2traverseAllEvents(
+            mapNodes,
+            topLevelEvent
+        );
+        const allEvents = jsonConverter.serializeArray(
+            Array.from(mapNodes.values())
+                .filter((event) =>
+                    TA2traverseAllEventsData.eventsSet.has(event.id)
+                )
+                .map((event) => {
+                    if (event.id === topLevelEvent) {
+                        event.isTopLevel = true;
+                        event.parent = "kairos:NULL";
+                    }
+                    return event;
+                }),
+            EventNode
+        );
+        const newData = {
+            ceID: ceID,
+            "@context": jsonData["@context"].filter(
+                (context) => context.ceID === ceID
+            )[0],
+            instances: [
+                {
+                    ...jsonData.instances[0],
+                    events: allEvents,
+                    entities: jsonConverter.serializeArray(
+                        Array.from(Entities.values()).filter((entity) =>
+                            TA2traverseAllEventsData.entitiesSet.has(entity.id)
+                        ),
+                        Entity
+                    ),
+                    relations: jsonData.instances[0].relations.filter(
+                        (relation) =>
+                            TA2traverseAllEventsData.entitiesSet.has(
+                                relation.relationObject
+                            ) &&
+                            TA2traverseAllEventsData.entitiesSet.has(
+                                relation.relationSubject
+                            )
+                    ),
+                },
+            ],
+            provenanceData: jsonConverter.serializeArray(
+                Array.from(Provenances.values()).filter((provenance) =>
+                    TA2traverseAllEventsData.provenanceSet.has(
+                        provenance.id
+                    )
+                )
+                // Array.from(Provenances.values()).filter((provenance) =>
+                //     TA2traverseAllEventsData.provenanceSet.has(
+                //         provenance.provenanceID
+                //     )
+                // )
+            ),
+        };
+
+        console.log("newData", newData);
+        const dataStr =
+            "data:text/json;charset=utf-8," +
+            encodeURIComponent(JSON.stringify(newData, null, "\t"));
+
+        const downloadAnchorNode = document.createElement("a");
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", ceID + ".json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
     return (
         <div>
-            <h2>Download TA2 Result Files</h2>
+            <h2>Download TA2 Schema Matching Result Files</h2>
             <button onClick={() => downloadJSON()}>Download</button>
+            {jsonData.mergedCEs && (
+                <>
+                    <h3> Download Individual Schema Matching Result</h3>
+                    {jsonData.mergedCEs.map((ceID) => (
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                            }}
+                        >
+                            <button onClick={() => downloadIndividualCE(ceID)}>
+                                {ceID}
+                            </button>
+                        </div>
+                    ))}
+                </>
+            )}
         </div>
     );
 };
