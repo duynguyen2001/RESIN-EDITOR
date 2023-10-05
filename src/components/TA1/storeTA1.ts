@@ -105,7 +105,7 @@ type RFState = {
     setFirstNode: (firstNode: string | null) => void;
     setEntityChosenEvents: (entityChosenEvents: []) => void;
     addNodeOnPanel: (node: TA1Event) => void;
-    addEventNode: (node: TA1Event, grouping: boolean) => void;
+    addEventNode: (node: TA1Event, grouping: boolean, parentId: string) => void;
     getNewIdInEventMap: () => string;
     onNodesChange: OnNodesChange;
     onEdgesChange: OnEdgesChange;
@@ -316,16 +316,19 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         nodeRerender("eventNode");
     },
 
-    addEventNode: (node: TA1Event, grouping: Boolean = false) => {
+    addEventNode: (node: TA1Event, grouping: Boolean = false, parentId: string) => {
         const { mapNodes, updateLayout } = get();
         console.log("subgroupEvent here here", node);
-        const nodeId =
-            node.id ||
-            `resin:Event:${UniqueString.getUniqueStringWithForm(
-                "resin:Event/",
-                "/"
-            )}}`;
-        mapNodes.set(nodeId || ``, node);
+        const nodeId = node.id ;
+        if (nodeId) {
+            mapNodes.set(nodeId, node);
+        }
+        const parentNode = mapNodes.get(parentId);
+        console.log("parentNode", parentNode);
+        if (parentNode === undefined) {
+            return;
+        }
+        
         if (grouping) {
             const children = node.children || [];
             const outlinks: string[] = [];
@@ -343,30 +346,32 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                 );
             });
             node.outlinks = outlinks;
-            // const parentNode = mapNodes.get(parentId);
-            // if (parentNode) {
-            //     parentNode.children = parentNode.children.filter(
-            //         (subgroupEvent: string) =>
-            //             !node.children?.includes(subgroupEvent)
-            //     );
-            //     parentNode.children.push(node.id);
-            //     parentNode.children.forEach((subgroupEvent: string) => {
-            //         const subgroupTA1Event = mapNodes.get(subgroupEvent);
-            //         console.log("subgroupTA1Event", subgroupTA1Event);
-            //         if (subgroupTA1Event.outlinks === undefined) {
-            //             return;
-            //         }
-            //         if (subgroupTA1Event.outlinks.filter((outlink: string) => children.includes(outlink)).length === 0) {
-            //             return;
-            //         }
-            //         subgroupTA1Event.outlinks = subgroupTA1Event.outlinks.filter(
-            //             (outlink: string) => !children.includes(outlink)
-            //         );
-            //         subgroupTA1Event.outlinks.push(node.id);
-            //     })
-            // }
+            if (parentNode) {
+                parentNode.children = parentNode.children.filter(
+                    (subgroupEvent: string) =>
+                        !node.children?.includes(subgroupEvent)
+                );
+                parentNode.children.push(node.id);
+                parentNode.children.forEach((subgroupEvent: string) => {
+                    const subgroupTA1Event = mapNodes.get(subgroupEvent);
+                    console.log("subgroupTA1Event", subgroupTA1Event);
+                    if (subgroupTA1Event.outlinks === undefined) {
+                        return;
+                    }
+                    if (subgroupTA1Event.outlinks.filter((outlink: string) => children.includes(outlink)).length === 0) {
+                        return;
+                    }
+                    subgroupTA1Event.outlinks = subgroupTA1Event.outlinks.filter(
+                        (outlink: string) => !children.includes(outlink)
+                    );
+                    subgroupTA1Event.outlinks.push(node.id);
+                })
+            }
+        } else {
+            console.log("parentNode", parentNode);
+            parentNode.children.push(nodeId);
+            mapNodes.set(parentNode.id, parentNode);
         }
-        // console.log("parentNode", parentNode);
         updateLayout();
     },
     setMapNodes: (mapNodes) => {

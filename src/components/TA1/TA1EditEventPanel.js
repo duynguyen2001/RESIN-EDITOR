@@ -34,7 +34,6 @@ export const TA1EditEventPanel = ({
         state.mapEntities,
         state.mapNodes,
     ]);
-    const [Events, _] = useContext(EventsContext);
     const [data, setData] = useState(
         existingData
             ? jsonConvert.serializeObject(existingData)
@@ -42,8 +41,9 @@ export const TA1EditEventPanel = ({
                   "@id": getNewIdInEventMap(),
                   name: "newNode",
                   description: "",
-                  children_gate: subgroupEvents.length > 0 ? "or" : undefined,
-                  children: subgroupEvents,
+                  children_gate: grouping && subgroupEvents.length > 0 ? "or" : undefined,
+                  children: grouping ? subgroupEvents: [],
+                  parent: parentId,
                   outlinks: [],
                   wd_node: [],
                   wd_label: [],
@@ -74,7 +74,7 @@ export const TA1EditEventPanel = ({
             onClose();
             return;
         }
-        addEventNode(jsonConvert.deserializeObject(data, TA1Event), grouping);
+        addEventNode(jsonConvert.deserializeObject(data, TA1Event), grouping, parentId);
         onClose();
     };
 
@@ -236,10 +236,10 @@ export const TA1EditEventPanel = ({
                     <label>Children:</label>
                     <Select
                         name="children"
-                        value={data.children?.map((child) => ({
+                        value={data.children? data.children.map((child) => ({
                             value: child,
                             label: mapNodes.get(child).name,
-                        }))}
+                        })): []}
                         onChange={(options) => {
                             const childrenEvents = options.map(
                                 (option) => option.value
@@ -280,9 +280,7 @@ export const TA1EditEventPanel = ({
                             data.outlinks
                                 ? data.outlinks.map((outlink) => ({
                                       value: outlink,
-                                      label: Events.filter(
-                                          (event) => event.id === outlink
-                                      )[0].name,
+                                      label: mapNodes.get(outlink).name,
                                   }))
                                 : []
                         }
@@ -295,7 +293,7 @@ export const TA1EditEventPanel = ({
                                 outlinks: outlinksEvents,
                             });
                         }}
-                        options={Events.map((event) => ({
+                        options={Array.from(mapNodes.values()).map((event) => ({
                             value: event.id,
                             label: event.name,
                         }))}
