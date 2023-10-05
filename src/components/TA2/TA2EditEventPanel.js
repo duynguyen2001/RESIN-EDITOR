@@ -25,14 +25,15 @@ export const TA2EditEventPanel = ({
         addNodeOnPanel,
         mapEntities,
         entitiesRelatedEventMap,
+        mapNodes
     ] = useStore((state) => [
         state.getNewIdInEventMap,
         state.addEventNode,
         state.addNodeOnPanel,
         state.mapEntities,
         state.entitiesRelatedEventMap,
+        state.mapNodes
     ]);
-    const [Events, _] = useContext(EventsContext);
 
     const [data, setData] = useState(
         existingData
@@ -230,9 +231,7 @@ export const TA2EditEventPanel = ({
                         name="parent"
                         value={{
                             value: data.parent,
-                            label: Events.filter(
-                                (event) => event.id === data.parent
-                            )[0].name,
+                            label: mapNodes.has(data.parent)? mapNodes.get(data.parent).name : "kairos:NULL",
                         }}
                         onChange={(option) => {
                             setData({
@@ -240,7 +239,7 @@ export const TA2EditEventPanel = ({
                                 parent: option.value,
                             });
                         }}
-                        options={Events.map((event) => ({
+                        options={Array.from(mapNodes.values()).map((event) => ({
                             value: event.id,
                             label: event.name,
                         }))}
@@ -253,8 +252,8 @@ export const TA2EditEventPanel = ({
                     <Select
                         isMulti
                         name="outlinks"
-                        options={Events.filter(
-                            (event) => event.id !== data["@id"]
+                        options={Array.from(mapNodes.values()).filter(
+                            (event) => event.id !== data.id
                         ).map((event) => ({
                             value: event.id,
                             label: event.name,
@@ -351,9 +350,7 @@ export const TA2EditEventPanel = ({
                         name="subgroup_events"
                         value={data.subgroup_events.map((child) => ({
                             value: child,
-                            label: Events.filter(
-                                (event) => event.id === child
-                            )[0].name,
+                            label: mapNodes.get(child).name,
                         }))}
                         onChange={(options) => {
                             const subgroup_events = options.map(
@@ -364,7 +361,7 @@ export const TA2EditEventPanel = ({
                                 subgroup_events: subgroup_events,
                             });
                         }}
-                        options={Events.map((event) => ({
+                        options={Array.from(mapNodes.values()).map((event) => ({
                             value: event.id,
                             label: event.name,
                         }))}
