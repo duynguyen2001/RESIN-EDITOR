@@ -161,6 +161,7 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
                 });
                 event.isTopLevel = false;
                 event.parent = originalEvent["@id"];
+                event.name = `${event.name} (${ceID})`;
                 originalEvent.subgroup_events.push(event["@id"]);
             } else if (event.parent) {
                 event.parent = mapEventsReverse.get(event.parent);
