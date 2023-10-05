@@ -1,13 +1,13 @@
 import { Slider } from "@mui/material";
+import axios from "axios";
 import { JsonConvert } from "json2typescript";
 import React, { useContext, useEffect, useState } from "react";
+import Select from "react-select";
+import AsyncSelect from "react-select/async";
+import { Modal } from "../CustomizedComponents/Modal/Modal";
+import { EventsContext } from "../DataReadingComponents/DataReader";
 import { TA1Event } from "../TA1/LibraryTA1";
 import useStoreTA1 from "./storeTA1";
-import { Modal } from "../CustomizedComponents/Modal/Modal";
-import AsyncSelect from "react-select/async";
-import Select from "react-select";
-import axios from "axios";
-import { EventsContext } from "../DataReadingComponents/DataReader";
 
 export const TA1EditEventPanel = ({
     onClose,

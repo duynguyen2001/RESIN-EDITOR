@@ -1,11 +1,10 @@
 import { Slider } from "@mui/material";
 import axios from "axios";
 import { JsonConvert } from "json2typescript";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import { Modal } from "../CustomizedComponents/Modal/Modal";
-import { EventsContext } from "../DataReadingComponents/DataReader";
 import { EventNode } from "./Library";
 import useStore from "./store";
 
@@ -25,14 +24,14 @@ export const TA2EditEventPanel = ({
         addNodeOnPanel,
         mapEntities,
         entitiesRelatedEventMap,
-        mapNodes
+        mapNodes,
     ] = useStore((state) => [
         state.getNewIdInEventMap,
         state.addEventNode,
         state.addNodeOnPanel,
         state.mapEntities,
         state.entitiesRelatedEventMap,
-        state.mapNodes
+        state.mapNodes,
     ]);
 
     const [data, setData] = useState(
@@ -224,14 +223,16 @@ export const TA2EditEventPanel = ({
                         <option value={null}>NONE</option>
                     </select>
                 </div>
-               
+
                 <div className="form-group">
                     <label>Parent:</label>
                     <Select
                         name="parent"
                         value={{
                             value: data.parent,
-                            label: mapNodes.has(data.parent)? mapNodes.get(data.parent).name : "kairos:NULL",
+                            label: mapNodes.has(data.parent)
+                                ? mapNodes.get(data.parent).name
+                                : "kairos:NULL",
                         }}
                         onChange={(option) => {
                             setData({
@@ -243,7 +244,6 @@ export const TA2EditEventPanel = ({
                             value: event.id,
                             label: event.name,
                         }))}
-
                     />
                 </div>
 
@@ -252,12 +252,12 @@ export const TA2EditEventPanel = ({
                     <Select
                         isMulti
                         name="outlinks"
-                        options={Array.from(mapNodes.values()).filter(
-                            (event) => event.id !== data.id
-                        ).map((event) => ({
-                            value: event.id,
-                            label: event.name,
-                        }))}
+                        options={Array.from(mapNodes.values())
+                            .filter((event) => event.id !== data.id)
+                            .map((event) => ({
+                                value: event.id,
+                                label: event.name,
+                            }))}
                         onChange={(selected) => {
                             setData({
                                 ...data,

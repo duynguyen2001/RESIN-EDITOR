@@ -1,14 +1,14 @@
 import { JsonConvert } from "json2typescript";
 import React, { useContext, useState } from "react";
-import { Entity, Participant } from "./Library";
+import EditableText from "../CustomizedComponents/EditableText/EditableText.jsx";
+import { Modal } from "../CustomizedComponents/Modal/Modal";
+import { EntitiesContext } from "../DataReadingComponents/DataReader";
 import ProvenancePopup from "../PageComponents/ProvenancePopUp/ProvenancePopup.jsx";
 import { UniqueString } from "../utils/TypeScriptUtils";
-import { EntitiesContext } from "../DataReadingComponents/DataReader";
-import EditableText from "../CustomizedComponents/EditableText/EditableText.jsx";
-import useStore from "./store";
-import { TA2TableInfoPanel } from "./TA2TableInfoPanel";
-import { Modal } from "../CustomizedComponents/Modal/Modal";
+import { Entity, Participant } from "./Library";
 import { TA2EditEventPanel } from "./TA2EditEventPanel";
+import { TA2TableInfoPanel } from "./TA2TableInfoPanel";
+import useStore from "./store";
 
 export function TA2EventNodeInfoPanel({ data, onClose }) {
     const [isEnlarged, setIsEnlarged] = useState(false);
@@ -45,21 +45,24 @@ export function TA2EventNodeInfoPanel({ data, onClose }) {
                 handleClick={onClose}
                 handleEdit={() => {
                     setShowEditPanel(!showEditPanel);
-                }} />
+                }}
+            />
 
             {data.name && (
                 <EditableText
                     values={data.name}
                     variant="h2"
                     onSave={handleOnSave}
-                    field="name" />
+                    field="name"
+                />
             )}
             {data.description && (
                 <EditableText
                     values={data.description}
                     variant="p"
                     onSave={handleOnSave}
-                    field="description" />
+                    field="description"
+                />
             )}
             {provenanceExisted && (
                 <a onClick={toggleProvenance}>
@@ -72,7 +75,8 @@ export function TA2EventNodeInfoPanel({ data, onClose }) {
                 <ProvenancePopup
                     ids={data.provenance}
                     onClose={toggleProvenance}
-                    parentId={data.id} />
+                    parentId={data.id}
+                />
             )}
             {data.wdNode && data.wdNode !== null && data.wdNode !== "null" && (
                 <details open>
@@ -91,13 +95,15 @@ export function TA2EventNodeInfoPanel({ data, onClose }) {
                                 variant="h3"
                                 index={index}
                                 onSave={handleOnSave}
-                                field="wdLabel" />
+                                field="wdLabel"
+                            />
                             <EditableText
                                 values={data.wdDescription[index]}
                                 variant="p"
                                 index={index}
                                 onSave={handleOnSave}
-                                field="wdDescription" />
+                                field="wdDescription"
+                            />
                         </div>
                     ))}
                 </details>
@@ -116,7 +122,8 @@ export function TA2EventNodeInfoPanel({ data, onClose }) {
                     <TA2TableInfoPanel
                         data={data.participants}
                         parentId={data.id}
-                        editMode={editMode} />
+                        editMode={editMode}
+                    />
                 </details>
             )}
             <div
@@ -127,57 +134,62 @@ export function TA2EventNodeInfoPanel({ data, onClose }) {
                     gap: "10px",
                 }}
             >
-                {<button
-                    className="anchor-button"
-                    onClick={() => {
-                        const jsonConvert = new JsonConvert();
-                        const newParticipantId = UniqueString.getUniqueStringWithForm(
-                            "resin:Participant/",
-                            "/"
-                        );
-                        const newEntityId = UniqueString.getUniqueStringWithForm(
-                            "resin:Entity/",
-                            "/"
-                        );
-                        const newEntity = jsonConvert.deserializeObject(
-                            {
-                                "@id": newEntityId,
-                                name: "NewEntity",
-                                description: "",
-                                provenance: [],
-                                ta2wdNode: [],
-                                ta2wdLabel: "",
-                                ta2wdDescription: "",
-                                optional: false,
-                            },
-                            Entity
-                        );
-                        Entities.set(newEntityId, newEntity);
+                {
+                    <button
+                        className="anchor-button"
+                        onClick={() => {
+                            const jsonConvert = new JsonConvert();
+                            const newParticipantId =
+                                UniqueString.getUniqueStringWithForm(
+                                    "resin:Participant/",
+                                    "/"
+                                );
+                            const newEntityId =
+                                UniqueString.getUniqueStringWithForm(
+                                    "resin:Entity/",
+                                    "/"
+                                );
+                            const newEntity = jsonConvert.deserializeObject(
+                                {
+                                    "@id": newEntityId,
+                                    name: "NewEntity",
+                                    description: "",
+                                    provenance: [],
+                                    ta2wdNode: [],
+                                    ta2wdLabel: "",
+                                    ta2wdDescription: "",
+                                    optional: false,
+                                },
+                                Entity
+                            );
+                            Entities.set(newEntityId, newEntity);
 
-                        // console.log("newParticipantId", newParticipantId);
-                        const newParticipant = jsonConvert.deserializeObject(
-                            {
-                                "@id": newParticipantId,
-                                roleName: "new Role",
-                                entity: newEntityId,
-                            },
-                            Participant
-                        );
+                            // console.log("newParticipantId", newParticipantId);
+                            const newParticipant =
+                                jsonConvert.deserializeObject(
+                                    {
+                                        "@id": newParticipantId,
+                                        roleName: "new Role",
+                                        entity: newEntityId,
+                                    },
+                                    Participant
+                                );
 
-                        data.participants.push(newParticipant);
-                        editMapNode(
-                            data.id,
-                            "participants",
-                            data.participants
-                        );
-                        setTimeFrame(Date.now());
-                    }}
-                >
-                    <h4>
-                        <span className="fa fa-plus" />
-                        {" Add Participant"}
-                    </h4>
-                </button>}
+                            data.participants.push(newParticipant);
+                            editMapNode(
+                                data.id,
+                                "participants",
+                                data.participants
+                            );
+                            setTimeFrame(Date.now());
+                        }}
+                    >
+                        <h4>
+                            <span className="fa fa-plus" />
+                            {" Add Participant"}
+                        </h4>
+                    </button>
+                }
                 {data.participants && data.participants.length > 0 && (
                     <button
                         className="anchor-button"
@@ -199,7 +211,8 @@ export function TA2EventNodeInfoPanel({ data, onClose }) {
                     }}
                     isEnlarged={isEnlarged}
                     toggleEnlarged={toggleEnlarged}
-                    existingData={data} />
+                    existingData={data}
+                />
             )}
         </div>
     );
