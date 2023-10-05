@@ -459,15 +459,8 @@ const TA2DownloadPanel = () => {
             ],
             provenanceData: jsonConverter.serializeArray(
                 Array.from(Provenances.values()).filter((provenance) =>
-                    TA2traverseAllEventsData.provenanceSet.has(
-                        provenance.id
-                    )
+                    TA2traverseAllEventsData.provenanceSet.has(provenance.id)
                 )
-                // Array.from(Provenances.values()).filter((provenance) =>
-                //     TA2traverseAllEventsData.provenanceSet.has(
-                //         provenance.provenanceID
-                //     )
-                // )
             ),
         };
 

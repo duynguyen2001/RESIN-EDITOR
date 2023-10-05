@@ -30,16 +30,23 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
     const participantPrefix = "resin:Participants/";
     const valuePrefix = "resin:Values/";
     const provenancePrefix = "resin:Provenance/";
-    const mergedEventId = getId(eventPrefix, "/", mapEvents, "resin:Events/00000/");
+    const mergedEventId = getId(
+        eventPrefix,
+        "/",
+        mapEvents,
+        "resin:Events/00000/"
+    );
     const originalEvent = {
         "@id": mergedEventId,
         name: "Merge Matching Results",
-        description: `This is a merged event of multiple matching results of ${ dataList.map((dataObject) => dataObject.ceID).join(", ")}`,
+        description: `This is a merged event of multiple matching results of ${dataList
+            .map((dataObject) => dataObject.ceID)
+            .join(", ")}`,
         isTopLevel: true,
         parent: "kairos:NULL",
         children_gate: "or",
         subgroup_events: [],
-        "ta1ref": "none",
+        ta1ref: "none",
         confidence: 0,
         predictionProvenance: mergedEventId,
     };
@@ -49,10 +56,9 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
     });
 
     dataList.forEach((dataObject) => {
-
         let ceID = dataObject.ceID;
         let num = 1;
-        while (mergedCEs.includes(ceID)){
+        while (mergedCEs.includes(ceID)) {
             ceID = `${ceID} (${num})`;
         }
 
@@ -63,9 +69,14 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
         const mapProvenanceReverse = new Map();
 
         provenanceData.forEach((provenance) => {
-            const newId = getId(provenancePrefix, "/", mapProvenance, provenance["provenanceID"]);
+            const newId = getId(
+                provenancePrefix,
+                "/",
+                mapProvenance,
+                provenance["provenanceID"]
+            );
             mapProvenance.set(newId, {
-                "provenanceID": provenance["provenanceID"],
+                provenanceID: provenance["provenanceID"],
                 ceID: ceID,
             });
             mapProvenanceReverse.set(provenance["provenanceID"], newId);
@@ -90,14 +101,24 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
             });
             mapEventsReverse.set(event["@id"], newId);
             event.participants?.forEach((participant) => {
-                const newId = getId(participantPrefix, "/", mapParticipants, participant["@id"]);
+                const newId = getId(
+                    participantPrefix,
+                    "/",
+                    mapParticipants,
+                    participant["@id"]
+                );
                 mapParticipants.set(newId, {
                     "@id": participant["@id"],
                     ceID: ceID,
                 });
                 mapParticipantsReverse.set(participant["@id"], newId);
                 participant.values?.forEach((value) => {
-                    const newId = getId(valuePrefix, "/", mapValues,    value["@id"]);
+                    const newId = getId(
+                        valuePrefix,
+                        "/",
+                        mapValues,
+                        value["@id"]
+                    );
                     mapValues.set(newId, {
                         "@id": value["@id"],
                         ceID: ceID,
@@ -115,7 +136,12 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
             mapEntitiesReverse.set(entity["@id"], newId);
         });
         data.relations.forEach((relation) => {
-            const newId = getId(relationPrefix, "/", mapRelations, relation["@id"]);
+            const newId = getId(
+                relationPrefix,
+                "/",
+                mapRelations,
+                relation["@id"]
+            );
             mapRelations.set(newId, {
                 "@id": relation["@id"],
                 ceID: ceID,
@@ -154,12 +180,14 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
 
             // replace Provenance old ids with the new ones
             if (event.provenance) {
-                if (event.provenance instanceof Array){
+                if (event.provenance instanceof Array) {
                     event.provenance = event.provenance.map((provenance) =>
-                    mapProvenanceReverse.get(provenance)
-                );
-                } else if (event.provenance instanceof String){
-                    event.provenance = mapProvenanceReverse.get(event.provenance);
+                        mapProvenanceReverse.get(provenance)
+                    );
+                } else {
+                    event.provenance = mapProvenanceReverse.get(
+                        event.provenance
+                    );
                 }
             }
 
@@ -177,24 +205,28 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
                 participant.values?.forEach((value) => {
                     value["@id"] = mapValuesReverse.get(value["@id"]);
                     if (value.provenance) {
-                        if (value.provenance instanceof Array){
-                            value.provenance = value.provenance.map((provenance) =>
-                            mapProvenanceReverse.get(provenance)
-                        );
+                        if (value.provenance instanceof Array) {
+                            value.provenance = value.provenance.map(
+                                (provenance) =>
+                                    mapProvenanceReverse.get(provenance)
+                            );
+                        } else {
+                            value.provenance = mapProvenanceReverse.get(
+                                value.provenance
+                            );
                         }
-                        else if (value.provenance instanceof String){
-                            value.provenance = mapProvenanceReverse.get(value.provenance);
-                        }
-                        
                     }
                     if (value.ta2entity) {
-                        if (value.ta2entity instanceof Array){
-                        value.ta2entity = value.ta2entity.map((entity) =>
-                        mapEntitiesReverse.get(entity)
-                    );
-                    } else if (value.ta2entity instanceof String){
-                        value.ta2entity = mapEntitiesReverse.get(value.ta2entity);
-                    }}
+                        if (value.ta2entity instanceof Array) {
+                            value.ta2entity = value.ta2entity.map((entity) =>
+                                mapEntitiesReverse.get(entity)
+                            );
+                        } else {
+                            value.ta2entity = mapEntitiesReverse.get(
+                                value.ta2entity
+                            );
+                        }
+                    }
                 });
             });
 
@@ -207,7 +239,6 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
                 relation.relationSubject = mapEntitiesReverse.get(
                     relation.relationSubject
                 );
-
             });
         });
 
@@ -283,41 +314,39 @@ export const TA2traverseAllEvents = (mapEvents, topLevelEvent) => {
     const traverseEvent = (event) => {
         eventsSet.add(event.id);
         if (event.provenance) {
-            if (event.provenance instanceof Array){
+            if (event.provenance instanceof Array) {
                 event.provenance.forEach((provenance) => {
                     provenanceSet.add(provenance);
                 });
-            } else if (event.provenance instanceof String){
+            } else {
                 provenanceSet.add(event.provenance);
             }
-            
         }
         event.participants?.forEach((participant) => {
             participantsSet.add(participant);
             entitiesSet.add(participant.entity);
             participant.values?.forEach((value) => {
                 entitiesSet.add(value.id);
+                console.log("processing value", value);
                 if (value.provenance) {
-                    if (value.provenance instanceof Array){
+                    if (value.provenance instanceof Array) {
                         value.provenance.forEach((provenance) => {
                             provenanceSet.add(provenance);
                         });
-                    
-                    
-                    } else if (value.provenance instanceof String){
+                    } else {
                         provenanceSet.add(value.provenance);
                     }
-                    
                 }
                 if (value.entity) {
                     entitiesSet.add(value.entity);
                 }
                 if (value.ta2entity) {
-                    if (value.ta2entity instanceof Array){
+                    if (value.ta2entity instanceof Array) {
                         value.ta2entity.forEach((entity) => {
+                            console.log("add ta2entities", entity);
                             entitiesSet.add(entity);
                         });
-                    } else if (value.ta2entity instanceof String){
+                    } else {
                         entitiesSet.add(value.ta2entity);
                     }
                 }
@@ -326,7 +355,7 @@ export const TA2traverseAllEvents = (mapEvents, topLevelEvent) => {
         event.subgroupEvents?.forEach((subgroup) => {
             traverseEvent(mapEvents.get(subgroup));
         });
-    }
+    };
     console.log("topLevelEvent", topLevelEvent);
     console.log("mapEvents.get(topLevelEvent)", mapEvents.get(topLevelEvent));
     traverseEvent(mapEvents.get(topLevelEvent));
@@ -334,5 +363,5 @@ export const TA2traverseAllEvents = (mapEvents, topLevelEvent) => {
         eventsSet: eventsSet,
         entitiesSet: entitiesSet,
         provenanceSet: provenanceSet,
-    }
-}
+    };
+};

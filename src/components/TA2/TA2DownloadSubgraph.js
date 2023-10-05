@@ -7,8 +7,7 @@ import {
 import { JsonConvert } from "json2typescript";
 import { TA2traverseAllEvents } from "../DataReadingComponents/MergeMultipleFiles";
 import useStore from "./store";
-import { EventNode } from "./Library";
-import { Entity } from "./Library";
+import { EventNode, Entity } from "./Library";
 
 export const TA2DownloadSubgraph = ({ nodeId, onClick }) => {
     const [Provenances] = useContext(ProvenanceContext);
@@ -19,20 +18,20 @@ export const TA2DownloadSubgraph = ({ nodeId, onClick }) => {
     const downloadSubgraph = (nodeId) => {
         const TA2traverseAllEventsData = TA2traverseAllEvents(mapNodes, nodeId);
         const jsonConverter = new JsonConvert();
-        const allEvents = jsonConverter
-            .serializeArray(
-                Array.from(mapNodes.values()).filter((event) =>
+        const allEvents = jsonConverter.serializeArray(
+            Array.from(mapNodes.values())
+                .filter((event) =>
                     TA2traverseAllEventsData.eventsSet.has(event.id)
-                ).map((event) => {
+                )
+                .map((event) => {
                     if (event.id === nodeId) {
                         event.isTopLevel = true;
                         event.parent = "kairos:NULL";
                     }
                     return event;
                 }),
-                EventNode
-            )
-            ;
+            EventNode
+        );
         const newData = {
             ceID: jsonData.ceID,
             "@context": jsonData["@context"],
@@ -59,9 +58,7 @@ export const TA2DownloadSubgraph = ({ nodeId, onClick }) => {
             ],
             provenanceData: jsonConverter.serializeArray(
                 Array.from(Provenances.values()).filter((provenance) =>
-                    TA2traverseAllEventsData.provenanceSet.has(
-                        provenance.id
-                    )
+                    TA2traverseAllEventsData.provenanceSet.has(provenance.id)
                 )
             ),
         };
@@ -80,18 +77,17 @@ export const TA2DownloadSubgraph = ({ nodeId, onClick }) => {
     };
 
     return (
-            <button
-                onClick={() => {
-                    if (onClick instanceof Function) {
-                        onClick();
-
-                    }
-                    downloadSubgraph(nodeId);
-                }}
-                className="selection-button"
-            >
-                <i className="fa fa-download"></i>
-            </button>
+        <button
+            onClick={() => {
+                if (onClick instanceof Function) {
+                    onClick();
+                }
+                downloadSubgraph(nodeId);
+            }}
+            className="selection-button"
+        >
+            <i className="fa fa-download"></i>
+        </button>
     );
 };
 
