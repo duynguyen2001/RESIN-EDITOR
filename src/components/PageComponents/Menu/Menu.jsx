@@ -4,6 +4,7 @@ import {
     faInfoCircle,
     faListSquares,
     faPlusSquare,
+    faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { JsonConvert } from "json2typescript";
@@ -25,6 +26,10 @@ import {
     ProvenanceContext,
     SchemaTypeContext,
 } from "../../DataReadingComponents/DataReader";
+import {
+    TA2dataMergeMultipleFiles,
+    TA2traverseAllEvents,
+} from "../../DataReadingComponents/MergeMultipleFiles";
 import ZipReader from "../../DataReadingComponents/ZipReader";
 import {
     TA1Entity,
@@ -46,10 +51,6 @@ import {
 import useStore from "../../TA2/store";
 import { UniqueString } from "../../utils/TypeScriptUtils";
 import "./Menu.css";
-import {
-    TA2dataMergeMultipleFiles,
-    TA2traverseAllEvents,
-} from "../../DataReadingComponents/MergeMultipleFiles";
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [option, setOption] = useState(null);
@@ -95,6 +96,18 @@ function Menu() {
                             className="menu-item"
                             title="Global Entity List"
                         />
+                    </div>
+                    <div>
+                        <a
+                            href="https://duynguyen2001.github.io/RESIN-EDITOR-documentation/"
+                            target="_blank"
+                        >
+                            <FontAwesomeIcon
+                                icon={faQuestionCircle}
+                                className="menu-item"
+                                title="Help"
+                            />
+                        </a>
                     </div>
                 </div>
             )}
