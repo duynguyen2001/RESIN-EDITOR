@@ -6,13 +6,6 @@ const getId = (prefix, suffix, mapEvents, currentId) => {
     }
     return newId;
 };
-const detectPrefix = (id) => {
-    const prefix = id.slice(
-        0,
-        id.findIndex((char) => char === "/")
-    );
-    return prefix;
-};
 
 export const TA2dataMergeMultipleFiles = (dataList) => {
     console.log("dataList", dataList);

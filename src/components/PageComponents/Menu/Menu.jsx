@@ -50,8 +50,6 @@ import {
     TA2dataMergeMultipleFiles,
     TA2traverseAllEvents,
 } from "../../DataReadingComponents/MergeMultipleFiles";
-import { json } from "react-router-dom";
-
 function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [option, setOption] = useState(null);
