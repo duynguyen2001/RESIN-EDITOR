@@ -14,11 +14,12 @@ export function TA1TableInfoPanel({
     const [showAllEntities, setShowAllEntities] = useState(
         schemaType === "ta1"
     );
-    const [editMapNode, mapNodes, entitiesRelatedEventMap, mapEntities] = useStoreTA1((state) => [
+    const [editMapNode, mapNodes, entitiesRelatedEventMap, mapEntities, updateLayout] = useStoreTA1((state) => [
         state.editMapNode,
         state.mapNodes,
         state.entitiesRelatedEventMap,
         state.mapEntities,
+        state.updateLayout
     ]);
     const [editNode, setEditNode] = useState(null);
     const loadOptions = async (inputValue, callback) => {
@@ -92,7 +93,24 @@ export function TA1TableInfoPanel({
         console.log("parentId", parentId);
         return data.map((participant) => {
             // console.log("entitiesMap", mapEntities);
-            const entityObject = mapEntities.get(participant.entity);
+            let entityObject = mapEntities.get(participant.entity);
+            if (entityObject === undefined) {
+                const JsonConverter = new JsonConvert();
+                mapEntities.set(
+                    participant.entity,
+                    JsonConverter.deserializeObject(
+                        {
+                            "@id": participant.entity,
+                            name: "",
+                            wd_node: "",
+                            wd_label: "",
+                            wd_description: "",
+                        },
+                        TA1Entity
+                    )
+                );
+                entityObject = mapEntities.get(participant.entity);
+            }
             return {
                 id: participant.id,
                 entities: (
@@ -107,6 +125,7 @@ export function TA1TableInfoPanel({
                                 }}
                                 onChange={(object) => {
                                     console.log("object", object);
+                                    
                                     if (mapEntities.has(object.value)) {
                                         participant.entity = object.value;
                                         editMapNode(
@@ -158,6 +177,7 @@ export function TA1TableInfoPanel({
                                                 })
                                         );
                                     }
+                                    updateLayout();
                                 }} />
                         ) : (
                             <EditableText
@@ -169,6 +189,7 @@ export function TA1TableInfoPanel({
                                         entityObject
                                     );
                                     setTableChange(!tableChange);
+                                    updateLayout();
                                 }}
                                 wdData={{
                                     wd_node: entityObject.wd_node,

@@ -28,6 +28,7 @@ import {
 } from "../../DataReadingComponents/DataReader";
 import {
     TA2dataMergeMultipleFiles,
+    TA1dataMergeMultipleFiles,
     TA2traverseAllEvents,
 } from "../../DataReadingComponents/MergeMultipleFiles";
 import ZipReader from "../../DataReadingComponents/ZipReader";
@@ -209,11 +210,16 @@ function AddJSONPanel() {
                     if (jsonList.length === files.length) {
                         console.log("All files processed");
                         console.log("jsonList", jsonList);
+
                         if (activeTab === "ta2") {
                             const mergedJson =
                                 TA2dataMergeMultipleFiles(jsonList);
                             console.log("mergedJson", mergedJson);
                             setSchemaType("ta2");
+                            setJsonData(mergedJson);
+                        } else {
+                            const mergedJson = TA1dataMergeMultipleFiles(jsonList);
+                            setSchemaType("ta1");
                             setJsonData(mergedJson);
                         }
                     }
@@ -321,6 +327,7 @@ function AddJSONPanel() {
                     <input
                         type="file"
                         accept=".json"
+                        multiple
                         onChange={handleJSONUpload}
                     />
                 </>
@@ -1247,6 +1254,7 @@ const TA1GlobalEntityTable = () => {
             if (entity === undefined) {
                 continue;
             }
+            
             newEntitiesTable.push(
                 <TableRowTA1
                     key={key}

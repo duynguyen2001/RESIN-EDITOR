@@ -6,7 +6,171 @@ const getId = (prefix, suffix, mapEvents, currentId) => {
     }
     return newId;
 };
+export const TA1dataMergeMultipleFiles = (dataList) => {
+    console.log("dataList", dataList);
+    const mapEvents = new Map();
+    const mapEntities = new Map();
+    const mapRelations = new Map();
+    const mapParticipants = new Map();
+    const listTopLevelEvents = [];
+    const eventPrefix = "resin:Events/";
+    const entityPrefix = "resin:Entities/";
+    const relationPrefix = "resin:Relations/";
+    const participantPrefix = "resin:Participants/";
 
+    const mergedEventId = getId(
+        eventPrefix,
+        "/",
+        mapEvents,
+        "resin:Events/00000/"
+    );
+    const originalEvent = {
+        "@id": mergedEventId,
+        name: "Merge Matching Results",
+        description: `This is a merged event of multiple matching results of ${dataList
+            .map((dataObject) => dataObject["@id"])
+            .join(", ")}`,
+        children_gate: "or",
+        children: [],
+        "isSchema": true,
+        "repeatable": false,
+        "outlinks": [],
+        entities: [],
+        relations: [],
+        participants: [],
+        importance: 0,
+    };
+    mapEvents.set(originalEvent["@id"], 
+        {
+            "@id": originalEvent["@id"],
+            schema_id: "null",
+        }
+    );
+    dataList.forEach((data) => {
+        let schema_id = data["@id"];
+        let num = 1;
+        while (mapEvents.has(schema_id)) {
+            schema_id = `${schema_id} (${num})`;
+        }
+        console.log("data over here", data);
+        const mapEventsReverse = new Map();
+        const mapEntitiesReverse = new Map();
+        const mapRelationsReverse = new Map();
+        const mapParticipantsReverse = new Map();
+        const setChildren = new Set();
+        console.log("data.events", data.events);
+        data.events.forEach((event) => {
+            const newId = getId(eventPrefix, "/", mapEvents, event["@id"]);
+            mapEvents.set(newId, {
+                "@id": event["@id"],
+                schema_id: schema_id,
+            });
+            mapEventsReverse.set(event["@id"], newId);
+            event.participants?.forEach((participant) => {
+                if (mapParticipantsReverse.has(participant["@id"])) {
+                    return;
+                }
+                const newId = getId(
+                    participantPrefix,
+                    "/",
+                    mapParticipants,
+                    participant["@id"]
+                );
+                mapParticipants.set(newId, {
+                    "@id": participant["@id"],
+                    schema_id: schema_id,
+                });
+                mapParticipantsReverse.set(participant["@id"], newId);
+            });
+            event.entities?.forEach((entity) => {
+                if (mapEntitiesReverse.has(entity["@id"])) {
+                    return;
+                }
+                const newId = getId(
+                    entityPrefix,
+                    "/",
+                    mapEntities,
+                    entity["@id"]
+                );
+                mapEntities.set(newId, {
+                    "@id": entity["@id"],
+                    schema_id: schema_id,
+                });
+                mapEntitiesReverse.set(entity["@id"], newId);
+            });
+            event.relations?.forEach((relation) => {
+                if (mapRelationsReverse.has(relation["@id"])) {
+                    return;
+                }
+                const newId = getId(
+                    relationPrefix,
+                    "/",
+                    mapRelations,
+                    relation["@id"]
+                );
+                mapRelations.set(newId, {
+                    "@id": relation["@id"],
+                    schema_id: schema_id,
+                });
+                mapRelationsReverse.set(relation["@id"], newId);
+            });
+            event.children?.forEach((child) => {
+                setChildren.add(child);
+            });
+        });
+        console.log("setChildren", setChildren);
+        // Replace the old ids with the new ones
+        // data.events.forEach((event) => {
+        //     if (!setChildren.has(event["@id"])) {
+        //         listTopLevelEvents.push(mapEventsReverse.get(event["@id"]));
+        //     }
+        //     event["@id"] = mapEventsReverse.get(event["@id"]);
+            
+        //     event.participants?.forEach((participant) => {
+        //         participant["@id"] = mapParticipantsReverse.get(
+        //             participant["@id"]
+        //         );
+        //     });
+        //     event.entities?.forEach((entity) => {
+        //         entity["@id"] = mapEntitiesReverse.get(entity["@id"]);
+        //     });
+        //     event.relations?.forEach((relation) => {
+        //         relation["@id"] = mapRelationsReverse.get(relation["@id"]);
+        //     });
+        //     if (event.children) {
+        //         event.children = event.children?.map((child) => {
+        //             return mapEventsReverse.get(child["@id"]);
+        //         }
+        //         );
+        //     }
+        //     if (event.outlinks) {
+        //         event.outlinks = event.outlinks?.map((outlink) => {
+        //             return mapEventsReverse.get(outlink["@id"]);
+        //         });
+        //     }
+            
+
+        // });
+
+    });
+    console.log("mapEvents", mapEvents);
+    console.log("mapEntities", mapEntities);
+    console.log("mapRelations", mapRelations);
+    console.log("mapParticipants", mapParticipants);
+    console.log("originalEvent", originalEvent);
+    console.log("listTopLevelEvents", listTopLevelEvents);
+    originalEvent.children = listTopLevelEvents;
+    return {
+        "@id": "resin:Schema/00000/",
+        "sdfVersion": "3.0",
+        "version": "1.0",
+        "events": [
+            originalEvent,
+            ...dataList.map((dataObject) => dataObject.events).flat(),
+        ]
+    };
+
+}
 export const TA2dataMergeMultipleFiles = (dataList) => {
     console.log("dataList", dataList);
     const mapEvents = new Map();
