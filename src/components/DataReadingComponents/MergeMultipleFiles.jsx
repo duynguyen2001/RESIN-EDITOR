@@ -119,38 +119,40 @@ export const TA1dataMergeMultipleFiles = (dataList) => {
             });
         });
         console.log("setChildren", setChildren);
+        console.log("mapEventReverse", mapEventsReverse)
+        console.log("mapEntitiesReverse", mapEntitiesReverse);
         // Replace the old ids with the new ones
-        // data.events.forEach((event) => {
-        //     if (!setChildren.has(event["@id"])) {
-        //         listTopLevelEvents.push(mapEventsReverse.get(event["@id"]));
-        //     }
-        //     event["@id"] = mapEventsReverse.get(event["@id"]);
+        data.events.forEach((event) => {
+            if (!setChildren.has(event["@id"])) {
+                listTopLevelEvents.push(mapEventsReverse.get(event["@id"]));
+            }
+            event["@id"] = mapEventsReverse.get(event["@id"]);
             
-        //     event.participants?.forEach((participant) => {
-        //         participant["@id"] = mapParticipantsReverse.get(
-        //             participant["@id"]
-        //         );
-        //     });
-        //     event.entities?.forEach((entity) => {
-        //         entity["@id"] = mapEntitiesReverse.get(entity["@id"]);
-        //     });
-        //     event.relations?.forEach((relation) => {
-        //         relation["@id"] = mapRelationsReverse.get(relation["@id"]);
-        //     });
-        //     if (event.children) {
-        //         event.children = event.children?.map((child) => {
-        //             return mapEventsReverse.get(child["@id"]);
-        //         }
-        //         );
-        //     }
-        //     if (event.outlinks) {
-        //         event.outlinks = event.outlinks?.map((outlink) => {
-        //             return mapEventsReverse.get(outlink["@id"]);
-        //         });
-        //     }
+            event.participants?.forEach((participant) => {
+                participant["@id"] = mapParticipantsReverse.get(
+                    participant["@id"]
+                );
+            });
+            event.entities?.forEach((entity) => {
+                entity["@id"] = mapEntitiesReverse.get(entity["@id"]);
+            });
+            event.relations?.forEach((relation) => {
+                relation["@id"] = mapRelationsReverse.get(relation["@id"]);
+            });
+            if (event.children) {
+                event.children = event.children?.map((child) => {
+                    return mapEventsReverse.get(child);
+                }
+                );
+            }
+            if (event.outlinks) {
+                event.outlinks = event.outlinks?.map((outlink) => {
+                    return mapEventsReverse.get(outlink);
+                });
+            }
             
 
-        // });
+        });
 
     });
     console.log("mapEvents", mapEvents);
