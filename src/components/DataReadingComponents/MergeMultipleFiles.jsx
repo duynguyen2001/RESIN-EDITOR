@@ -26,8 +26,8 @@ export const TA1dataMergeMultipleFiles = (dataList) => {
     );
     const originalEvent = {
         "@id": mergedEventId,
-        name: "Merge Matching Results",
-        description: `This is a merged event of multiple matching results of ${dataList
+        name: "Merge Schemas",
+        description: `This is a merged event of multiple schema of ${dataList
             .map((dataObject) => dataObject["@id"])
             .join(", ")}`,
         children_gate: "or",
