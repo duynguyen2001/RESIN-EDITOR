@@ -1,4 +1,6 @@
 import dagre from "dagre";
+import { JsonConvert } from "json2typescript";
+import { TA1Entity } from "../../components/TA1/LibraryTA1";
 const nodeWidth = 200;
 const nodeHeight = 200;
 
@@ -6,7 +8,7 @@ export const getLayoutedElements = (
     nodes,
     edges,
     direction = "TB",
-    getGraph = false
+    getGraph = false,
 ) => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -16,7 +18,7 @@ export const getLayoutedElements = (
         ranker: "tight-tree",
         ranksep: isHorizontal ? 100 : 100,
         align: isHorizontal ? "UL" : undefined,
-        nodesep: isHorizontal ? 50 : 300,
+        nodesep: isHorizontal ? 100 : 300,
     });
     // console.log("getLayoutedElements");
     // console.log(nodes);
@@ -36,8 +38,8 @@ export const getLayoutedElements = (
 
     nodes.forEach((node) => {
         const nodeWithPosition = dagreGraph.node(node.id);
-        node.targetPosition = isHorizontal ? "left" : "top";
-        node.sourcePosition = isHorizontal ? "right" : "bottom";
+        // node.targetPosition = isHorizontal ? "left" : "top";
+        // node.sourcePosition = isHorizontal ? "right" : "bottom";
 
         // We are shifting the dagre node position (anchor=center center) to the top left
         // so it matches the React Flow node anchor point (top left).
@@ -173,7 +175,22 @@ const getLayoutedElementsNested = (
                 const participantsEntities = [];
                 const entityNodes = currentNode.participants?.map(
                     (participant) => {
-                        const entity = mapEntities.get(participant.entity);
+                        let entity = mapEntities.get(participant.entity);
+                        if (!entity) {
+                            const jsonConverter = new JsonConvert();
+                            const newEntity = jsonConverter.deserializeObject(
+                                {
+                                    "@id": participant.entity,
+                                    name: participant.entity,
+                                    wd_node: "",
+                                    wd_label: "",
+                                    wd_description: "",
+                                },
+                                TA1Entity
+                            );
+                            mapEntities.set(participant.entity, newEntity);
+                            entity = mapEntities.get(participant.entity);
+                        }
                         participantsEntities.push(participant.entity);
                         return {
                             id: `${entity.id}-${node}`,

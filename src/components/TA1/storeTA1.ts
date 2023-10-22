@@ -17,6 +17,7 @@ import {
 import { create } from "zustand";
 import {
     Relation,
+    TA1Entity,
     TA1EntityStrategy,
     TA1Event,
     TA1EventStrategy,
@@ -428,7 +429,30 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
     getNodeById: (id: string) => {
         const node = get().mapNodes.get(id);
-        return node ? node : get().mapEntities.get(id);
+        if (node) {
+            return node
+        } else {
+            const newNode = get().mapEntities.get(id);
+            if (newNode) {
+                return newNode
+            } else {
+                const jsonConverter = new JsonConvert();
+                const newEntity = jsonConverter.deserializeObject(
+                    {
+                        "@id": id,
+                        "name": id,
+                        "wd_node": [],
+                        "wd_label": [],
+                        "wd_description": [],
+                        "importance": 1,
+                        "likelihood": 1,
+                        "optional": false,
+                        // @ts-ignore
+                    }, TA1Entity);
+                get().mapEntities.set(id, newEntity);
+                return get().mapEntities.get(id);
+            }
+        }
     },
     groupingNodes(nodes: string[]) {},
     onNodesChange: (changes: NodeChange[]) => {

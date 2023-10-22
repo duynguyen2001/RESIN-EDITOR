@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { ReactFlow, ReactFlowProvider } from "reactflow";
+import { Position, ReactFlow, ReactFlowProvider } from "reactflow";
 import { getLayoutedElements } from "../../../pages/TA1/layoutTA1";
 import {
     RelationsContext,
@@ -156,33 +156,35 @@ export const EntityGraphPanelTA1 = () => {
                     target: target.id,
                     label: relation.name,
                     ...edgeStyle.relation,
-                    sourcePosition: "right",
-                    targetPosition: "left",
+                    sourceHandle: source.id + "_right",
+                    targetHandle: target.id + "_left",
                 });
             }
             const obj = getLayoutedElements(newNodes, newEdges, "LR");
+            console.log("obj", obj);
             setNodes(obj.nodes);
             setEdges(obj.edges);
         });
     }, [relationList]);
     useEffect(() => {
-        // console.log("chosenEntities", chosenEntities);
-        // if (chosenEntities.length === 0) {
-        //     setNodes(nodes.map((node) => ({
-        //         ...node,
-        //         style: {
-        //             ...node.style,
-        //         opacity: 1,
-        //         }})));
-        //     return;
-        // }
-        // setNodes(nodes.map((node) => ({
-        //     ...node,
-        //     style: {
-        //         ...node.style,
-        //     opacity: chosenEntities.includes(node.id) ? 1 : 0.5,
-        //     }
-        // })));
+        console.log("chosenEntities", chosenEntities);
+        if (nodes.length === 0) return;
+        if (chosenEntities.length === 0 ) {
+            setNodes(nodes.map((node) => ({
+                ...node,
+                style: {
+                    ...node.style,
+                opacity: 1,
+                }})));
+            return;
+        } 
+        setNodes(nodes.map((node) => ({
+            ...node,
+            style: {
+                ...node.style,
+            opacity: chosenEntities.includes(node.id) ? 1 : 0.5,
+            }
+        })));
     }, [chosenEntities]);
     return (
         <div>
@@ -190,7 +192,7 @@ export const EntityGraphPanelTA1 = () => {
             <div
                 style={{
                     width: "100%",
-                    height: "70vh",
+                    height: "60vh",
                     border: "1px solid black",
                 }}
             >
@@ -201,8 +203,16 @@ export const EntityGraphPanelTA1 = () => {
                         onNodeClick={handleClick}
                         nodeTypes={nodeTypes}
                         draggable={true}
-                        fitView
+                        fitView={true}
+                        zoomOnScroll={true}
+                        zoomOnDoubleClick={true}
+                        minZoom={0.1}
+                        maxZoom={2}
+                        defaultZoom={1}
+                        defaultPosition={Position.Center}
+
                     />
+
                 </ReactFlowProvider>
             </div>
         </div>
