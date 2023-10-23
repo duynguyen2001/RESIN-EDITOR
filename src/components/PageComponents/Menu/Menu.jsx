@@ -323,7 +323,7 @@ function AddJSONPanel() {
                 <>
                     <h2>Upload TA1 Schema</h2>
                     <h3>Upload TA1 Schema File</h3>
-                    {jsonData.ceID && <h4>Current File: {jsonData.ceID}</h4>}
+                    {jsonData.id && <h4>Current File: {jsonData.id}</h4>}
                     <input
                         type="file"
                         accept=".json"
