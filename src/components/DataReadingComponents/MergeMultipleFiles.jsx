@@ -7,7 +7,6 @@ const getId = (prefix, suffix, mapEvents, currentId) => {
     return newId;
 };
 export const TA1dataMergeMultipleFiles = (dataList) => {
-    console.log("dataList", dataList);
     const mapEvents = new Map();
     const mapEntities = new Map();
     const mapRelations = new Map();
@@ -32,33 +31,29 @@ export const TA1dataMergeMultipleFiles = (dataList) => {
             .join(", ")}`,
         children_gate: "or",
         children: [],
-        "isSchema": true,
-        "repeatable": false,
-        "outlinks": [],
+        isSchema: true,
+        repeatable: false,
+        outlinks: [],
         entities: [],
         relations: [],
         participants: [],
         importance: 0,
     };
-    mapEvents.set(originalEvent["@id"], 
-        {
-            "@id": originalEvent["@id"],
-            schema_id: "null",
-        }
-    );
+    mapEvents.set(originalEvent["@id"], {
+        "@id": originalEvent["@id"],
+        schema_id: "null",
+    });
     dataList.forEach((data) => {
         let schema_id = data["@id"];
         let num = 1;
         while (mapEvents.has(schema_id)) {
             schema_id = `${schema_id} (${num})`;
         }
-        console.log("data over here", data);
         const mapEventsReverse = new Map();
         const mapEntitiesReverse = new Map();
         const mapRelationsReverse = new Map();
         const mapParticipantsReverse = new Map();
         const setChildren = new Set();
-        console.log("data.events", data.events);
         data.events.forEach((event) => {
             const newId = getId(eventPrefix, "/", mapEvents, event["@id"]);
             mapEvents.set(newId, {
@@ -118,16 +113,13 @@ export const TA1dataMergeMultipleFiles = (dataList) => {
                 setChildren.add(child);
             });
         });
-        console.log("setChildren", setChildren);
-        console.log("mapEventReverse", mapEventsReverse)
-        console.log("mapEntitiesReverse", mapEntitiesReverse);
         // Replace the old ids with the new ones
         data.events.forEach((event) => {
             if (!setChildren.has(event["@id"])) {
                 listTopLevelEvents.push(mapEventsReverse.get(event["@id"]));
             }
             event["@id"] = mapEventsReverse.get(event["@id"]);
-            
+
             event.participants?.forEach((participant) => {
                 participant["@id"] = mapParticipantsReverse.get(
                     participant["@id"]
@@ -142,39 +134,27 @@ export const TA1dataMergeMultipleFiles = (dataList) => {
             if (event.children) {
                 event.children = event.children?.map((child) => {
                     return mapEventsReverse.get(child);
-                }
-                );
+                });
             }
             if (event.outlinks) {
                 event.outlinks = event.outlinks?.map((outlink) => {
                     return mapEventsReverse.get(outlink);
                 });
             }
-            
-
         });
-
     });
-    console.log("mapEvents", mapEvents);
-    console.log("mapEntities", mapEntities);
-    console.log("mapRelations", mapRelations);
-    console.log("mapParticipants", mapParticipants);
-    console.log("originalEvent", originalEvent);
-    console.log("listTopLevelEvents", listTopLevelEvents);
     originalEvent.children = listTopLevelEvents;
     return {
         "@id": "resin:Schema/00000/",
-        "sdfVersion": "3.0",
-        "version": "1.0",
-        "events": [
+        sdfVersion: "3.0",
+        version: "1.0",
+        events: [
             originalEvent,
             ...dataList.map((dataObject) => dataObject.events).flat(),
-        ]
+        ],
     };
-
-}
+};
 export const TA2dataMergeMultipleFiles = (dataList) => {
-    console.log("dataList", dataList);
     const mapEvents = new Map();
     const mapEntities = new Map();
     const mapRelations = new Map();
@@ -245,7 +225,6 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
 
         // Add the new ids to the maps
         const data = dataObject.instances[0];
-        console.log("data over here", data);
         const mapEventsReverse = new Map();
         const mapEntitiesReverse = new Map();
         const mapRelationsReverse = new Map();
@@ -419,13 +398,6 @@ export const TA2dataMergeMultipleFiles = (dataList) => {
         dataObject.instances[0] = data;
     });
 
-    console.log("mapEvents", mapEvents);
-    console.log("mapEntities", mapEntities);
-    console.log("mapRelations", mapRelations);
-    console.log("mapParticipants", mapParticipants);
-    console.log("mapValues", mapValues);
-    console.log("mapProvenance", mapProvenance);
-
     return {
         "@context": dataList.map((dataObject) => dataObject["@context"]).flat(),
         ceID: dataList.map((dataObject) => dataObject.ceID).join("+"),
@@ -487,7 +459,6 @@ export const TA2traverseAllEvents = (mapEvents, topLevelEvent) => {
             entitiesSet.add(participant.entity);
             participant.values?.forEach((value) => {
                 entitiesSet.add(value.id);
-                console.log("processing value", value);
                 if (value.provenance) {
                     if (value.provenance instanceof Array) {
                         value.provenance.forEach((provenance) => {
@@ -503,7 +474,6 @@ export const TA2traverseAllEvents = (mapEvents, topLevelEvent) => {
                 if (value.ta2entity) {
                     if (value.ta2entity instanceof Array) {
                         value.ta2entity.forEach((entity) => {
-                            console.log("add ta2entities", entity);
                             entitiesSet.add(entity);
                         });
                     } else {
@@ -516,8 +486,6 @@ export const TA2traverseAllEvents = (mapEvents, topLevelEvent) => {
             traverseEvent(mapEvents.get(subgroup));
         });
     };
-    console.log("topLevelEvent", topLevelEvent);
-    console.log("mapEvents.get(topLevelEvent)", mapEvents.get(topLevelEvent));
     traverseEvent(mapEvents.get(topLevelEvent));
     return {
         eventsSet: eventsSet,

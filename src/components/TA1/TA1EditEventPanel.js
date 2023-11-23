@@ -41,8 +41,9 @@ export const TA1EditEventPanel = ({
                   "@id": getNewIdInEventMap(),
                   name: "newNode",
                   description: "",
-                  children_gate: grouping && subgroupEvents.length > 0 ? "or" : undefined,
-                  children: grouping ? subgroupEvents: [],
+                  children_gate:
+                      grouping && subgroupEvents.length > 0 ? "or" : undefined,
+                  children: grouping ? subgroupEvents : [],
                   parent: parentId,
                   outlinks: [],
                   wd_node: [],
@@ -68,13 +69,16 @@ export const TA1EditEventPanel = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // console.log(data);
         if (parentId === "null" && !grouping) {
             addNodeOnPanel(jsonConvert.deserializeObject(data, TA1Event));
             onClose();
             return;
         }
-        addEventNode(jsonConvert.deserializeObject(data, TA1Event), grouping, parentId);
+        addEventNode(
+            jsonConvert.deserializeObject(data, TA1Event),
+            grouping,
+            parentId
+        );
         onClose();
     };
 
@@ -204,7 +208,6 @@ export const TA1EditEventPanel = ({
                             label: data.wd_label,
                         }}
                         onChange={(options) => {
-                            console.log("option", options);
                             setData({
                                 ...data,
                                 wd_node: options.map((option) => {
@@ -236,10 +239,14 @@ export const TA1EditEventPanel = ({
                     <label>Children:</label>
                     <Select
                         name="children"
-                        value={data.children? data.children.map((child) => ({
-                            value: child,
-                            label: mapNodes.get(child).name,
-                        })): []}
+                        value={
+                            data.children
+                                ? data.children.map((child) => ({
+                                      value: child,
+                                      label: mapNodes.get(child).name,
+                                  }))
+                                : []
+                        }
                         onChange={(options) => {
                             const childrenEvents = options.map(
                                 (option) => option.value
@@ -316,7 +323,6 @@ export const TA1EditEventPanel = ({
                         }}
                         valueLabelDisplay="on"
                         onChange={(event, value) => {
-                            // console.log("value", value);
                             setData({
                                 ...data,
                                 confidence: value,

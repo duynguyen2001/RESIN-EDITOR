@@ -13,23 +13,17 @@ const EditableTextNode = ({ data, fileContent }) => {
     const [beginHighlight, setBeginHighlight] = useState(0);
     const [endHighlight, setEndHighlight] = useState(0);
     const onProvenanceUpdate = (newProvenance) => {
-        console.log("data: ", newProvenance);
         provenances.set(newProvenance.id, newProvenance);
         setProvenances(provenances);
         setNodeData(newProvenance);
-        console.log("newprovenances: ", provenances.get(newProvenance.id));
     };
 
     const handleMouseUp = () => {
         if (editing) {
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
-                console.log("selection: ", selection);
                 const range = selection.getRangeAt(0);
                 const { startOffset, endOffset } = range;
-                console.log("start", start);
-                console.log("startOffset: ", startOffset);
-                console.log("endOffset: ", endOffset);
                 const newOffset = startOffset + start;
                 const newLength = endOffset - startOffset;
                 data.offset = newOffset;
@@ -106,7 +100,6 @@ const EditableTextNode = ({ data, fileContent }) => {
         setEndHighlight(nendHighlight);
         setEnd(nend);
     }, [editing, showWholeParagraph]);
-    console.log("data sourceURL: ", data.sourceURL);
 
     return (
         <div className="text-node">

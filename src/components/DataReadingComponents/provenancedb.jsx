@@ -26,11 +26,9 @@ async function getImage(key) {
         await initializeDB();
     }
     const blob = await db.get("images", key);
-    console.log("blob: ", blob);
 
     if (blob !== undefined) {
         const url = URL.createObjectURL(blob);
-        console.log("url: ", url);
         return url;
     }
     return null;

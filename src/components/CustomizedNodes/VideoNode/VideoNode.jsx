@@ -82,11 +82,9 @@ function VideoWithBox({ data, containerWidth = 500 }) {
             containerWidth === 0
         )
             return;
-        console.log("containerWidth", containerWidth);
         setScale(containerWidth / 1080.0);
     }, [playerRef]);
     useEffect(() => {
-        console.log("scale", scale);
         if (scale === 0) return;
         setBoundingBoxWidth((x_end - x) * scale);
         setBoundingBoxHeight((y_end - y) * scale);
@@ -146,7 +144,6 @@ function VideoWithBox({ data, containerWidth = 500 }) {
     };
 
     useEffect(() => {
-        console.log("played", played);
         if (played > endTime) {
             playerRef.current.seekTo(startTime, "seconds");
         }

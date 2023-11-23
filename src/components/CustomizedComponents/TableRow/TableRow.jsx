@@ -123,7 +123,6 @@ export const EntityGraphPanelTA1 = () => {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const handleClick = (e, node) => {
-        console.log("dataathere", node);
         const updatedList = chosenEntities.includes(node.id)
             ? chosenEntities.filter((item) => item !== node.id)
             : [...chosenEntities, node.id];
@@ -131,7 +130,6 @@ export const EntityGraphPanelTA1 = () => {
     };
 
     useEffect(() => {
-        console.log("relationList", relationList);
         const newNodes = [];
         const newEdges = [];
         relationList.forEach((relation) => {
@@ -161,30 +159,33 @@ export const EntityGraphPanelTA1 = () => {
                 });
             }
             const obj = getLayoutedElements(newNodes, newEdges, "LR");
-            console.log("obj", obj);
             setNodes(obj.nodes);
             setEdges(obj.edges);
         });
     }, [relationList]);
     useEffect(() => {
-        console.log("chosenEntities", chosenEntities);
         if (nodes.length === 0) return;
-        if (chosenEntities.length === 0 ) {
-            setNodes(nodes.map((node) => ({
+        if (chosenEntities.length === 0) {
+            setNodes(
+                nodes.map((node) => ({
+                    ...node,
+                    style: {
+                        ...node.style,
+                        opacity: 1,
+                    },
+                }))
+            );
+            return;
+        }
+        setNodes(
+            nodes.map((node) => ({
                 ...node,
                 style: {
                     ...node.style,
-                opacity: 1,
-                }})));
-            return;
-        } 
-        setNodes(nodes.map((node) => ({
-            ...node,
-            style: {
-                ...node.style,
-            opacity: chosenEntities.includes(node.id) ? 1 : 0.5,
-            }
-        })));
+                    opacity: chosenEntities.includes(node.id) ? 1 : 0.5,
+                },
+            }))
+        );
     }, [chosenEntities]);
     return (
         <div>
@@ -210,9 +211,7 @@ export const EntityGraphPanelTA1 = () => {
                         maxZoom={2}
                         defaultZoom={1}
                         defaultPosition={Position.Center}
-
                     />
-
                 </ReactFlowProvider>
             </div>
         </div>

@@ -63,11 +63,14 @@ export abstract class NodeRenderingStrategy {
 
     render(isConnectable: boolean | undefined): ReactElement {
         return (
-            <div className="hover-container" style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-            }}>
+            <div
+                className="hover-container"
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                }}
+            >
                 <span className="hover-text">{this.eventNode.description}</span>
                 {this.shape === "diamond" ? (
                     <div
@@ -522,7 +525,7 @@ export class EventNode {
         this.predictionProvenance = predictionProvenance;
         this.confidence = confidence || [];
         this.wdNode = wdNode || [];
-        this.wdLabel = wdLabel ;
+        this.wdLabel = wdLabel;
         this.wdDescription = wdDescription || [];
         this.provenance = provenance || [];
         this.participants = participants || [];
@@ -558,12 +561,22 @@ export class EventNode {
         options: RenderOptions,
         isConnectable: boolean | undefined
     ): ReactElement {
-        // console.log("Rendering node: " + this.id);
         return (
             <div>
                 {this.renderStrategy.render(isConnectable)}
-                <div className=" font-bold" style={{ fontSize: "1.5rem", width: "fit-content", maxInlineSize: "200px", overflowWrap: "anywhere", textAlign: "center", hyphens: "auto"
-                }}>{this.name}</div>
+                <div
+                    className=" font-bold"
+                    style={{
+                        fontSize: "1.5rem",
+                        width: "fit-content",
+                        maxInlineSize: "200px",
+                        overflowWrap: "anywhere",
+                        textAlign: "center",
+                        hyphens: "auto",
+                    }}
+                >
+                    {this.name}
+                </div>
             </div>
         );
     }
@@ -711,7 +724,7 @@ export function createProvenanceEntity(
         return jsonConvert.deserializeObject(jsonData, ImageProvenance);
     } else if (jsonData.mediaType.startsWith("video")) {
         return jsonConvert.deserializeObject(jsonData, VideoProvenance);
-    }else {
+    } else {
         console.log("Unsupported: " + jsonData);
         throw new Error(`Unsupported mediaType: ${jsonData.mediaType}`);
     }

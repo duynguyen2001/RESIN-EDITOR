@@ -1,15 +1,7 @@
 import { JsonConvert } from "json2typescript";
 import React, { createContext, useEffect } from "react";
-import {
-    Entity,
-    EventNode,
-    createProvenanceEntity,
-} from "../TA2/Library";
-import {
-    Relation,
-    TA1Entity,
-    TA1Event,
-} from "../TA1/LibraryTA1";
+import { Entity, EventNode, createProvenanceEntity } from "../TA2/Library";
+import { Relation, TA1Entity, TA1Event } from "../TA1/LibraryTA1";
 
 import defaultData from "../../data/resin-resin-task1-ce2013.json";
 import defaultText from "../../data/triggers.json";
@@ -61,7 +53,6 @@ const DataReader = () => {
         if (schemaType === "ta1") {
             if (data.events && data.events.length > 0) {
                 setEvents(jsonConvert.deserializeArray(data.events, TA1Event));
-
                 const entitiesMap = new Map();
                 const relationList = [];
                 data.events.forEach((event) => {
@@ -121,46 +112,40 @@ const DataReader = () => {
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
-                <SchemaTypeContext.Provider value={[schemaType, setSchemaType]}>
-                    <DataContext.Provider value={[data, setData]}>
-                        <ProvenanceContext.Provider
-                            value={[Provenances, setProvenances]}
-                        >
-                            <EventsContext.Provider value={[Events, setEvents]}>
-                                <EntitiesContext.Provider
-                                    value={[Entities, setEntities]}
+            <SchemaTypeContext.Provider value={[schemaType, setSchemaType]}>
+                <DataContext.Provider value={[data, setData]}>
+                    <ProvenanceContext.Provider
+                        value={[Provenances, setProvenances]}
+                    >
+                        <EventsContext.Provider value={[Events, setEvents]}>
+                            <EntitiesContext.Provider
+                                value={[Entities, setEntities]}
+                            >
+                                <ExtractedTextsContext.Provider
+                                    value={[extractedTexts, setExtractedTexts]}
                                 >
-                                    <ExtractedTextsContext.Provider
+                                    <ExtractedFilesContext.Provider
                                         value={[
-                                            extractedTexts,
-                                            setExtractedTexts,
+                                            extractedFiles,
+                                            setExtractedFiles,
                                         ]}
                                     >
-                                        <ExtractedFilesContext.Provider
-                                            value={[
-                                                extractedFiles,
-                                                setExtractedFiles,
-                                            ]}
+                                        <RelationsContext.Provider
+                                            value={[Relations, setRelations]}
                                         >
-                                            <RelationsContext.Provider
-                                                value={[
-                                                    Relations,
-                                                    setRelations,
-                                                ]}
-                                            >
-                                                {schemaType === "ta2" ? (
-                                                    <Graph />
-                                                ) : (
-                                                    <GraphTA1 />
-                                                )}
-                                            </RelationsContext.Provider>
-                                        </ExtractedFilesContext.Provider>
-                                    </ExtractedTextsContext.Provider>
-                                </EntitiesContext.Provider>
-                            </EventsContext.Provider>
-                        </ProvenanceContext.Provider>
-                    </DataContext.Provider>
-                </SchemaTypeContext.Provider>
+                                            {schemaType === "ta2" ? (
+                                                <Graph />
+                                            ) : (
+                                                <GraphTA1 />
+                                            )}
+                                        </RelationsContext.Provider>
+                                    </ExtractedFilesContext.Provider>
+                                </ExtractedTextsContext.Provider>
+                            </EntitiesContext.Provider>
+                        </EventsContext.Provider>
+                    </ProvenanceContext.Provider>
+                </DataContext.Provider>
+            </SchemaTypeContext.Provider>
         </div>
     );
 };

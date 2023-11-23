@@ -8,18 +8,27 @@ import useStoreTA1 from "./storeTA1";
 import { TA1Entity } from "./LibraryTA1";
 
 export function TA1TableInfoPanel({
-    data, parentId, editMode = false, schemaType = "ta1",
+    data,
+    parentId,
+    editMode = false,
+    schemaType = "ta1",
 }) {
     const [tableChange, setTableChange] = useState(false);
     const [showAllEntities, setShowAllEntities] = useState(
         schemaType === "ta1"
     );
-    const [editMapNode, mapNodes, entitiesRelatedEventMap, mapEntities, updateLayout] = useStoreTA1((state) => [
+    const [
+        editMapNode,
+        mapNodes,
+        entitiesRelatedEventMap,
+        mapEntities,
+        updateLayout,
+    ] = useStoreTA1((state) => [
         state.editMapNode,
         state.mapNodes,
         state.entitiesRelatedEventMap,
         state.mapEntities,
-        state.updateLayout
+        state.updateLayout,
     ]);
     const [editNode, setEditNode] = useState(null);
     const loadOptions = async (inputValue, callback) => {
@@ -33,16 +42,17 @@ export function TA1TableInfoPanel({
         });
         if (!inputValue) {
             setTimeout(
-                () => callback([
-                    {
-                        label: "Existing Entities",
-                        options: options,
-                    },
-                    {
-                        label: "New Entities",
-                        options: [],
-                    },
-                ]),
+                () =>
+                    callback([
+                        {
+                            label: "Existing Entities",
+                            options: options,
+                        },
+                        {
+                            label: "New Entities",
+                            options: [],
+                        },
+                    ]),
                 1000
             );
         }
@@ -76,9 +86,10 @@ export function TA1TableInfoPanel({
         const totalOptions = [
             {
                 label: "Existing Entities",
-                options: options.filter((option) => option.label
-                    .toLowerCase()
-                    .includes(inputValue.toLowerCase())
+                options: options.filter((option) =>
+                    option.label
+                        .toLowerCase()
+                        .includes(inputValue.toLowerCase())
                 ),
             },
             {
@@ -89,10 +100,7 @@ export function TA1TableInfoPanel({
         return callback(totalOptions);
     };
     const getDisplayParticipantArray = (data, parentId, showAllEntities) => {
-        console.log("dataoverhere", data);
-        console.log("parentId", parentId);
         return data.map((participant) => {
-            // console.log("entitiesMap", mapEntities);
             let entityObject = mapEntities.get(participant.entity);
             if (entityObject === undefined) {
                 const JsonConverter = new JsonConvert();
@@ -115,7 +123,9 @@ export function TA1TableInfoPanel({
                 id: participant.id,
                 entities: (
                     <React.Fragment>
-                        {editNode !== null && participant.id === editNode.id ? (
+                        {editMode &&
+                        editNode !== null &&
+                        participant.id === editNode.id ? (
                             <AsyncSelect
                                 loadOptions={loadOptions}
                                 defaultOptions
@@ -124,8 +134,6 @@ export function TA1TableInfoPanel({
                                     label: entityObject.name,
                                 }}
                                 onChange={(object) => {
-                                    console.log("object", object);
-                                    
                                     if (mapEntities.has(object.value)) {
                                         participant.entity = object.value;
                                         editMapNode(
@@ -134,8 +142,10 @@ export function TA1TableInfoPanel({
                                             mapNodes
                                                 .get(parentId)
                                                 .participants.map((part) => {
-                                                    if (part.id ===
-                                                        participant.id) {
+                                                    if (
+                                                        part.id ===
+                                                        participant.id
+                                                    ) {
                                                         return participant;
                                                     } else {
                                                         return part;
@@ -152,7 +162,8 @@ export function TA1TableInfoPanel({
                                             name: object.data.name,
                                             wd_node: object.data.wd_node,
                                             wd_label: object.data.wd_label,
-                                            wd_description: object.data.wd_description,
+                                            wd_description:
+                                                object.data.wd_description,
                                         };
                                         mapEntities.set(
                                             newEntity["@id"],
@@ -168,8 +179,10 @@ export function TA1TableInfoPanel({
                                             mapNodes
                                                 .get(parentId)
                                                 .participants.map((part) => {
-                                                    if (part.id ===
-                                                        participant.id) {
+                                                    if (
+                                                        part.id ===
+                                                        participant.id
+                                                    ) {
                                                         return participant;
                                                     } else {
                                                         return part;
@@ -178,7 +191,8 @@ export function TA1TableInfoPanel({
                                         );
                                     }
                                     updateLayout();
-                                }} />
+                                }}
+                            />
                         ) : (
                             <EditableText
                                 values={entityObject.name}
@@ -197,7 +211,8 @@ export function TA1TableInfoPanel({
                                     wd_description: entityObject.wd_description,
                                 }}
                                 variant="none"
-                                onTable={true} />
+                                onTable={true}
+                            />
                         )}
                     </React.Fragment>
                 ),
@@ -223,7 +238,8 @@ export function TA1TableInfoPanel({
                                 setTableChange(!tableChange);
                             }}
                             variant="none"
-                            onTable={true} />
+                            onTable={true}
+                        />
                     </React.Fragment>
                 ),
             };
@@ -294,7 +310,8 @@ export function TA1TableInfoPanel({
                                         onClick={() => {
                                             // move the entity up
                                             const index = data.findIndex(
-                                                (part) => part.id === participant.id
+                                                (part) =>
+                                                    part.id === participant.id
                                             );
                                             if (index > 0) {
                                                 const temp = data[index - 1];
@@ -314,7 +331,8 @@ export function TA1TableInfoPanel({
                                         onClick={() => {
                                             // move the entity down
                                             const index = data.findIndex(
-                                                (part) => part.id === participant.id
+                                                (part) =>
+                                                    part.id === participant.id
                                             );
                                             if (index < data.length - 1) {
                                                 const temp = data[index + 1];
@@ -332,13 +350,10 @@ export function TA1TableInfoPanel({
                                     <span
                                         className="fa fa-edit new-style-button"
                                         onClick={() => {
-                                            // edit the entity
-                                            // console.log(
-                                            //     "participant",
-                                            //     participant
-                                            // );
-                                            if (editNode !== null &&
-                                                editNode.id === participant.id) {
+                                            if (
+                                                editNode !== null &&
+                                                editNode.id === participant.id
+                                            ) {
                                                 setEditNode(null);
                                             } else {
                                                 setEditNode(participant);
@@ -350,7 +365,8 @@ export function TA1TableInfoPanel({
                                         onClick={() => {
                                             // delete the entity
                                             const index = data.findIndex(
-                                                (part) => part.id === participant.id
+                                                (part) =>
+                                                    part.id === participant.id
                                             );
                                             if (index > -1) {
                                                 data.splice(index, 1);

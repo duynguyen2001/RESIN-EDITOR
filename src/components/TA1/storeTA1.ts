@@ -317,10 +317,14 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         nodeRerender("eventNode");
     },
 
-    addEventNode: (node: TA1Event, grouping: Boolean = false, parentId: string) => {
+    addEventNode: (
+        node: TA1Event,
+        grouping: Boolean = false,
+        parentId: string
+    ) => {
         const { mapNodes, updateLayout } = get();
         console.log("subgroupEvent here here", node);
-        const nodeId = node.id ;
+        const nodeId = node.id;
         if (nodeId) {
             mapNodes.set(nodeId, node);
         }
@@ -329,7 +333,7 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         if (parentNode === undefined) {
             return;
         }
-        
+
         if (grouping) {
             const children = node.children || [];
             const outlinks: string[] = [];
@@ -359,14 +363,19 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                     if (subgroupTA1Event.outlinks === undefined) {
                         return;
                     }
-                    if (subgroupTA1Event.outlinks.filter((outlink: string) => children.includes(outlink)).length === 0) {
+                    if (
+                        subgroupTA1Event.outlinks.filter((outlink: string) =>
+                            children.includes(outlink)
+                        ).length === 0
+                    ) {
                         return;
                     }
-                    subgroupTA1Event.outlinks = subgroupTA1Event.outlinks.filter(
-                        (outlink: string) => !children.includes(outlink)
-                    );
+                    subgroupTA1Event.outlinks =
+                        subgroupTA1Event.outlinks.filter(
+                            (outlink: string) => !children.includes(outlink)
+                        );
                     subgroupTA1Event.outlinks.push(node.id);
-                })
+                });
             }
         } else {
             console.log("parentNode", parentNode);
@@ -430,25 +439,27 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     getNodeById: (id: string) => {
         const node = get().mapNodes.get(id);
         if (node) {
-            return node
+            return node;
         } else {
             const newNode = get().mapEntities.get(id);
             if (newNode) {
-                return newNode
+                return newNode;
             } else {
                 const jsonConverter = new JsonConvert();
                 const newEntity = jsonConverter.deserializeObject(
                     {
                         "@id": id,
-                        "name": id,
-                        "wd_node": [],
-                        "wd_label": [],
-                        "wd_description": [],
-                        "importance": 1,
-                        "likelihood": 1,
-                        "optional": false,
-                        // @ts-ignore
-                    }, TA1Entity);
+                        name: id,
+                        wd_node: [],
+                        wd_label: [],
+                        wd_description: [],
+                        importance: 1,
+                        likelihood: 1,
+                        optional: false,
+                    },
+                    // @ts-ignore
+                    TA1Entity
+                );
                 get().mapEntities.set(id, newEntity);
                 return get().mapEntities.get(id);
             }
@@ -462,7 +473,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
     onPaneContextMenu: (event) => {
         event.preventDefault();
-        // console.log("event", event);
         set({
             paneContextMenu: event,
             contextMenu: null,
@@ -507,18 +517,15 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
 
     updateGraphByTA1Events: (eventNodes: TA1Event[]) => {
-        // console.log("eventNodes", eventNodes);
         if (eventNodes.length > 0) {
             const allChildren = eventNodes.map((node) => node.children).flat();
             const firstNode = eventNodes.find(
                 (node) => !allChildren.includes(node.id)
             );
-            // console.log("firstNode", firstNode);
             const newMap = new Map();
             eventNodes.forEach((node) => {
                 newMap.set(node.id, node);
             });
-            // console.log("newMap", newMap);
 
             set({
                 mapNodes: newMap,
@@ -540,7 +547,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     },
     updateEdgeStyle: (edgeType: GraphEdgeType, style: any) => {
         const { edgeStyle } = get();
-        // console.log("edgeType", edgeType);
         const newEdgeStyle = {
             ...edgeStyle,
             [edgeType]: {
@@ -601,7 +607,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         return sortedEntitiesRelatedEventMap;
     },
     onSelectionContextMenu: (event, nodes) => {
-        // console.log("nodes multiselect", nodes);
         event.preventDefault();
         set({
             selectionNodes: nodes,
@@ -621,7 +626,7 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         } = get();
         const newMapNodes = new Map(mapNodes);
         const newFirstNode = getNewIdInEventMap();
-        console.log('firstNode', firstNode);
+        console.log("firstNode", firstNode);
         if (firstNode === null) {
             return;
         }
@@ -629,9 +634,9 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         const newFirstNodeObject = jsonConverter.deserializeObject(
             {
                 "@id": newFirstNode,
-                "name": "New Grouping Node",
-                "children": [firstNode, node.id],
-                "children_gate": "or",
+                name: "New Grouping Node",
+                children: [firstNode, node.id],
+                children_gate: "or",
                 wd_node: [],
                 wd_label: [],
                 wd_description: [],
@@ -640,15 +645,20 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                 importance: 1,
                 likelihood: 1,
                 optional: false,
-            }, TA1Event);
+            },
+            TA1Event
+        );
         console.log("newFirstNodeObject", newFirstNodeObject);
-        // //set up the new node
-        // console.log("node", node);
-        if (node.id){
+        // set up the new node
+        if (node.id) {
             newMapNodes.set(node.id, node);
         }
         newMapNodes.set(newFirstNode, newFirstNodeObject);
-        set({ mapNodes: newMapNodes, firstNode: newFirstNode, chosenNodes: [newFirstNode, ...chosenNodes] });
+        set({
+            mapNodes: newMapNodes,
+            firstNode: newFirstNode,
+            chosenNodes: [newFirstNode, ...chosenNodes],
+        });
         console.log("newMapNodes", newMapNodes);
         console.log("chosenNodes", chosenNodes);
         console.log("firstNode", firstNode);
@@ -713,34 +723,25 @@ const useStoreTA1 = create<RFState>((set, get) => ({
     onNodeClick: (event, node) => {
         set({ contextMenu: null, showAddPanel: null });
         if (node.data.isEntity) {
-            // get().entitiesRelatedEventMap.get(node.id).forEach((eventId) => {
             return;
         }
         const mapNodes = get().mapNodes;
         const currentNode = node.data.isGate
             ? mapNodes.get(node.data.referredNode)
             : mapNodes.get(node.id);
-        // console.log("currentNode", currentNode);
-        if (
-            //     !currentNode.children ||
-            //     currentNode.children.length === 0 ||
-            node.data.isGate
-        ) {
+        if (node.data.isGate) {
             set({ clickedNode: node });
             return;
         }
 
         if (get().chosenNodes.includes(node.id)) {
-            // console.log("node.data.isExpanded", node.data);
             const allSubEvents = get().getAllCurrentSubgroupEvents(node.id);
 
             const newChosenNodes = get().chosenNodes.filter(
                 (n) => !allSubEvents.includes(n)
             );
 
-            // console.log("currentNode", currentNode.id);
             const parentId = `gate-${currentNode.parent}`;
-            // console.log("parentId", parentId);
             const oldNodePosition = get().nodes.find(
                 (n) => n.id === parentId
             )?.position;
@@ -752,8 +753,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
             const newNodePosition = get().nodes.find(
                 (n) => n.id === parentId
             )?.position;
-            // console.log("oldNodePosition", oldNodePosition);
-            // console.log("newNodePosition", newNodePosition);
             if (oldNodePosition && newNodePosition) {
                 set({
                     deltaX: oldNodePosition?.x - newNodePosition?.x,
@@ -765,8 +764,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         }
 
         const newChosenNodes = [...get().chosenNodes, node.id];
-
-        // console.log("currentNode", currentNode.id);
         const parentId = `gate-${currentNode.parent}`;
         // console.log("parentId", parentId);
         const oldNodePosition = get().nodes.find(
@@ -778,14 +775,11 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         const newNodePosition = get().nodes.find(
             (n) => n.id === parentId
         )?.position;
-        // console.log("oldNodePosition", oldNodePosition);
-        // console.log("newNodePosition", newNodePosition);
         if (oldNodePosition && newNodePosition) {
             set({
                 deltaX: oldNodePosition?.x - newNodePosition?.x,
                 deltaY: oldNodePosition?.y - newNodePosition?.y,
             });
-            // const {setCenter} = useReactFlow();
         }
     },
 
@@ -859,9 +853,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         get().updateLayout();
     },
     onEdgeUpdate: (oldEdge: Edge, newConnection: Connection) => {
-        // console.log("oldEdge", oldEdge);
-        // console.log("newConnection", newConnection);
-
         const { mapNodes } = get();
         const oldSourceID = oldEdge.source.startsWith("gate-")
             ? oldEdge.source.slice(5)
@@ -912,7 +903,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
             const nodeId = node.id.startsWith("gate-")
                 ? node.id.slice(5)
                 : node.id;
-            // console.log("nodeId", nodeId);
             const nodeToDelete = mapNodes.get(nodeId);
             if (nodeToDelete === undefined) {
                 return;
@@ -968,10 +958,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         if (firstNode === null || mapNodes.size === 0) {
             return;
         }
-        // console.log("updateLayout");
-        // console.log("chosenNodes", chosenNodes);
-        // console.log("mapNodes", mapNodes);
-        // console.log("firstNode", firstNode);
         const newNodes = getLayoutedElementsNested(
             chosenNodes,
             mapNodes,
@@ -1032,7 +1018,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                 },
             };
         });
-        // console.log("layoutedNodes", layoutedNodes);
 
         const newEdges: Edge[] = [];
         chosenNodes.forEach((source) => {

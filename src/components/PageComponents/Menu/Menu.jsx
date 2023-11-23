@@ -218,7 +218,8 @@ function AddJSONPanel() {
                             setSchemaType("ta2");
                             setJsonData(mergedJson);
                         } else {
-                            const mergedJson = TA1dataMergeMultipleFiles(jsonList);
+                            const mergedJson =
+                                TA1dataMergeMultipleFiles(jsonList);
                             setSchemaType("ta1");
                             setJsonData(mergedJson);
                         }
@@ -369,12 +370,21 @@ const TA1DownloadPanel = () => {
     const jsonConverter = new JsonConvert();
     const newData = { ...jsonData };
     console.log("mapEntity", mapEntities);
+    newData.events = jsonConverter.serializeArray(
+        Array.from(mapNodes.values()),
+        TA1Event
+    );
+
     newData.events.forEach((event) => {
-        event.entities = event.entities.map((entity) =>
-            jsonConverter.serialize(mapEntities.get(entity["@id"]), TA1Entity)
-        );
+        event.entities = event.participants.map((participant) => {
+            return jsonConverter.serialize(
+                mapEntities.get(participant["entity"]),
+                TA1Entity
+            );
+        });
     });
-    console.log("newData", newData);
+
+    console.log("newData over here", newData);
     const downloadJSON = () => {
         const dataStr =
             "data:text/json;charset=utf-8," +
@@ -386,6 +396,7 @@ const TA1DownloadPanel = () => {
     };
     return (
         <div>
+            <h2>Download TA1 Schema</h2>
             <button onClick={downloadJSON}>Download TA1 Schema</button>
         </div>
     );
@@ -424,11 +435,6 @@ const TA2DownloadPanel = () => {
     };
 
     const downloadIndividualCE = (ceID) => {
-        // const mapEvents = jsonData.mapEvents;
-        // const mapEntities = jsonData.mapEntities;
-        // const mapProvenances = jsonData.mapProvenances;
-        // const mapRelations = jsonData.mapRelations;
-        // const mapValues = jsonData.mapValues;
         const topLevelEvent = jsonData.isTopLevelEvents.get(ceID)["@id"];
 
         const TA2traverseAllEventsData = TA2traverseAllEvents(
@@ -1254,7 +1260,7 @@ const TA1GlobalEntityTable = () => {
             if (entity === undefined) {
                 continue;
             }
-            
+
             newEntitiesTable.push(
                 <TableRowTA1
                     key={key}

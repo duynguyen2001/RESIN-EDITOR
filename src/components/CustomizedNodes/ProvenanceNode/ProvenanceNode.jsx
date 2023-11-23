@@ -19,14 +19,11 @@ const ProvenanceNode = ({ data }) => {
     console.log("extractedFiles: ", extractedFiles);
 
     if (data.mediaType.startsWith("video/")) {
-        return (
-            <VideoNode data={data} />
-        );
+        return <VideoNode data={data} />;
     }
 
     if (extractedFiles.size > 0) {
         const fileContent = extractedFiles.get(data.childID);
-        // console.log("fileContent: ", fileContent);
         if (fileContent) {
             if (data.mediaType.startsWith("image/")) {
                 return <ImageNode data={data} fileContent={fileContent} />;
@@ -36,7 +33,6 @@ const ProvenanceNode = ({ data }) => {
 
     if (extractedTexts.size > 0) {
         const textContent = extractedTexts.get(data.childID);
-        // console.log("textContent: ", textContent);
         if (textContent) {
             if (data.mediaType.startsWith("text/")) {
                 return (
