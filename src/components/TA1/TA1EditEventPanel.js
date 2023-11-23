@@ -202,36 +202,35 @@ export const TA1EditEventPanel = ({
                             marginLeft: "1%",
                         }}
                         loadOptions={loadOptions}
-                        isMulti
                         value={{
                             value: data.wd_node,
                             label: data.wd_label,
                         }}
-                        onChange={(options) => {
-                            setData({
-                                ...data,
-                                wd_node: options.map((option) => {
-                                    if (mapEntities.has(option.value)) {
-                                        return mapEntities.get(option.value)
-                                            .wd_node;
-                                    }
-                                    return option.data.wd_node;
-                                }),
-                                wd_label: options.map((option) => {
-                                    if (mapEntities.has(option.value)) {
-                                        return mapEntities.get(option.value)
-                                            .name;
-                                    }
-                                    return option.data.name;
-                                }),
-                                wd_description: options.map((option) => {
-                                    if (mapEntities.has(option.value)) {
-                                        return mapEntities.get(option.value)
-                                            .description;
-                                    }
-                                    return option.data.description;
-                                }),
-                            });
+                        onChange={(option) => {
+                            if (mapEntities.has(option.value)) {
+                                setData({
+                                    ...data,
+                                    wd_node: [
+                                        mapEntities.get(option.value).wdNode,
+                                    ],
+                                    wd_label: [
+                                        mapEntities.get(option.value).wdLabel,
+                                    ],
+                                    wd_description: [
+                                        mapEntities.get(option.value)
+                                            .wdDescription,
+                                    ],
+                                });
+                            } else {
+                                setData({
+                                    ...data,
+                                    wd_node: [option.data.wd_node],
+                                    wd_label: [option.data.wd_label],
+                                    wd_description: [
+                                        option.data.wd_description,
+                                    ],
+                                });
+                            }
                         }}
                     />
                 </div>
