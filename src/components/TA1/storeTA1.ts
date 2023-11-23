@@ -1067,8 +1067,6 @@ const useStoreTA1 = create<RFState>((set, get) => ({
                         id: relation.id,
                         source: `${relation.relationSubject}-${node.id}`,
                         target: `${relation.relationObject}-${node.id}`,
-                        // sourceHandle: relation.relationSubject + "_top",
-                        // targetHandle: relation.relationObject + "_bottom",
                         label: relation.name,
                         ...edgeStyle.relation,
                     });

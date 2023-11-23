@@ -152,12 +152,15 @@ export function TA1EventNodeInfoPanel({ data, onClose }) {
                                 {
                                     "@id": newEntityId,
                                     name: "New Entity",
+                                    description: "New Description",
+                                    wd_node: [],
+                                    wd_label: [],
+                                    wd_description: [],
                                 },
                                 TA1Entity
                             );
                             mapEntities.set(newEntityId, newEntity);
 
-                            // console.log("newParticipantId", newParticipantId);
                             const newParticipant =
                                 jsonConvert.deserializeObject(
                                     {
