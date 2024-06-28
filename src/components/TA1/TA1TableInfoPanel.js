@@ -34,10 +34,11 @@ export function TA1TableInfoPanel({
     const loadOptions = async (inputValue, callback) => {
         // if (!inputValue) return callback([]);
         const options = [];
-        entitiesRelatedEventMap.forEach((entity, key) => {
+        mapEntities.forEach((entity, key) => {
+            console.log("entity", entity);
             options.push({
                 value: key,
-                label: mapEntities.get(key).name,
+                label: entity.name,
             });
         });
         if (!inputValue) {

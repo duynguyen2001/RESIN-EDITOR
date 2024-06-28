@@ -580,7 +580,16 @@ const useStoreTA1 = create<RFState>((set, get) => ({
         const entitiesRelatedEventMap = new Map();
         mapNodes.forEach((event, key) => {
             event.participants?.forEach((participant: Participant) => {
-                if (entitiesRelatedEventMap.has(participant.entity)) {
+                if (participant.entity === undefined || participant.entity === "") {
+                    const entityId = UniqueString.getUniqueStringWithForm(
+                            "resin:Entity/2",
+                            "/",
+                            4
+                        );
+                    participant.entity = entityId;
+                    event.entities.push(new TA1Entity(entityId, "New Entity", [], [], []));
+                    entitiesRelatedEventMap.set(entityId, [key]);
+                } else if (entitiesRelatedEventMap.has(participant.entity)) {
                     entitiesRelatedEventMap.set(participant.entity, [
                         ...entitiesRelatedEventMap.get(participant.entity),
                         key,
